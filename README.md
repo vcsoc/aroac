@@ -13,7 +13,7 @@ see the license for details.
 
 ## Version 0.3.12
 
-- Signed-out account menu, a tutorial Help shortcut after Quick Switch, expanded About information, supplied OAR branding and refreshed Linux/Windows/macOS/iOS icon assets. Linux and Windows x64 packages have been built for this release.
+- Signed-out account menu, a tutorial Help shortcut after Quick Switch, expanded About information, supplied OAR branding and refreshed Linux/Windows/macOS/iOS icon assets. Linux, Windows x64 and macOS ARM64 packages have been built for this release.
 - Camera button saves the application view to Pictures as `oar-screenshot-YYMMddHHmmss.png`; images can contain private information.
 - Uniform monospace License typography, collapsed third-party notices, thin themed scrollbars shown only during scrolling, small-text scaling, and consolidated Login help.
 - The comparison timeline follows the theme. Escape no longer adds an orange keyboard-focus border to the map.
@@ -112,22 +112,24 @@ Chromium, Node and SQLite; no separate runtime or server installation is needed.
 
 ## macOS Apple Silicon release
 
-[GitHub Releases — v0.3.11](https://github.com/vcsoc/oar/releases/tag/v0.3.11) includes
-`OAR-0.3.11-arm64.dmg`, `OAR-0.3.11-arm64-mac.zip` and macOS SHA-256 checksums.
+[GitHub Releases — v0.3.12](https://github.com/vcsoc/oar/releases/tag/v0.3.12) includes
+`OAR-0.3.12-arm64.dmg`, `OAR-0.3.12-arm64-mac.zip` and macOS SHA-256 checksums.
 This standalone Electron application bundles its Chromium interface, local SQLite
 and application logic; no separate server or system Node installation is needed.
 Intel Macs were not built or tested.
 
-Built and tested on macOS 26.5.2 (Apple Silicon). All 41 unit tests, the packaged
-desktop smoke test (offline accounts, persistence, backup and map controls), and
-guidance smoke test passed. DMG and ZIP integrity checks passed. The extended
+Built and tested on macOS 26.5.2 (Apple Silicon). The unit suite passed 44 tests
+with four skipped and no failures. Packaged desktop (offline accounts, persistence,
+backup and map controls), guidance, and release-twelve (native screenshots and
+signed-out backup protection) smoke tests passed. DMG and ZIP integrity checks
+passed. The extended
 release-ten smoke test did not pass: after canonicalizing macOS's temporary path,
 it failed opening bundled Chromium license notices. The DMG installation workflow
 and automatic updates were not tested.
 
 This build is not Developer ID signed or notarized; Gatekeeper may block opening
 it. macOS automatic-update metadata is deliberately not published for this
-manual-install build. Packaging uses the default Electron application icon.
+manual-install build. Packaging includes the OAR application icon.
 
 ## Workspace controls
 
