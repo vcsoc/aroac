@@ -158,7 +158,7 @@ npm run build
 npm start                         # self-contained Electron application
 npm run desktop:dev               # desktop with UI hot reload
 npm run desktop:build -- --linux AppImage
-npm run desktop:build -- --win --x64 # Windows: releases/OAR Setup 0.3.10.exe
+npm run desktop:build -- --win --x64 # Windows: releases/OAR Setup 0.3.11.exe
 ```
 
 Before packaging a fresh checkout, generate the offline city directory: download and extract `cities500.zip` and download `admin1CodesASCII.txt` from https://download.geonames.org/export/dump/, then run `node scripts/build-cities.js /path/cities500.txt /path/admin1CodesASCII.txt`. The generated `data/cities.json` and attribution file are ignored by Git but included in the package.
