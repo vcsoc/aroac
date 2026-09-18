@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Search, X, MapPin } from "lucide-react";
 import { api } from "./lib";
+import { Help } from "./InterfaceUI";
 import { contactLocation } from "./contactLocation";
 import { coordinatesFromQuery, withTimezone } from "./locations";
 export default function AddressSearch({ onSelect, onClear, onSavedSelect }) {
@@ -260,12 +261,12 @@ export default function AddressSearch({ onSelect, onClear, onSavedSelect }) {
               Search online places instead
             </button>
           )}
-          <small>
+          <Help label="About location search">
             Saved names and callsigns are searched locally first. If none match,
             suggestions send your query to Photon/OpenStreetMap after a short
             pause. City/timezone search in the clock editor works offline.
             Verify address positions; a saved pin can correct them.
-          </small>
+          </Help>
         </div>
       )}
     </div>

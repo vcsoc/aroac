@@ -11,6 +11,22 @@ written consent from Chris Visser ([vcsoc](https://github.com/vcsoc)). Third-par
 components retain their own licenses. Future versions may use different terms;
 see the license for details.
 
+## Version 0.3.9
+
+- Action notifications are themed toasts that fade out after four seconds. Saved-location and home changes identify what changed instead of saying “Saved locally.” Field validation and feed/offline status remain visible where needed.
+- **About OAR → Roadmap** fetches `https://raw.githubusercontent.com/vcsoc/oar/main/roadmap.md` only when opened. It renders safe Markdown without raw HTML or remote images. Offline, missing, oversized or unreachable content shows a contribution/sponsorship invitation instead. The repository file must be published on `main` before the live roadmap can load.
+- **Callsign → Help → Tutorial** starts a 13-step guided tour with highlighted sections and Previous, Next and End controls. End/Escape restores the previous workspace view; the tour does not edit saved records.
+- A persistent bottom status line shows the installed package version on the left and station callsign/grid on the right.
+- Clock editors use a compact color swatch beside the foreground-color title and an icon-only “Use theme color” reset. Location, timezone, color and coordinate explanations are question-mark tooltips beside their headings.
+
+### Interface updates included
+
+- Saved-location cards group Move, Home and Delete on the right. Delete is available without entering edit mode and requires confirmation.
+- App confirmations and About OAR use themed dialogs. The callsign opens an Edit Profile / About OAR / Logout menu.
+- The topbar uses a left-panel toggle, left-aligned workspace breadcrumb and compact search that expands on focus. About OAR credits Chris Visser and links to this repository.
+- Routine location, map, clock and settings explanations use keyboard-accessible question-mark tooltips. Location source attribution is included in help; errors, stale-data indicators and security warnings remain visible. Local time appears beside the province/country row.
+- Windows and macOS use frameless windows with custom topbar controls (right on Windows, left on macOS); Linux retains its native frame. Windows/macOS native behavior still requires testing on those platforms.
+
 Version **0.3.8** changes custom clock colors to **foreground text** while retaining theme backgrounds, with a subtle contrasting text outline. It redesigns the profile form with circular image/placeholder avatars. Left-panel cards focus the map on single click; double-click anywhere on the title area toggles the card independently without navigation. Each card has a set-home icon (disabled without coordinates), and Home no longer has a Change button. Selected locations show live local time, IANA timezone and current DST-aware difference from home. Map/pin context menus can add the exact point as an additional toolbar clock (up to 24), without changing home.
 
 Version **0.3.7** added source/destination link planning, theme-independent contrasting custom clock colors, pin-hover tooltips/highlights, a logged-in user panel, private profile/avatar/password editing, equipment/invoice records and local ownership PDF export. It also fixes sidebar alignment, compact icon actions, unclipped alphabetical/timezone menus, responsive forecasts, and a context-menu/marker interaction that could leave a phantom drag active. **Link planning is not terrain-verified line of sight or a guaranteed operating configuration.**
@@ -29,8 +45,12 @@ Version **0.3.1** fixed the clock editor/search layout and adds offline search o
 
 ## Linux release
 
+Download the AppImage, Linux archive and SHA-256 checksums from
+[GitHub Releases — v0.3.9](https://github.com/vcsoc/oar/releases/tag/v0.3.9).
+Release binaries are distributed as release assets, not stored in Git history.
+
 ```text
-releases/OAR-0.3.8.AppImage
+releases/OAR-0.3.9.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
@@ -144,8 +164,8 @@ npm run test:panels                # resizing/persistence, auto-hidden themed sc
 npm run test:items                 # read-only/edit, private saved search, grouping, context, home persistence
 npm run test:seven                 # link planner, clock colors, hover, menus, icons and responsive forecasts
 npm run test:account               # private profile/avatar/devices, password change, original invoices in PDF
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.8.AppImage" npm run test:desktop
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.8.AppImage" npm run test:account
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.9.AppImage" npm run test:desktop
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.9.AppImage" npm run test:guidance
 npm run test:browser               # development harness / responsive UI
 npm audit
 ```

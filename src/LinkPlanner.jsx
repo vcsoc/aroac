@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { linkGeometry, horizonKm } from "./contactContext";
+import { Help } from "./InterfaceUI";
 export default function LinkPlanner({ source, destination, onClear }) {
   const [a, setA] = useState(""),
     [b, setB] = useState("");
@@ -78,13 +79,24 @@ export default function LinkPlanner({ source, destination, onClear }) {
             </p>
           )}
           <p>
-            <b>Terrain-verified line of sight: unknown.</b> No elevation
-            profile, buildings, vegetation or Fresnel-zone clearance data is
-            available. The horizon estimate cannot confirm a usable radio link
-            and does not account for differing ground elevations or changing
-            atmospheric refraction.
+            <b>Terrain-verified line of sight: unknown.</b>{" "}
+            <Help label="About line-of-sight estimates">
+              No elevation profile, buildings, vegetation or Fresnel-zone
+              clearance data is available. The horizon estimate cannot confirm a
+              usable radio link and does not account for differing ground
+              elevations or changing atmospheric refraction.
+            </Help>
           </p>
-          <h4>Configuration to investigate</h4>
+          <h4>
+            Configuration to investigate{" "}
+            <Help label="About operating configuration">
+              No reliable dial frequency, power, mode or bandwidth can be
+              recommended without both stations’ capabilities, licence
+              privileges, local band plans and propagation/path measurements.
+              Agree a clear permitted frequency and configuration before
+              transmitting. This is planning guidance, not a link guarantee.
+            </Help>
+          </h4>
           {known && path.distance <= radio ? (
             <p>
               For a confirmed unobstructed local path, investigate mutually
@@ -107,13 +119,6 @@ export default function LinkPlanner({ source, destination, onClear }) {
               recommendations.
             </p>
           )}
-          <p>
-            No reliable dial frequency, power, mode or bandwidth can be
-            recommended without both stations’ capabilities, licence privileges,
-            local band plans and propagation/path measurements. Agree a clear
-            permitted frequency and configuration before transmitting. This is
-            planning guidance, not a link guarantee.
-          </p>
         </>
       )}
       <button onClick={onClear}>Clear source and destination</button>

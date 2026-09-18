@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Database, Download } from "lucide-react";
 import { connection } from "./platform";
+import { Help } from "./InterfaceUI";
+import { useToastStatus } from "./Toasts";
 export default function LocalData() {
   const [info, setInfo] = useState(null),
-    [status, setStatus] = useState("");
+    [status, setStatus] = useToastStatus();
   useEffect(() => {
     connection()
       .then(setInfo)
@@ -12,12 +14,14 @@ export default function LocalData() {
   return (
     <article className="panel connection-settings">
       <Database className="accent" size={28} />
-      <h3>Your station lives on this device.</h3>
-      <p>
-        Profiles, contacts and your logbook are stored in OAR’s own SQLite
-        database. They work without internet. Nothing needs to be installed or
-        started separately.
-      </p>
+      <h3>
+        Your station lives on this device.{" "}
+        <Help label="About local storage">
+          Profiles, contacts and your logbook are stored in OAR’s own SQLite
+          database. They work without internet. Nothing needs to be installed or
+          started separately.
+        </Help>
+      </h3>
       <label className="check-label">
         <input
           type="checkbox"
@@ -58,11 +62,11 @@ export default function LocalData() {
         Back up database
       </button>
       {status && <p role="status">{status}</p>}
-      <small>
+      <Help label="About database backups">
         Backups contain all local profiles and private records. The database is
         not encrypted; keep your device and backups protected. Maps and fresh
         observations use online providers.
-      </small>
+      </Help>
       {info && !info.secureSessionStorage && (
         <small>
           OS encrypted credential storage is unavailable. Settings → Login

@@ -1,0 +1,234 @@
+.switch-help-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.switch-help-row > .row-toggle {
+  flex: 1;
+  min-width: 0;
+}
+.map-instruction .help-tip {
+  pointer-events: auto;
+}
+.help-tip {
+  display: inline-flex;
+  vertical-align: middle;
+  position: relative;
+}
+.oar-tooltip {
+  position: fixed;
+  z-index: 10000;
+  width: max-content;
+  max-width: min(300px, 75vw);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  box-shadow: 0 6px 24px #0005;
+}
+.oar-dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: 85vh;
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 16px 80px #0008;
+}
+.oar-dialog::backdrop {
+  background: #0008;
+}
+.oar-dialog header,
+.oar-dialog footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+.oar-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.oar-dialog p {
+  line-height: 1.6;
+}
+.oar-dialog footer {
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.oar-dialog a {
+  color: var(--accent);
+}
+.topbar {
+  justify-content: flex-start;
+  gap: 10px;
+}
+.topbar .topbar-location-button {
+  order: 0;
+  flex-shrink: 0;
+}
+.topbar .breadcrumb {
+  display: flex;
+  order: 0;
+  margin: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+.topbar-search-group {
+  flex: 0 1 170px;
+  width: 170px;
+  min-width: 100px;
+  margin-left: auto;
+  transition:
+    flex-basis 0.2s,
+    width 0.2s;
+}
+.topbar-search-group:focus-within {
+  flex-basis: 290px;
+  width: 290px;
+}
+.topbar-search-group > .address-search {
+  width: 100%;
+  min-width: 0;
+}
+.top-actions {
+  position: relative;
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+.account-menu {
+  position: absolute;
+  z-index: 200;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 175px;
+  padding: 6px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px #0005;
+}
+.account-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+}
+.window-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 3px;
+}
+.window-controls.darwin {
+  order: -1;
+}
+.window-controls .window-close:hover {
+  background: #c42b1c;
+  color: white;
+}
+.platform-win32.topbar,
+.platform-darwin.topbar {
+  -webkit-app-region: drag;
+}
+.topbar button,
+.topbar input,
+.topbar a,
+.topbar .account-menu,
+.topbar .address-search {
+  -webkit-app-region: no-drag;
+}
+.pin-actions {
+  justify-content: flex-end;
+  gap: 6px;
+}
+.pin-actions button {
+  flex: 0 0 auto;
+}
+.pin-actions .icon-button {
+  margin-left: 0;
+}
+.pin-actions button[aria-label="Save changes"] {
+  margin-right: auto;
+}
+.pin-actions button[aria-label="Move on map"] {
+  order: 1;
+  margin-left: auto;
+}
+.pin-actions button[aria-label="Use this pin as home location"] {
+  order: 2;
+}
+.pin-actions button[title="Delete saved location"] {
+  order: 3;
+}
+.place-region-time {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.place-region-time > strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.location-title-group {
+  flex: 1;
+  min-width: 0;
+}
+.location-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.location-subtitle > strong {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .topbar .breadcrumb {
+    font-size: 11px;
+  }
+  .topbar .connection {
+    display: none;
+  }
+  .topbar-search-group {
+    flex-basis: 120px;
+    width: 120px;
+  }
+  .topbar-search-group:focus-within {
+    flex-basis: 230px;
+    width: 230px;
+  }
+}
+@media (max-width: 640px) {
+  .topbar {
+    gap: 4px;
+  }
+  .topbar .breadcrumb {
+    display: none;
+  }
+  .topbar-search-group {
+    flex: 1 1 90px;
+    width: 90px;
+    min-width: 70px;
+  }
+  .topbar-search-group:focus-within {
+    flex-basis: 150px;
+    width: 150px;
+  }
+  .top-actions {
+    gap: 1px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar-search-group {
+    transition: none;
+  }
+}

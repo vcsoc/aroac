@@ -17,7 +17,7 @@ export default function SpecialistViews() {
       const r = host.current.getBoundingClientRect();
       const hidden =
         !!document.querySelector(
-          "dialog[open],[popover]:popover-open,.address-dropdown [role=listbox],.floating-list-menu",
+          "dialog[open],[popover]:popover-open,.address-dropdown [role=listbox],.floating-list-menu,.account-menu,.oar-tooltip,.oar-toast",
         ) ||
         r.bottom < 34 ||
         r.top > innerHeight;

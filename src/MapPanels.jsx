@@ -22,6 +22,8 @@ import SavedItemList, {
   CollapseButton,
 } from "./SavedItemUI";
 import ContactContext from "./ContactContext";
+import { Help } from "./InterfaceUI";
+import { useToastStatus } from "./Toasts";
 export function Switch({
   label,
   value,
@@ -31,27 +33,30 @@ export function Switch({
 }) {
   if (fullRow)
     return (
-      <button
-        type="button"
-        className="drawer-setting row-toggle"
-        role="switch"
-        aria-label={label}
-        aria-description={description}
-        title={description}
-        aria-checked={value}
-        onClick={() => onChange(!value)}
-      >
-        <strong>{label}</strong>
-        <span className="row-toggle-track" aria-hidden="true">
-          <i />
-        </span>
-      </button>
+      <div className="switch-help-row">
+        <button
+          type="button"
+          className="drawer-setting row-toggle"
+          role="switch"
+          aria-label={label}
+          aria-description={description}
+          title={description}
+          aria-checked={value}
+          onClick={() => onChange(!value)}
+        >
+          <strong>{label}</strong>
+          <span className="row-toggle-track" aria-hidden="true">
+            <i />
+          </span>
+        </button>
+        {description && <Help label={"About " + label}>{description}</Help>}
+      </div>
     );
   return (
     <div className="drawer-setting">
       <div>
         <strong>{label}</strong>
-        {description && <small>{description}</small>}
+        {description && <Help label={"About " + label}>{description}</Help>}
       </div>
       <button
         className="toggle-switch"
@@ -245,7 +250,7 @@ function PinEditor({
   }, [editRequested]);
   const [draft, setDraft] = useState({}),
     [busy, setBusy] = useState(false),
-    [status, setStatus] = useState("");
+    [status, setStatus] = useToastStatus();
   const host = useRef();
   useEffect(() => {
     if (selected) host.current?.scrollIntoView({ block: "nearest" });
@@ -281,7 +286,9 @@ function PinEditor({
           await onUpdate(pin.id, patch);
           setDraft({});
           setEditing(false);
-          setStatus("Saved locally.");
+          setStatus(
+            `Updated saved location “${patch.label || pin.label}” on this device. ${Object.keys(patch).some((k) => k === "lat" || k === "lng") ? "Its map position has been updated." : "Your location details have been saved."}`,
+          );
         } catch (error) {
           setStatus(error.message);
         } finally {
@@ -434,7 +441,7 @@ function PinEditor({
             >
               <Move size={14} />
             </button>
-            {editing && (
+            {
               <button
                 type="button"
                 className="icon-button"
@@ -444,7 +451,7 @@ function PinEditor({
               >
                 <Trash2 size={14} />
               </button>
-            )}
+            }
             {onHome && (
               <button
                 type="button"
@@ -452,9 +459,9 @@ function PinEditor({
                 title="Use this pin as home location"
                 aria-label="Use this pin as home location"
                 onClick={() =>
-                  onHome(pin)
-                    .then(() => setStatus("Home location updated."))
-                    .catch((e) => setStatus(e.message))
+                  onHome(pin).catch((e) =>
+                    setStatus(`Could not change home location: ${e.message}`),
+                  )
                 }
               >
                 <Home size={14} />
@@ -490,10 +497,13 @@ export function SavedPins({
   );
   return (
     <>
-      <p className="drawer-help">
-        {pins.length} locations saved on this device. Right-click the map to add
-        a pin. Drag any pin to move it.
-      </p>
+      <span>
+        {pins.length} saved locations{" "}
+        <Help label="About saved locations">
+          Locations are saved on this device. Right-click the map to add a pin.
+          Drag any pin to move it, or use its Move button.
+        </Help>
+      </span>
       <input
         aria-label="Filter saved locations"
         placeholder="Filter names or callsigns…"
@@ -547,7 +557,7 @@ export function RepeaterDetails({
   directory,
   onSave,
 }) {
-  const [status, setStatus] = useState(""),
+  const [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
   useEffect(() => setStatus(""), [repeater?.id]);
   if (!repeater)

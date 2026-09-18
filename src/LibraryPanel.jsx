@@ -9,8 +9,10 @@ import SavedItemList, {
   CollapseButton,
 } from "./SavedItemUI";
 import ContactContext from "./ContactContext";
+import { confirmAction, Help } from "./InterfaceUI";
+import { toast, useToastStatus } from "./Toasts";
 export function LibraryTransfer({ onImported, children }) {
-  const [status, setStatus] = useState(""),
+  const [status, setStatus] = useToastStatus(),
     [pending, setPending] = useState(null),
     [include, setInclude] = useState(false),
     [busy, setBusy] = useState(false);
@@ -144,10 +146,10 @@ export default function LibraryContacts({
   }, [revision]);
   return (
     <section>
-      <p className="drawer-help">
+      <Help label="About the address book">
         Device-wide address book. These contacts do not create operator accounts
         or send messages.
-      </p>
+      </Help>
       <button onClick={() => setAdding(true)}>Add contact</button>
       {error && <p role="alert">{error}</p>}
       {adding && (
@@ -190,9 +192,12 @@ export default function LibraryContacts({
               await load();
             }}
             onDelete={async () => {
-              if (confirm("Delete this address-book contact?")) {
+              if (await confirmAction("Delete this address-book contact?")) {
                 await api("/address-book/" + row.id, { method: "DELETE" });
                 await load();
+                toast(
+                  `Deleted address-book contact “${row.name || row.callsign}” from this device.`,
+                );
               }
             }}
           />
@@ -246,7 +251,10 @@ function ContactEditor({
         try {
           await onSave(draft);
           if (value.id) setEditing(false);
-          setError("Saved.");
+          setError("");
+          toast(
+            `Saved address-book contact “${draft.name || draft.callsign}” on this device.`,
+          );
         } catch (e) {
           setError(e.message);
         } finally {

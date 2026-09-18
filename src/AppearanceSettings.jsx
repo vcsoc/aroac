@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Help } from "./InterfaceUI";
+import { useToastStatus } from "./Toasts";
 export default function AppearanceSettings({ value, onSave, onPreview }) {
   const [scale, setScale] = useState(value.fontScale),
     [zoom, setZoom] = useState(1),
-    [status, setStatus] = useState("");
+    [status, setStatus] = useToastStatus();
   useEffect(() => {
     onPreview(scale);
   }, [scale, onPreview]);
@@ -37,7 +39,6 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
           value={scale}
           onChange={(e) => {
             setScale(Number(e.target.value));
-            setStatus("Preview — apply to keep this text size.");
           }}
         />
       </label>
@@ -46,7 +47,9 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
           onClick={async () => {
             try {
               await onSave({ fontScale: scale });
-              setStatus("Text size saved.");
+              setStatus(
+                `Interface text size saved at ${Math.round(scale * 100)}%.`,
+              );
             } catch (e) {
               setStatus(e.message);
             }
@@ -56,10 +59,10 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
         </button>
         <button onClick={() => setScale(1.12)}>Default (112%)</button>
       </div>
-      <small>
+      <Help label="About text size preview">
         Preview changes text, not the map’s geographic scale. Leaving this tab
         or closing Settings without applying reverts the preview.
-      </small>
+      </Help>
       {window.oarDesktop && (
         <>
           <label>
@@ -89,10 +92,10 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
               +
             </button>
           </div>
-          <small>
+          <Help label="About app zoom">
             Ctrl+ / Ctrl− zoom the whole interface. Ctrl+0 resets zoom. Saved
             automatically.
-          </small>
+          </Help>
         </>
       )}
       {status && <p role="status">{status}</p>}

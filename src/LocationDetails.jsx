@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { homeDifference } from "./contactContext";
+import { Help } from "./InterfaceUI";
 import {
   Pin,
   PinOff,
@@ -188,25 +189,43 @@ function LocationCard({
           toggle();
         }}
       >
-        <button
-          className="location-title"
-          title="Click to focus on map; double-click to expand or collapse"
-          onClick={(e) => {
-            clearTimeout(clickTimer.current);
-            if (e.detail === 0) {
-              onFocus?.(place);
-              return;
-            }
-            if (e.detail === 1)
-              clickTimer.current = setTimeout(() => onFocus?.(place), 280);
-          }}
-        >
-          <h3>
-            {home ? <Home size={14} /> : <MapPin size={14} />}{" "}
-            {home ? "Home location" : "Selected location"}
-          </h3>
-          <strong>{place?.name || place?.title || "Map location"}</strong>
-        </button>
+        <div className="location-title-group">
+          <button
+            className="location-title"
+            title="Click to focus on map; double-click to expand or collapse"
+            onClick={(e) => {
+              clearTimeout(clickTimer.current);
+              if (e.detail === 0) {
+                onFocus?.(place);
+                return;
+              }
+              if (e.detail === 1)
+                clickTimer.current = setTimeout(() => onFocus?.(place), 280);
+            }}
+          >
+            <h3>
+              {home ? <Home size={14} /> : <MapPin size={14} />}{" "}
+              {home ? "Home location" : "Selected location"}
+            </h3>
+          </button>
+          <div className="location-subtitle">
+            <strong>{place?.name || place?.title || "Map location"}</strong>
+            <Help label={home ? "About home location" : "About map location"}>
+              {place?.locationSource && <>{place.locationSource}. </>}
+              Timezone identifiers name a representative city, not necessarily
+              this location. Live time uses current daylight-saving rules.
+              {!located && (
+                <>
+                  {" "}
+                  Home time follows {zone}, but home coordinates are not set.
+                  Use the home clock editor to choose your home address, city or
+                  exact saved pin. Its weather and forecasts will then appear
+                  here.
+                </>
+              )}
+            </Help>
+          </div>
+        </div>
         <button
           className="icon-button"
           aria-label="Set as home location"
@@ -238,21 +257,27 @@ function LocationCard({
             storageKey={home ? "oar-home-details-collapsed" : null}
             title="Home location details"
           >
-            {place?.locationSource && <small>{place.locationSource}</small>}
             {located ? (
               <>
-                <PlaceName lat={place.lat} lng={place.lng} />
+                <PlaceName
+                  lat={place.lat}
+                  lng={place.lng}
+                  time={
+                    <strong aria-label="Live location time">
+                      {place?.zone
+                        ? timeAt(now, zone)
+                        : "Local time unavailable"}
+                    </strong>
+                  }
+                />
                 <div className="location-coordinates">
                   {place.lat.toFixed(5)}°, {place.lng.toFixed(5)}° ·{" "}
                   {maidenhead(place.lat, place.lng)}
                 </div>
                 <div
                   className="location-live-time"
-                  aria-label="Live location time"
+                  aria-label="Location timezone"
                 >
-                  <strong>
-                    {place?.zone ? timeAt(now, zone) : "Local time unavailable"}
-                  </strong>
                   <small>
                     Timezone: <span>{place?.zone || "Unknown"}</span>
                   </small>
@@ -263,12 +288,7 @@ function LocationCard({
                         : "Home time difference unavailable"}
                     </small>
                   )}
-                  <small>Live time · current daylight-saving rules</small>
                 </div>
-                <small className="timezone-explanation">
-                  Timezone identifiers name a representative city, not
-                  necessarily this location.
-                </small>
                 {!home && onCorrect && (
                   <AddressCorrection
                     place={place}
@@ -277,13 +297,7 @@ function LocationCard({
                   />
                 )}
               </>
-            ) : (
-              <p>
-                Home time follows {zone}, but home coordinates are not set. Use
-                the home clock editor to choose your home address, city or exact
-                saved pin. Its weather and forecasts will then appear here.
-              </p>
-            )}
+            ) : null}
           </Disclosure>
           {located && (
             <>
@@ -470,6 +484,7 @@ export default function LocationDetails({
   }, [open, pinned, onClose]);
   return (
     <aside
+      data-tutorial="location-panel"
       className={"location-pane " + (open ? "open" : "")}
       aria-label="Location details"
       aria-hidden={!open}

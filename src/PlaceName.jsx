@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./lib";
-export default function PlaceName({ lat, lng }) {
+import { Help } from "./InterfaceUI";
+export default function PlaceName({ lat, lng, time }) {
   const [state, setState] = useState({});
   useEffect(() => {
     let live = true;
@@ -23,11 +24,15 @@ export default function PlaceName({ lat, lng }) {
   }, [lat, lng]);
   if (!state.value)
     return (
-      <small>
-        {state.error
-          ? "Place name unavailable; use the coordinates below."
-          : "Finding place name…"}
-      </small>
+      <div className="mapped-place">
+        <b>City / place</b>
+        <div className="place-region-time">
+          <small>
+            {state.error ? "Place name unavailable" : "Finding place name…"}
+          </small>
+          {time}
+        </div>
+      </div>
     );
   const p = state.value;
   return (
@@ -36,13 +41,16 @@ export default function PlaceName({ lat, lng }) {
         {p.kind === "nearest" ? "Nearest mapped place: " : "City / place: "}
         {p.name}
       </b>
-      <small>
-        {[p.region, p.country].filter(Boolean).join(" · ")}
+      <div className="place-region-time">
+        <small>{[p.region, p.country].filter(Boolean).join(" · ")}</small>
+        {time}
+      </div>
+      <Help label="About this place lookup">
+        {p.source}
         {p.kind === "nearest"
           ? ` · ${p.distanceKm.toFixed(1)} km from its mapped centre (not a boundary lookup)`
           : ""}
-      </small>
-      <small>{p.source}</small>
+      </Help>
     </div>
   );
 }

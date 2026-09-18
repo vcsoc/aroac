@@ -8,6 +8,9 @@ files:
   - desktop/**
   - dist/**
   - shared/sources.json
+  - shared/roadmap.js
+  - LICENSE
+  - roadmap.md
   - data/cities.json
   - data/README.md
   - public/icon-512.png

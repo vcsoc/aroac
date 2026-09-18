@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { api, post } from "./lib";
+import { Help } from "./InterfaceUI";
+import { toast } from "./Toasts";
 export default function AddressCorrection({ place, pins, onCorrect }) {
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
@@ -8,6 +10,9 @@ export default function AddressCorrection({ place, pins, onCorrect }) {
     setBusy(true);
     try {
       await fn();
+      toast(
+        `Updated the map position used for “${place.searchQuery}” on this device. The online provider’s data has not been changed.`,
+      );
     } catch (e) {
       setError(e.message);
     } finally {
@@ -17,11 +22,11 @@ export default function AddressCorrection({ place, pins, onCorrect }) {
   if (!place.searchQuery) return null;
   return (
     <section className="address-correction">
-      <small>
+      <Help label="About address corrections">
         {place.corrected
           ? "Position corrected on this device using your saved pin."
           : "Search-provider coordinates may be approximate. If a saved pin marks the correct position, use it below."}
-      </small>
+      </Help>
       {!!pins.length && (
         <details>
           <summary>Correct this address using a saved pin</summary>

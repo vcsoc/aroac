@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   useCallback,
   useMemo,
@@ -33,6 +34,18 @@ import {
 } from "lucide-react";
 import { api, post, gridCenter } from "./lib";
 import LinkPlanner from "./LinkPlanner";
+import Tutorial from "./Tutorial";
+import { toast, ToastHost } from "./Toasts";
+import { APP_VERSION } from "./version";
+import {
+  AboutOAR,
+  Help,
+  AccountMenu,
+  WindowControls,
+  ConfirmationHost,
+  confirmAction,
+} from "./InterfaceUI";
+import { PanelLeft, Info } from "lucide-react";
 import AccountPanel from "./AccountPanel";
 import { Auth, Messages, Logbook, Profile } from "./Station.jsx";
 import LocalData from "./LocalData.jsx";
@@ -339,8 +352,10 @@ function Atlas({
             : "EARTH / LIVE CONTEXT"}
         </div>
         <div className="map-instruction">
-          Drag to explore · right-click to save a location · drag saved pins to
-          move them · Esc twice: world overview
+          <Help label="About map navigation">
+            Drag to explore · right-click to save a location · drag saved pins
+            to move them · Esc twice: world overview
+          </Help>
         </div>
         {movingPinId && (
           <div className="move-pin-prompt" role="status">
@@ -348,15 +363,6 @@ function Atlas({
             <button onClick={onCancelMove}>Cancel</button>
           </div>
         )}
-      </div>
-      <div className="map-footer">
-        <span>
-          <i className="station-dot" />{" "}
-          {user
-            ? user.callsign +
-              (user.grid ? " · " + user.grid : " · location not set")
-            : "Set up your station"}
-        </span>
       </div>
     </article>
   );
@@ -366,7 +372,9 @@ export default function App() {
     [user, setUser] = useState(null),
     [auth, setAuth] = useState(false),
     [accountScreen, setAccountScreen] = useState(null),
-    [notice, setNotice] = useState(""),
+    [accountMenu, setAccountMenu] = useState(false),
+    [aboutOpen, setAboutOpen] = useState(false),
+    [tutorialOpen, setTutorialOpen] = useState(false),
     [networkOnline, setOnline] = useState(navigator.onLine),
     [forcedOffline, setForcedOffline] = useState(false),
     [mapLocation, setMapLocation] = useState(null),
@@ -396,6 +404,47 @@ export default function App() {
     [movingPinId, setMovingPinId] = useState(null),
     [repeaterIds, setRepeaterIds] = useState([]),
     [activeRepeaterId, setActiveRepeaterId] = useState(null);
+  const setNotice = toast;
+  const tutorialSnapshot = useRef(null);
+  const startTutorial = () => {
+    tutorialSnapshot.current = {
+      page,
+      drawer,
+      leftOpen,
+      settingsOpen,
+      quickOpen,
+      libraryTab,
+    };
+    setAccountScreen(null);
+    setAboutOpen(false);
+    setClockEdit(null);
+    setMapContext(null);
+    setTutorialOpen(true);
+  };
+  const prepareTutorial = useCallback((view) => {
+    setPage(view === "logbook" || view === "conditions" ? view : "atlas");
+    setLeftOpen(view === "locations");
+    setDrawer(view === "saved" ? "pins" : null);
+    if (view === "saved") setLibraryTab("pins");
+    setQuickOpen(view === "quick");
+    setSettingsOpen(null);
+  }, []);
+  const endTutorial = () => {
+    setTutorialOpen(false);
+    const previous = tutorialSnapshot.current;
+    if (previous) {
+      setPage(previous.page);
+      setDrawer(previous.drawer);
+      setLeftOpen(previous.leftOpen);
+      setSettingsOpen(previous.settingsOpen);
+      setQuickOpen(previous.quickOpen);
+      setLibraryTab(previous.libraryTab);
+    }
+    tutorialSnapshot.current = null;
+    requestAnimationFrame(() =>
+      document.querySelector(".profile-button")?.focus(),
+    );
+  };
   const panelWidths = usePanelWidths(leftOpen, !!drawer);
   const [muf, setMuf] = usePreference("oar-muf");
   const [followGrey, setFollowGrey] = usePreference(
@@ -497,6 +546,9 @@ export default function App() {
       lng: data.lng,
     });
     selectPin(pin);
+    toast(
+      `Saved location “${pin.label}” to your device at ${pin.lat.toFixed(5)}°, ${pin.lng.toFixed(5)}°.`,
+    );
     setEditingPinId(pin.id);
     setLibraryTab("pins");
     setDrawer("pins");
@@ -507,6 +559,9 @@ export default function App() {
       const pin = await pinStore.update(id, point);
       setMovingPinId(null);
       setActivePinId(id);
+      toast(
+        `Moved saved location “${pin.label}” to ${pin.lat.toFixed(5)}°, ${pin.lng.toFixed(5)}°.`,
+      );
       return pin;
     } catch (error) {
       setNotice(error.message);
@@ -519,9 +574,13 @@ export default function App() {
     if (!["dashboard", "atlas"].includes(page)) focusPin(pin);
   };
   const deletePin = async (pin) => {
-    if (!confirm("Delete saved location “" + pin.label + "”?")) return;
+    if (!(await confirmAction("Delete saved location “" + pin.label + "”?")))
+      return;
     try {
       await pinStore.remove(pin.id);
+      toast(`Deleted saved location “${pin.label}” from this device.`);
+      if (activePinId === pin.id) setActivePinId(null);
+      if (editingPinId === pin.id) setEditingPinId(null);
       if (movingPinId === pin.id) setMovingPinId(null);
     } catch (error) {
       setNotice(error.message);
@@ -632,19 +691,24 @@ export default function App() {
           </button>
           <div className="version">
             <span className="dot" />
-            OAR / v0.3.8 <span>73, always.</span>
+            OAR / v{APP_VERSION} <span>73, always.</span>
           </div>
         </div>
       </aside>
       <div className="workspace">
-        <header className="topbar">
+        <header
+          className={
+            "topbar platform-" + (window.oarDesktop?.platform || "browser")
+          }
+        >
+          {window.oarDesktop?.platform === "darwin" && <WindowControls />}
           <button
             className="icon-button topbar-location-button"
             aria-label="Location details"
             aria-expanded={leftOpen}
             onClick={() => setLeftOpen((v) => (leftPinned ? true : !v))}
           >
-            <MapPin size={17} />
+            <PanelLeft size={17} />
           </button>
           <span className="breadcrumb">
             Workspace <ChevronRight size={14} />
@@ -697,6 +761,14 @@ export default function App() {
             </button>
             <button
               className="icon-button"
+              aria-label="About OAR"
+              title="About OAR"
+              onClick={() => setAboutOpen(true)}
+            >
+              <Info size={18} />
+            </button>
+            <button
+              className="icon-button"
               aria-label="Quick Switch"
               title="Quick Switch"
               aria-expanded={quickOpen}
@@ -715,24 +787,34 @@ export default function App() {
             </span>
             <button
               className="profile-button"
-              onClick={() =>
-                user ? setAccountScreen("summary") : setAuth(true)
-              }
+              aria-haspopup={user ? "menu" : "dialog"}
+              aria-expanded={user ? accountMenu : auth}
+              onClick={() => (user ? setAccountMenu((v) => !v) : setAuth(true))}
             >
               {user?.callsign || "Sign in"}
               <span>{user ? user.callsign.slice(0, 2) : "↗"}</span>
             </button>
+            {user && accountMenu && (
+              <AccountMenu
+                onClose={() => setAccountMenu(false)}
+                onTutorial={startTutorial}
+                onEdit={() => setAccountScreen("profile")}
+                onAbout={() => setAboutOpen(true)}
+                onLogout={async () => {
+                  try {
+                    await post("/logout", {});
+                    setUser(null);
+                    setAccountScreen(null);
+                  } catch (e) {
+                    setNotice(e.message);
+                  }
+                }}
+              />
+            )}
           </div>
+          {window.oarDesktop?.platform === "win32" && <WindowControls />}
         </header>
-        <main>
-          {notice && (
-            <div className="notice" role="status">
-              {notice}
-              <button onClick={() => setNotice("")} aria-label="Dismiss">
-                <X size={16} />
-              </button>
-            </div>
-          )}
+        <main data-tutorial="main">
           {!online && (
             <div className="notice">
               {isNative
@@ -951,7 +1033,9 @@ export default function App() {
                   : {}),
               },
             });
-            setNotice("Home location updated.");
+            setNotice(
+              `Home location changed to “${place.name || place.title || place.label || "selected map point"}”. Your home clock, weather and map Home button now use this location.`,
+            );
           } catch (e) {
             setNotice(e.message);
           }
@@ -1183,7 +1267,9 @@ export default function App() {
                     },
                   });
                   setLeftOpen(true);
-                  setNotice("Home location set to the saved pin coordinates.");
+                  setNotice(
+                    `Home location changed to saved pin “${pin.label}”. Your home clock, weather and map Home button now use its coordinates.`,
+                  );
                 }}
               />
             )}
@@ -1257,6 +1343,27 @@ export default function App() {
           onDelete={deletePin}
           onFocus={focusPin}
         />
+      )}
+      <div
+        className="app-statusbar map-footer"
+        aria-label="Application version and station status"
+      >
+        <span>OAR v{APP_VERSION}</span>
+        <span>
+          <i className="station-dot" />{" "}
+          {user
+            ? user.callsign +
+              (user.grid ? " · " + user.grid : " · location not set")
+            : "Set up your station"}
+        </span>
+      </div>
+      <ToastHost />
+      <ConfirmationHost />
+      {tutorialOpen && (
+        <Tutorial onPrepare={prepareTutorial} onEnd={endTutorial} />
+      )}
+      {aboutOpen && (
+        <AboutOAR offline={!online} onClose={() => setAboutOpen(false)} />
       )}
       {user && accountScreen && (
         <AccountPanel

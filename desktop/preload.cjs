@@ -2,6 +2,9 @@ const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld(
   "oarDesktop",
   Object.freeze({
+    platform: process.platform,
+    roadmap: () => ipcRenderer.invoke("oar:roadmap"),
+    windowControl: (action) => ipcRenderer.invoke("oar:window-control", action),
     connection: () => ipcRenderer.invoke("oar:connection"),
     loginSettings: (value, allowUnencrypted) =>
       ipcRenderer.invoke("oar:login-settings", value, allowUnencrypted),

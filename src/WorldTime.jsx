@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Plus, X, RotateCcw, Trash2, LocateFixed } from "lucide-react";
 import AddressSearch from "./AddressSearch";
+import { Help } from "./InterfaceUI";
+import { toast } from "./Toasts";
 import { withTimezone } from "./locations";
 import { validatePlace, validateTimeConfig } from "../shared/workspace";
 import CityTimezonePicker from "./CityTimezonePicker";
@@ -42,7 +44,11 @@ export function WorldTime({
   const instant = new Date(now + offset * 60000),
     all = [{ id: "home", ...config.home }, ...config.clocks];
   return (
-    <section className="world-time" aria-label="World clocks">
+    <section
+      className="world-time"
+      aria-label="World clocks"
+      data-tutorial="clocks"
+    >
       <div className="clock-strip world-clocks">
         {all.map((c) => (
           <button
@@ -169,6 +175,7 @@ export function WorldTime({
   );
 }
 function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
+  const colorId = useId();
   const [draft, setDraft] = useState(
       value || { name: "", zone: "UTC", lat: null, lng: null },
     ),
@@ -191,6 +198,11 @@ function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
         lng: draft.lng === "" || draft.lng == null ? null : Number(draft.lng),
       };
       await onSave(validatePlace(place));
+      toast(
+        home
+          ? `Home location changed to “${place.name || place.zone}” (${place.zone}). ${Number.isFinite(place.lat) && Number.isFinite(place.lng) ? "Home weather and the map Home button now use its coordinates." : "Choose coordinates to enable home weather and map navigation."}`
+          : `Saved world clock “${place.name || place.zone}” using ${place.zone}.`,
+      );
     } catch (e) {
       setError(e.message);
     } finally {
@@ -206,17 +218,17 @@ function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
       <header>
         <h2>
           {home ? "Home Location Time" : value ? "Edit clock" : "Add clock"}
+          <Help label="About clock locations">
+            Search for an address below, or type a city directly in the timezone
+            field. City suggestions are available offline. Select a result to
+            set its name, coordinates and timezone together. Daylight-saving
+            changes are automatic.
+          </Help>
         </h2>
         <button aria-label="Close clock editor" onClick={onClose}>
           <X size={17} />
         </button>
       </header>
-      <p>
-        Search addresses above, or type a city directly in the timezone field
-        below. City suggestions are available offline. Select a result to set
-        its name, coordinates and timezone together. Daylight-saving changes are
-        automatic.
-      </p>
       <AddressSearch
         onSelect={(p) =>
           setDraft((d) => ({ ...placeFromLocation(p), color: d.color }))
@@ -270,9 +282,17 @@ function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
         <LocateFixed size={13} /> Use current location
       </button>
       <form onSubmit={save}>
-        <label>
-          Clock color (foreground)
+        <div className="clock-color-row">
+          <div className="clock-field-heading">
+            <label htmlFor={colorId}>Clock color (foreground)</label>
+            <Help label="About clock text colors">
+              Custom text colors keep the theme background. A subtle contrasting
+              outline helps readability across themes. Use theme color removes
+              your custom color and follows the selected theme.
+            </Help>
+          </div>
           <input
+            id={colorId}
             type="color"
             aria-label="Clock color"
             value={
@@ -284,14 +304,16 @@ function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
             }
             onChange={(e) => change("color", e.target.value)}
           />
-        </label>
-        <button type="button" onClick={() => change("color", "")}>
-          Use theme color
-        </button>
-        <small>
-          Custom text colors keep the theme background. A subtle contrasting
-          outline helps readability across themes.
-        </small>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Use theme color"
+            title="Use theme color"
+            onClick={() => change("color", "")}
+          >
+            <RotateCcw size={15} />
+          </button>
+        </div>
         <label>
           Location name
           <input
@@ -309,6 +331,15 @@ function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
             setDraft((d) => ({ ...placeFromLocation(p), color: d.color }))
           }
         />
+        <div className="clock-field-heading clock-coordinate-heading">
+          <span>Coordinates (optional)</span>
+          <Help label="About clock coordinates">
+            Coordinates enable home weather. Initial home time uses your device
+            timezone; no precise position is guessed. Weather sends selected
+            coordinates to Open-Meteo. Leave both coordinates blank if unknown,
+            or select an exact saved pin.
+          </Help>
+        </div>
         <div className="coordinate-fields">
           <label>
             Latitude (optional)
@@ -333,11 +364,6 @@ function ClockEditor({ value, home, onSave, onRemove, onClose, pins }) {
             />
           </label>
         </div>
-        <small>
-          Coordinates enable home weather. Initial home time uses your device
-          timezone; no precise position is guessed. Weather sends selected
-          coordinates to Open-Meteo.
-        </small>
         {error && (
           <p className="form-error" role="alert">
             {error}

@@ -5,6 +5,7 @@ import WeatherIcon from "./WeatherIcon";
 import { useWeather, codes } from "./LocationDetails";
 import { homeDifference, linkGeometry } from "./contactContext";
 import { usePreference } from "./mapState";
+import { Help } from "./InterfaceUI";
 export default function ContactContext({ place, error, home }) {
   const host = useRef(),
     [visible, setVisible] = useState(false),
@@ -142,22 +143,20 @@ export default function ContactContext({ place, error, home }) {
                 guidance.
               </p>
             )}
-            <p>
-              HF bands to investigate, not recommended transmit frequencies:
-            </p>
+            <strong>HF reference bands</strong>
             <ul>
               <li>40 m ≈ 7 MHz (7,000,000 Hz)</li>
               <li>20 m ≈ 14 MHz (14,000,000 Hz)</li>
               <li>15 m ≈ 21 MHz (21,000,000 Hz)</li>
               <li>10 m ≈ 28 MHz (28,000,000 Hz)</li>
             </ul>
-            <p>
+            <Help label="About HF reference bands">
               These are band references, not dial settings. No path-specific
               band/mode/power prediction is installed. Weather and MUF(3000 km)
               alone cannot establish this link. Agree a clear frequency and
               mode, check both operators’ licence privileges and local band
               plans, antennas and propagation before transmitting.
-            </p>
+            </Help>
           </details>
         </>
       )}

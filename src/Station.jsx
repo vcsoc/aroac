@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { api, post, adif, download } from "./lib";
 import { isNative } from "./platform";
+import { confirmAction } from "./InterfaceUI";
+import { toast, useToastStatus } from "./Toasts";
 import { Switch } from "./MapPanels";
 import { validateRegistration } from "../shared/registration.js";
 export function Auth({ onClose, onUser }) {
@@ -485,6 +487,7 @@ export function Logbook() {
     try {
       await post("/logbook", data);
       await load();
+      toast(`Logged QSO with ${data.callsign} in your local logbook.`);
       setShow(false);
       setError("");
     } catch (e) {
@@ -602,7 +605,9 @@ export function Logbook() {
                     className="icon-button"
                     aria-label={"Delete contact " + r.callsign}
                     onClick={async () => {
-                      if (confirm("Delete this contact permanently?"))
+                      if (
+                        await confirmAction("Delete this contact permanently?")
+                      )
                         try {
                           await api("/logbook/" + r.id, { method: "DELETE" });
                           load();
@@ -629,8 +634,8 @@ export function Logbook() {
     </>
   );
 }
-export function Profile({ user, setUser, onLogout,onEdit }) {
-  const [status, setStatus] = useState(""),
+export function Profile({ user, setUser, onLogout, onEdit }) {
+  const [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
   return (
     <>
@@ -645,7 +650,11 @@ export function Profile({ user, setUser, onLogout,onEdit }) {
           Sign out
         </button>
       </div>
-      {onEdit&&<button className="primary" onClick={onEdit}>Edit profile, avatar & devices</button>}
+      {onEdit && (
+        <button className="primary" onClick={onEdit}>
+          Edit profile, avatar & devices
+        </button>
+      )}
       <form
         className="panel profile-form"
         onSubmit={async (e) => {
@@ -660,7 +669,9 @@ export function Profile({ user, setUser, onLogout,onEdit }) {
                 ),
               }),
             );
-            setStatus("Profile saved.");
+            setStatus(
+              `Updated the local operator profile for ${user.callsign}.`,
+            );
           } catch (e) {
             setStatus(e.message);
           } finally {

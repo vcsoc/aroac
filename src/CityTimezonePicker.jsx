@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { api } from "./lib";
+import { Help } from "./InterfaceUI";
 const zones = ["UTC", ...Intl.supportedValuesOf("timeZone")];
 const fold = (s) =>
   s.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().replaceAll("_", " ");
@@ -29,9 +30,7 @@ export default function CityTimezonePicker({ value, onChange, onPlace }) {
           .then((data) => {
             if (live) {
               setCities(data.results);
-              setStatus(
-                `${data.total.toLocaleString()} cities/towns offline · GeoNames (CC BY 4.0). Showing up to 40 city matches; refine your search.`,
-              );
+              setStatus(`${data.results.length} matching cities/towns`);
             }
           })
           .catch((e) => {
@@ -66,7 +65,16 @@ export default function CityTimezonePicker({ value, onChange, onPlace }) {
   }
   return (
     <div className="city-timezone-picker" ref={host}>
-      <label htmlFor={id}>Timezone</label>
+      <div className="clock-field-heading">
+        <label htmlFor={id}>Timezone</label>
+        <Help label="About city and timezone search">
+          Type a city, country or IANA timezone. City search uses the bundled
+          GeoNames directory (CC BY 4.0) and shows up to 40 matches; refine your
+          search if needed. Timezone identifiers name a representative city, not
+          necessarily your location. If a smaller place is missing, use address
+          search instead.
+        </Help>
+      </div>
       <input
         id={id}
         required
@@ -142,12 +150,7 @@ export default function CityTimezonePicker({ value, onChange, onPlace }) {
             ))}
           </div>
           <small role="status">{status}</small>
-          {!items.length && (
-            <p>
-              No match yet. Try another spelling, or use address search for
-              smaller places.
-            </p>
-          )}
+          {!items.length && <p>No matching city or timezone.</p>}
         </div>
       )}
     </div>

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { parseDocument, stringify } from "yaml";
 import { defaultTheme, validateTheme } from "../shared/workspace";
 import { documentFile } from "./workspaceState";
+import { Help } from "./InterfaceUI";
+import { useToastStatus } from "./Toasts";
 export const themeStyle = (theme) =>
   Object.fromEntries(
     Object.entries(theme.colors).map(([key, value]) => [
@@ -11,7 +13,7 @@ export const themeStyle = (theme) =>
   );
 export default function ThemeEditor({ value, onSave, onPreview }) {
   const [draft, setDraft] = useState(value),
-    [status, setStatus] = useState(""),
+    [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
   useEffect(() => {
     try {
@@ -32,12 +34,14 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
   };
   return (
     <section className="theme-editor">
-      <h3>Theme editor</h3>
-      <p>
-        Live preview across OAR. Apply to save; leaving this tab or closing
-        Settings discards unapplied changes. Provider imagery/websites keep
-        their own colors.
-      </p>
+      <h3>
+        Theme editor{" "}
+        <Help label="About theme preview">
+          Live preview across OAR. Apply to save; leaving this tab or closing
+          Settings discards unapplied changes. Provider imagery/websites keep
+          their own colors.
+        </Help>
+      </h3>
       <label>
         Theme name
         <input
@@ -124,7 +128,9 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
             run(async () => {
               const valid = validateTheme(draft);
               await onSave(valid);
-              setStatus("Theme saved.");
+              setStatus(
+                `Applied and saved theme “${draft.name}” for this installation.`,
+              );
             })
           }
         >

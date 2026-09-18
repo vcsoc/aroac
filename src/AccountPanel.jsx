@@ -9,6 +9,8 @@ import {
   FileDown,
 } from "lucide-react";
 import { api, post } from "./lib";
+import { confirmAction, Help } from "./InterfaceUI";
+import { useToastStatus } from "./Toasts";
 import { imageDimensions } from "../shared/media";
 const imageUrl = (a) => (a ? `data:${a.mime};base64,${a.data}` : null);
 export default function AccountPanel({
@@ -22,7 +24,7 @@ export default function AccountPanel({
     file = useRef(),
     [screen, setScreen] = useState(initial),
     [account, setAccount] = useState(null),
-    [status, setStatus] = useState(""),
+    [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
   const load = () => api("/account").then(setAccount);
   useEffect(() => {
@@ -226,7 +228,9 @@ export default function AccountPanel({
                           }),
                         );
                         onUser(await api("/me"));
-                        setStatus("Profile saved.");
+                        setStatus(
+                          `Updated the local operator profile for ${user.callsign}.`,
+                        );
                       });
                     }}
                   >
@@ -355,7 +359,7 @@ const fields = [
 function DeviceInventory({ user, account }) {
   const [rows, setRows] = useState([]),
     [draft, setDraft] = useState(null),
-    [status, setStatus] = useState(""),
+    [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
   const load = () => api("/devices").then(setRows);
   useEffect(() => {
@@ -386,18 +390,20 @@ function DeviceInventory({ user, account }) {
     });
   return (
     <section>
-      <h3>My devices</h3>
-      <p>
-        Private local inventory. Invoices are stored unchanged in SQLite
-        (PDF/JPG/PNG, up to 4 MiB each, eight per device). Ownership reports are
-        user-entered records, not certified proof or guaranteed warranty
-        coverage. PDFs contain private account and invoice details; review
-        before sharing. PDF invoices are embedded attachments; image invoices
-        have page previews within size/decoding limits. Use an
-        attachment-capable PDF viewer to retrieve originals. Exports allow up to
-        32 MiB of original attachments; use per-device exports for larger
-        inventories.
-      </p>
+      <h3>
+        My devices{" "}
+        <Help label="About devices and ownership records">
+          Private local inventory. Invoices are stored unchanged in SQLite
+          (PDF/JPG/PNG, up to 4 MiB each, eight per device). Ownership reports
+          are user-entered records, not certified proof or guaranteed warranty
+          coverage. PDFs contain private account and invoice details; review
+          before sharing. PDF invoices are embedded attachments; image invoices
+          have page previews within size/decoding limits. Use an
+          attachment-capable PDF viewer to retrieve originals. Exports allow up
+          to 32 MiB of original attachments; use per-device exports for larger
+          inventories.
+        </Help>
+      </h3>
       <div className="account-actions">
         <button disabled={busy} onClick={() => setDraft({})}>
           <Plus size={16} />
@@ -423,7 +429,9 @@ function DeviceInventory({ user, account }) {
               });
               setDraft(null);
               await load();
-              setStatus("Device saved.");
+              setStatus(
+                "Equipment details saved to your private local inventory.",
+              );
             });
           }}
         >
@@ -511,8 +519,12 @@ function DeviceInventory({ user, account }) {
             </button>
             <button
               disabled={busy}
-              onClick={() => {
-                if (confirm("Delete this device and all its invoices?"))
+              onClick={async () => {
+                if (
+                  await confirmAction(
+                    "Delete this device and all its invoices?",
+                  )
+                )
                   run(async () => {
                     await api("/devices/" + d.id, { method: "DELETE" });
                     await load();
@@ -531,8 +543,8 @@ function DeviceInventory({ user, account }) {
                 <button
                   disabled={busy}
                   aria-label={"Delete invoice " + f.name}
-                  onClick={() => {
-                    if (confirm("Delete this invoice?"))
+                  onClick={async () => {
+                    if (await confirmAction("Delete this invoice?"))
                       run(async () => {
                         await api(`/devices/${d.id}/invoices/${f.id}`, {
                           method: "DELETE",
@@ -565,7 +577,9 @@ function DeviceInventory({ user, account }) {
                         data: base64(new Uint8Array(await f.arrayBuffer())),
                       });
                       await load();
-                      setStatus("Invoice stored in the database.");
+                      setStatus(
+                        "Invoice attached to this device in your local equipment inventory.",
+                      );
                     });
                 }}
               />

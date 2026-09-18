@@ -12,8 +12,10 @@ import "./contact-navigation.css";
 import "./layout-settings.css";
 import "./quick-switch.css";
 import "./panel-layout.css";
-import './saved-items.css';
-import './release-seven.css';
+import "./saved-items.css";
+import "./release-seven.css";
+import "./interface-ui.css";
+import "./guidance.css";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <NativeRoot />

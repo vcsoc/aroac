@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Switch } from "./MapPanels";
+import { confirmAction, Help } from "./InterfaceUI";
+import { toast } from "./Toasts";
 export default function LoginSettings() {
   const [prefs, setPrefs] = useState(null),
     [error, setError] = useState("");
@@ -11,11 +13,13 @@ export default function LoginSettings() {
   }, []);
   return (
     <section>
-      <h3>Sign-in memory</h3>
-      <p>
-        By default you stay signed in while OAR is running, until you sign out
-        or quit. No password is saved.
-      </p>
+      <h3>
+        Sign-in memory{" "}
+        <Help label="About sign-in memory">
+          By default you stay signed in while OAR is running, until you sign out
+          or quit. No password is saved.
+        </Help>
+      </h3>
       {prefs ? (
         <>
           <Switch
@@ -26,9 +30,9 @@ export default function LoginSettings() {
                 if (
                   value &&
                   !prefs.secureStorage &&
-                  !confirm(
+                  !(await confirmAction(
                     "No OS secret store is available. Save your sign-in token in an owner-only but UNENCRYPTED file on this trusted device? Anyone who can read it can use your local profile. Your password is not saved.",
-                  )
+                  ))
                 )
                   return;
                 setPrefs(
@@ -38,6 +42,11 @@ export default function LoginSettings() {
                   ),
                 );
                 setError("");
+                toast(
+                  value
+                    ? "Sign-in persistence enabled on this device. You will remain signed in after restarting OAR until you log out."
+                    : "Sign-in persistence disabled. You will need to sign in again after quitting OAR.",
+                );
               } catch (e) {
                 setError(e.message);
               }
@@ -53,11 +62,11 @@ export default function LoginSettings() {
               device.
             </p>
           )}
-          <p>
+          <Help label="About disabling sign-in memory">
             Turning this off removes the saved session but keeps you signed in
             until you quit or sign out. The login screen’s Remember my callsign
             slider is separate and never stores your password.
-          </p>
+          </Help>
         </>
       ) : (
         <p>

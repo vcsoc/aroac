@@ -320,6 +320,22 @@ async function start() {
     if (!result.canceled)
       await fs.promises.writeFile(result.filePath, text, "utf8");
   });
+  ipcMain.handle("oar:roadmap", async (event) => {
+    authorized(event);
+    const { fetchRoadmap } = await import("../shared/roadmap.js");
+    return fetchRoadmap({
+      offline: !!config.offline,
+      fetcher: (url, options) => net.fetch(url, options),
+    });
+  });
+  ipcMain.handle("oar:window-control", (event, action) => {
+    authorized(event);
+    if (action === "minimize") win.minimize();
+    else if (action === "maximize")
+      win.isMaximized() ? win.unmaximize() : win.maximize();
+    else if (action === "close") win.close();
+    else throw Error("Invalid window action");
+  });
   const create = () => {
     win = new BrowserWindow({
       title: "OAR · Open Amateur Radio",
@@ -330,6 +346,7 @@ async function start() {
       backgroundColor: "#101513",
       icon: path.join(__dirname, "../public/icon-512.png"),
       autoHideMenuBar: true,
+      frame: !["win32", "darwin"].includes(process.platform),
       webPreferences: {
         preload: path.join(__dirname, "preload.cjs"),
         contextIsolation: true,
