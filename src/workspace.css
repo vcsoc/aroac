@@ -1,0 +1,588 @@
+:root {
+  --background: #101513;
+  --sidebar: #141c17;
+  --panel: #18231b;
+  --surface: #29382b;
+  --text: #e2e9e2;
+  --muted: #96a58e;
+  --accent: #c4ed9e;
+  --border: #354139;
+  --button-text: #172415;
+  --selection: #354c2b;
+  --danger: #ef9990;
+  --saved-pin: #82bc50;
+  --repeater: #ffb86b;
+  --left-width: 250px;
+}
+body,
+.app {
+  background: var(--background);
+  color: var(--text);
+}
+.sidebar,
+.topbar,
+.map-drawer,
+.location-pane,
+.map-context-menu,
+.address-results,
+dialog {
+  background: var(--sidebar);
+  color: var(--text);
+  border-color: var(--border);
+}
+.panel,
+.clock-strip,
+.pin-editor {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--border);
+}
+input,
+select,
+textarea,
+button {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+}
+button.primary,
+.primary {
+  background: var(--accent);
+  color: var(--button-text);
+}
+.icon-button {
+  background: transparent;
+  color: var(--muted);
+}
+button:hover,
+.map-context-menu > button:hover,
+button[aria-pressed="true"] {
+  background: var(--selection);
+}
+.muted,
+small,
+.clock > small,
+.clock > span {
+  color: var(--muted);
+}
+.clock > strong,
+.location-card > strong {
+  color: var(--text);
+}
+.form-error,
+.field-error {
+  color: var(--danger);
+}
+.topbar button[aria-expanded="true"] {
+  background: var(--selection);
+  color: var(--accent);
+}
+.sidebar nav button.selected,
+.segmented button.active {
+  color: var(--accent);
+  background: var(--selection);
+}
+.saved-map-pin {
+  background: var(--saved-pin) !important;
+}
+.saved-pin-label {
+  color: var(--text);
+  background: var(--sidebar);
+  border-color: var(--border);
+}
+.map-context-menu > button {
+  color: var(--text);
+}
+.toggle-switch {
+  background: var(--surface);
+}
+.toggle-switch[aria-checked="true"] {
+  background: var(--selection);
+  border-color: var(--accent);
+}
+.toggle-switch[aria-checked="true"] i {
+  background: var(--accent);
+}
+.world-time {
+  margin: 0 0 3px;
+}
+.world-clocks.clock-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  padding: 0;
+  gap: 0;
+}
+.world-clocks.clock-strip > .clock {
+  display: flex !important;
+  flex-direction: column;
+  border: 0;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--panel);
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  padding: 4px 2px;
+  cursor: pointer;
+}
+.world-clocks .clock > small {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  white-space: normal;
+}
+.world-clocks .clock > strong {
+  font-size: 21px;
+  font-weight: 500;
+}
+.world-clocks .clock .clock-zone {
+  font-size: 9px;
+  text-transform: none;
+  overflow-wrap: anywhere;
+  letter-spacing: 0;
+}
+.clock-add {
+  font-size: 10px;
+  border-radius: 0;
+  min-height: 30px;
+}
+.time-comparison {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+}
+.time-comparison label {
+  font-size: 10px;
+  min-width: 78px;
+  white-space: nowrap;
+}
+.time-comparison input {
+  flex: 1;
+  min-width: 50px;
+  height: 18px;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.time-comparison button {
+  padding: 2px 4px;
+  font-size: 10px;
+}
+.time-comparison small {
+  font-size: 9px;
+  white-space: nowrap;
+}
+.workspace-dialog {
+  width: 430px;
+  max-width: calc(100vw - 24px);
+  max-height: 90dvh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px;
+}
+.workspace-dialog::backdrop {
+  background: #0009;
+}
+.workspace-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.workspace-dialog h2 {
+  font-size: 18px;
+}
+.workspace-dialog p {
+  font-size: 12px;
+}
+.workspace-dialog > form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.workspace-dialog footer {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.workspace-dialog footer button {
+  padding: 6px;
+  font-size: 12px;
+}
+.workspace-dialog .address-search {
+  width: 100%;
+  max-width: none;
+  margin: 8px 0;
+}
+.workspace-dialog input {
+  min-width: 0;
+}
+.workspace-dialog label {
+  font-size: 12px;
+}
+.workspace-dialog .address-results {
+  position: relative;
+  max-height: 190px;
+  overflow: auto;
+}
+.workspace-dialog > button {
+  font-size: 11px;
+  padding: 5px;
+  margin-bottom: 6px;
+}
+.left-open .workspace > main {
+  margin-left: var(--left-width);
+}
+.location-pane {
+  position: fixed;
+  left: 40px;
+  top: 34px;
+  bottom: 0;
+  width: var(--left-width);
+  z-index: 39;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  transform: translateX(-110%);
+  visibility: hidden;
+  transition:
+    transform 0.16s ease,
+    visibility 0.16s;
+}
+.location-pane.open {
+  transform: translateX(0);
+  visibility: visible;
+}
+.drawer-heading h2 {
+  flex: 1;
+}
+.drawer-heading button[aria-pressed="true"] {
+  color: var(--accent);
+}
+.location-pane .drawer-body {
+  padding: 3px;
+}
+.weather-controls {
+  display: flex;
+  gap: 5px;
+  padding: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.weather-controls label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  flex: 1;
+}
+.weather-controls select {
+  font-size: 11px;
+  padding: 2px;
+  min-width: 0;
+}
+.location-pane .location-card {
+  position: static;
+  width: auto;
+  max-width: none;
+  min-width: 0;
+  margin: 0 0 6px;
+  padding: 4px;
+  border-radius: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  display: block;
+  color: var(--text);
+}
+.location-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.location-card header h3 {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+}
+.location-card button {
+  font-size: 10px;
+  padding: 4px;
+  margin-top: 3px;
+}
+.location-card > strong {
+  display: block;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.location-coordinates {
+  font-size: 10px;
+  line-height: 1.6;
+}
+.current-weather {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 7px 0;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+.current-weather strong {
+  font-size: 22px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.current-weather span {
+  font-size: 12px;
+}
+.weather-facts {
+  display: grid;
+  grid-template-columns: 65px 1fr;
+  font-size: 10px;
+  gap: 5px;
+  margin: 4px 0 8px;
+}
+.weather-facts dt {
+  color: var(--muted);
+}
+.weather-facts dd {
+  margin: 0;
+}
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.forecast-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 2px;
+  background: var(--surface);
+  font-size: 9px;
+}
+.forecast-grid b {
+  color: var(--accent);
+}
+.forecast-grid strong {
+  font-size: 9px;
+}
+.forecast-grid small {
+  font-size: 8px;
+}
+.weather-credit {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.theme-editor,
+.library-transfer {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.theme-editor > p,
+.library-transfer > small {
+  font-size: 10px;
+  line-height: 1.5;
+  display: block;
+}
+.theme-editor > label {
+  font-size: 11px;
+}
+.theme-preview {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--text);
+  margin: 6px 0;
+  font-size: 10px;
+}
+.theme-preview > header {
+  background: var(--sidebar);
+  padding: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.theme-preview header b {
+  float: right;
+  color: var(--accent);
+}
+.theme-preview > div {
+  display: flex;
+}
+.theme-preview aside {
+  background: var(--sidebar);
+  padding: 6px;
+  line-height: 2.5;
+}
+.theme-preview article {
+  padding: 7px;
+  background: var(--panel);
+  flex: 1;
+  min-width: 0;
+}
+.theme-preview article > strong {
+  display: block;
+  font-size: 22px;
+  color: var(--text);
+}
+.theme-preview p span,
+.theme-preview small {
+  color: var(--muted);
+}
+.theme-preview button {
+  font-size: 9px;
+  padding: 3px;
+  margin-right: 2px;
+}
+.theme-preview input {
+  margin-top: 4px;
+  font-size: 10px;
+}
+.theme-preview .preview-pin {
+  color: var(--saved-pin);
+}
+.theme-preview .preview-repeater {
+  color: var(--repeater);
+}
+.theme-colors {
+  display: grid;
+  gap: 3px;
+}
+.theme-colors label {
+  display: grid;
+  grid-template-columns: 1fr 35px 78px;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.theme-colors input[type="color"] {
+  padding: 0;
+  width: 35px;
+  height: 25px;
+  border: 0;
+  background: transparent;
+}
+.theme-colors input:not([type="color"]) {
+  padding: 3px;
+  font-family: monospace;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 5px 0;
+}
+.button-row button {
+  font-size: 10px;
+  padding: 5px;
+}
+.import-preview {
+  border: 1px solid var(--accent);
+  padding: 5px;
+  margin: 5px 0;
+  font-size: 11px;
+}
+.library-transfer .button-row {
+  margin-top: 0;
+}
+.specialist-views .resource {
+  text-align: left;
+  display: block;
+  color: var(--text);
+  padding: 8px;
+}
+.specialist-toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 5px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.specialist-toolbar small {
+  flex: 1;
+}
+.specialist-toolbar button {
+  font-size: 11px;
+  padding: 4px;
+}
+.specialist-host {
+  height: 65vh;
+  min-height: 350px;
+  position: relative;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+.specialist-host iframe {
+  width: 100%;
+  height: 90%;
+  border: 0;
+}
+@media (max-width: 1100px) {
+  .world-clocks.clock-strip {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  .time-comparison small {
+    display: none;
+  }
+  .world-clocks .clock > strong {
+    font-size: 18px;
+  }
+}
+@media (max-width: 700px) {
+  .app { display: block; }
+  .left-open .workspace > main {
+    margin-left: 0;
+  }
+  .location-pane,
+  .map-drawer {
+    position: relative;
+    top: auto;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    max-width: none;
+    transform: none;
+    transition: none;
+    display: none;
+    max-height: 75vh;
+    visibility: hidden;
+  }
+  .location-pane.open,
+  .map-drawer.open {
+    display: flex;
+    visibility: visible;
+  }
+  .world-clocks.clock-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .world-clocks .clock > strong {
+    font-size: 20px;
+  }
+  .location-pane .forecast-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .workspace-dialog {
+    padding: 8px;
+  }
+  .specialist-host {
+    min-height: 300px;
+  }
+  .topbar {
+    gap: 2px;
+  }
+  .world-time {
+    max-width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .location-pane {
+    transition: none;
+  }
+}

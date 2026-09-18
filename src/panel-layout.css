@@ -1,0 +1,64 @@
+.panel-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  z-index: 3;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+.panel-resizer-left {
+  right: -3px;
+}
+.panel-resizer-right {
+  left: -3px;
+}
+.panel-resizer:hover,
+.panel-resizer:focus-visible,
+.panel-resizer.dragging {
+  background: var(--accent);
+  opacity: 0.65;
+  outline: 0;
+}
+.app:has(.panel-resizer.dragging) {
+  user-select: none;
+}
+.topbar-location-button {
+  flex-shrink: 0;
+  margin: 0;
+}
+.themed-scroll {
+  scrollbar-gutter: stable;
+}
+.themed-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.themed-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.themed-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+.themed-scroll.scrolling::-webkit-scrollbar-thumb {
+  background: var(--muted);
+}
+@supports not selector(::-webkit-scrollbar) {
+  .themed-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  .themed-scroll.scrolling {
+    scrollbar-color: var(--muted) transparent;
+  }
+}
+@media (max-width: 700px) {
+  .map-page .location-pane {
+    width: var(--left-width);
+  }
+  .map-page .map-drawer {
+    width: var(--right-width);
+  }
+}

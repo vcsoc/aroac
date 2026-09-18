@@ -1,0 +1,225 @@
+.topbar {
+  position: relative;
+  gap: 6px;
+  z-index: 20;
+}
+.address-search {
+  position: relative;
+  flex: 1;
+  min-width: 100px;
+  max-width: 780px;
+}
+.address-search form {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: #0c130f;
+  height: 28px;
+  gap: 3px;
+}
+.address-search form > svg {
+  flex-shrink: 0;
+  color: var(--muted);
+  margin-left: 3px;
+}
+.address-search input {
+  min-width: 0;
+  width: 100%;
+  height: 26px;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  padding: 2px;
+}
+.address-search input:focus {
+  outline: none;
+}
+.address-search form:focus-within {
+  border-color: var(--accent);
+}
+.address-search button {
+  border: 0;
+  border-radius: 0;
+  padding: 3px;
+  min-height: 26px;
+}
+.address-search .search-submit {
+  font-size: 11px;
+  padding: 3px 6px;
+  color: var(--accent);
+}
+.address-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  min-width: 260px;
+  max-height: 65vh;
+  overflow: auto;
+  z-index: 50;
+  border: 1px solid #485640;
+  background: #152019;
+  box-shadow: 0 8px 18px #0008;
+}
+.address-dropdown [role="option"] {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+  text-align: left;
+  justify-content: flex-start;
+  min-height: 40px;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  padding: 4px;
+}
+.address-dropdown [role="option"][aria-selected="true"],
+.address-dropdown [role="option"]:hover {
+  background: #32422a;
+}
+.address-dropdown [role="option"] > svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.address-dropdown b {
+  display: block;
+  font-size: 12px;
+}
+.address-dropdown small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.address-dropdown > small {
+  padding: 4px;
+  border-top: 1px solid var(--border);
+}
+.timezone-control {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: 10px;
+}
+.timezone-control button {
+  position: relative;
+  width: 30px;
+  height: 17px;
+  min-height: 17px;
+  padding: 0;
+  border: 1px solid #60715b;
+  border-radius: 20px;
+  background: #29322a;
+}
+.timezone-control button i {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #a6b09f;
+  transition: transform 0.1s;
+}
+.timezone-control button[aria-checked="true"] {
+  background: #527939;
+  border-color: #c4ed9e;
+}
+.timezone-control button[aria-checked="true"] i {
+  transform: translateX(13px);
+  background: #d3f6b5;
+}
+.timezone-map-label {
+  font:
+    9px "DM Sans",
+    sans-serif;
+  color: #dfefc7;
+  background: #152014c9;
+  padding: 1px 3px;
+  border: 1px solid #aec68166;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.search-pin {
+  pointer-events: none;
+  width: 14px;
+  height: 14px;
+  background: #78d9e3;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px #78d9e344;
+}
+.location-card {
+  max-width: min(320px, 85%);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px;
+}
+.location-card > .icon-button {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  margin: 0;
+}
+.location-card > b {
+  padding-right: 15px;
+}
+.location-card .clock {
+  padding: 2px 0;
+}
+.set-station {
+  font-size: 10px;
+  padding: 4px !important;
+}
+.breadcrumb {
+  flex-shrink: 0;
+}
+@media (max-width: 900px) {
+  .breadcrumb {
+    display: none;
+  }
+  .topbar {
+    gap: 4px;
+  }
+  .address-search {
+    max-width: none;
+  }
+  .top-actions {
+    gap: 3px;
+  }
+  .connection {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .timezone-control {
+    font-size: 8px;
+    gap: 2px;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .top-actions {
+    gap: 1px;
+  }
+  .profile-button > span {
+    display: none;
+  }
+  .profile-button {
+    font-size: 9px;
+  }
+  .address-search input {
+    font-size: 11px;
+  }
+  .topbar .icon-button {
+    padding: 2px;
+  }
+  .address-dropdown {
+    max-width: calc(100vw - 12px);
+  }
+  .timezone-control button {
+    width: 30px;
+  }
+  .map-footer .station-dot {
+    margin: 0;
+  }
+}

@@ -1,0 +1,42 @@
+.pin-editor .location-card-title {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 3px 0;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.pin-editor .location-card-title:hover {
+  text-decoration: underline;
+  background: var(--selection);
+}
+.pin-editor .location-card-title:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.contact-location-marker {
+  background: var(--accent);
+}
+.contact-location-label {
+  position: absolute;
+  left: 50%;
+  top: 17px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 4px;
+  background: var(--sidebar);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  font-size: 12px;
+  pointer-events: none;
+}

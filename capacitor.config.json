@@ -1,0 +1,9 @@
+{
+  "appId": "org.openamateurradio.oar",
+  "appName": "OAR",
+  "webDir": "dist",
+  "backgroundColor": "#101513",
+  "server": { "androidScheme": "https" },
+  "ios": { "contentInset": "automatic" },
+  "android": { "allowMixedContent": false }
+}

@@ -1,0 +1,229 @@
+.topbar-search-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 100px;
+  max-width: 1000px;
+}
+.topbar-search-group > .icon-button {
+  flex: 0 0 27px;
+  margin: 0;
+}
+.topbar-search-group > .address-search {
+  max-width: none;
+  min-width: 0;
+}
+.clock-editor .address-search form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 32px;
+  gap: 3px;
+}
+.clock-editor .address-search input {
+  flex: 1;
+  width: 0;
+  height: 30px;
+}
+.clock-editor .address-search form > button {
+  flex-shrink: 0;
+}
+.clock-editor .address-dropdown {
+  position: relative;
+  top: auto;
+  min-width: 0;
+  max-height: 260px;
+}
+.clock-editor .address-search {
+  margin: 8px 0;
+}
+.clock-editor .address-dropdown small {
+  font-size: 10px;
+}
+.clock-editor .saved-clock-places {
+  margin: 7px 0;
+  font-size: 12px;
+}
+.saved-clock-places[open] {
+  max-height: 190px;
+  overflow-y: auto;
+}
+.saved-clock-places button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 11px;
+  padding: 5px;
+  margin: 3px 0;
+}
+.city-timezone-picker > label {
+  display: block;
+  margin-bottom: 3px;
+}
+.city-options {
+  border: 1px solid var(--border);
+  background: var(--sidebar);
+  margin-top: 2px;
+}
+.city-options > [role="listbox"] {
+  max-height: 230px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.city-options [role="option"] {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 5px 7px;
+  background: transparent;
+  line-height: 1.4;
+}
+.city-options [role="option"]:hover,
+.city-options [aria-selected="true"] {
+  background: var(--selection);
+}
+.city-options b {
+  display: block;
+  font-size: 12px;
+}
+.city-options small {
+  display: block;
+  font-size: 10px;
+}
+.city-options > small,
+.city-options > p {
+  padding: 5px;
+}
+.city-timezone-picker > input {
+  width: 100%;
+}
+.weather-controls {
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+.weather-switch {
+  flex: 1;
+  min-width: 0;
+}
+.weather-switch > span {
+  display: block;
+  font-size: 9px;
+  text-align: center;
+  margin-bottom: 3px;
+}
+.weather-switch > button {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  isolation: isolate;
+  align-items: center;
+  min-height: 27px;
+  width: 100%;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  font-size: 11px;
+  overflow: hidden;
+}
+.weather-switch > button > i {
+  position: absolute;
+  z-index: -1;
+  left: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: calc(50% - 2px);
+  border-radius: 14px;
+  background: var(--accent);
+  transition: transform 0.15s ease;
+}
+.weather-switch > button[aria-checked="true"] > i {
+  transform: translateX(100%);
+}
+.weather-switch > button > span {
+  color: var(--muted);
+}
+.weather-switch > button[aria-checked="false"] > span:nth-of-type(1),
+.weather-switch > button[aria-checked="true"] > span:nth-of-type(2) {
+  color: var(--button-text);
+  font-weight: 700;
+}
+.weather-switch > button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.address-correction {
+  margin-top: 5px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+}
+.address-correction details[open] {
+  max-height: 160px;
+  overflow-y: auto;
+}
+.address-correction button {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+.address-correction summary {
+  cursor: pointer;
+  color: var(--accent);
+  margin-top: 4px;
+}
+.mapped-place {
+  margin: 4px 0;
+  font-size: 12px;
+}
+.mapped-place b,
+.mapped-place small {
+  display: block;
+}
+.mapped-place small {
+  font-size: 9px;
+}
+.timezone-explanation {
+  display: block;
+  font-size: 9px !important;
+  line-height: 1.3;
+}
+.searched-place-label {
+  position: absolute;
+  left: 50%;
+  top: 17px;
+  transform: translateX(-50%);
+  background: #102127ee;
+  color: #fff;
+  padding: 2px 5px;
+  border: 1px solid #78d9e3;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+@media (max-width: 700px) {
+  .topbar-search-group {
+    gap: 2px;
+  }
+  .topbar-search-group > .icon-button {
+    flex-basis: 22px;
+  }
+  .clock-editor {
+    max-width: calc(100vw - 12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weather-switch > button > i {
+    transition: none;
+  }
+}

@@ -1,0 +1,331 @@
+.floating-list-menu {
+  position: fixed !important;
+  width: 280px;
+  right: auto !important;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
+  z-index: 200;
+  color: var(--text);
+  background: var(--panel);
+}
+.sidebar .sidebar-bottom {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.sidebar .sidebar-bottom .settings-button {
+  width: 100%;
+  margin: 0;
+  justify-content: center;
+  padding: 10px 0;
+}
+.world-clocks .clock[data-custom-color="true"] > * {
+  color: var(--clock-ink) !important;
+  text-shadow:
+    -0.5px 0 var(--clock-outline),
+    0.5px 0 var(--clock-outline),
+    0 -0.5px var(--clock-outline),
+    0 0.5px var(--clock-outline);
+}
+.location-title-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.location-card .location-title {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: block;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 6px 0;
+  color: var(--text);
+}
+.location-title strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.location-title h3 {
+  margin: 0 0 4px;
+}
+.account-dialog .account-avatar {
+  width: 90px;
+  height: 90px;
+  min-width: 90px;
+  max-width: 90px;
+  flex: none;
+  aspect-ratio: 1;
+  border-radius: 50% !important;
+  overflow: hidden;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+.account-avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--muted);
+}
+.account-dialog .account-avatar-drop {
+  width: 100%;
+  justify-content: flex-start;
+  background: var(--surface);
+  margin: 18px 0;
+}
+.profile-editor-form .account-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.profile-editor-form .profile-field-name,
+.profile-editor-form .profile-field-address {
+  grid-column: 1/-1;
+}
+.profile-editor-form {
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.profile-editor-form input,
+.profile-editor-form textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.profile-editor-form .primary {
+  justify-self: start;
+  padding: 10px 24px;
+}
+@media (max-width: 600px) {
+  .profile-editor-form .account-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.location-card {
+  container-type: inline-size;
+}
+.location-live-time {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0;
+  font-variant-numeric: tabular-nums;
+}
+.location-live-time > strong {
+  font-size: 1.2em;
+  color: var(--accent);
+}
+.location-pane .forecast-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+}
+.location-pane .forecast-grid > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 4px;
+}
+.location-pane .forecast-days-7 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.location-pane .forecast-days-7 > div {
+  grid-column: span 4;
+}
+.location-pane .forecast-days-7 > div:nth-child(n + 4) {
+  grid-column: span 3;
+}
+@container (max-width:303px) {
+  .location-pane .forecast-days-7 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .location-pane .forecast-days-7 > div:nth-child(n) {
+    grid-column: auto;
+  }
+}
+@container (max-width:239px) {
+  .location-pane .forecast-days-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width:170px) {
+  .location-pane .forecast-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.pin-hovered {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: var(--surface) !important;
+}
+.pin-hover-popup .maplibregl-popup-content {
+  background: var(--panel, #17201a);
+  color: var(--text, #eee);
+  border: 1px solid var(--accent, #b4e390);
+  font: 12px sans-serif;
+  max-width: 260px;
+  padding: 10px;
+}
+.pin-hover-popup p {
+  margin: 4px 0;
+}
+.library-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.library-tabs .library-transfer {
+  margin-left: auto;
+  display: contents;
+}
+.library-tabs .button-row {
+  margin-left: auto;
+}
+.library-tabs .import-preview,
+.library-tabs .library-transfer > p {
+  position: fixed;
+  right: 16px;
+  top: 90px;
+  background: var(--panel);
+  padding: 12px;
+  z-index: 95;
+  max-width: 320px;
+  border: 1px solid var(--border);
+}
+.link-planner {
+  display: grid;
+  gap: 12px;
+  padding: 8px;
+}
+.link-planner label {
+  display: grid;
+  gap: 5px;
+}
+.link-planner p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.account-dialog {
+  max-width: min(760px, 95vw);
+  width: 760px;
+  max-height: 88dvh;
+  overflow: auto;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.account-dialog::backdrop {
+  background: #0008;
+  backdrop-filter: blur(5px);
+}
+.account-dialog header {
+  position: sticky;
+  top: 0;
+  box-shadow: 0 -24px 0 var(--panel);
+  background: var(--panel);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.account-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.account-avatar-drop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.account-grid label {
+  display: grid;
+  gap: 5px;
+}
+.account-dialog form {
+  display: grid;
+  gap: 12px;
+}
+.account-dialog section {
+  margin-top: 15px;
+}
+.device-card {
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.account-status {
+  white-space: pre-wrap;
+}
+.user-menu {
+  width: 320px;
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.account-dialog {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) var(--panel);
+}
+.account-dialog::-webkit-scrollbar {
+  width: 5px;
+}
+.account-dialog::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+}
+.account-dialog::-webkit-scrollbar-track {
+  background: var(--panel);
+}
+.device-card dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+.device-card dd {
+  margin: 0;
+}
+.device-card dt {
+  font-size: 11px;
+  color: var(--muted);
+}
+.map-context-menu {
+  max-height: calc(100dvh - 8px);
+  overflow: auto;
+}
+.pin-hover-popup {
+  pointer-events: none;
+}
+.saved-map-pin.maplibregl-marker-covered {
+  visibility: hidden;
+  pointer-events: none !important;
+}
+.path-point {
+  border: 2px solid white;
+  border-radius: 50%;
+  padding: 5px;
+  background: #143747;
+  color: white;
+  font-size: 11px;
+  pointer-events: none;
+}

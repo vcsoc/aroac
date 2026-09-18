@@ -1,0 +1,38 @@
+[
+  {
+    "id": "muf",
+    "title": "Maximum usable frequency",
+    "description": "Provider-modeled MUF map and ionosonde observations.",
+    "url": "https://prop.kc2g.com/"
+  },
+  {
+    "id": "lightning",
+    "title": "Global & local lightning",
+    "description": "Interactive LightningMaps observations.",
+    "url": "https://www.lightningmaps.org/"
+  },
+  {
+    "id": "shortwave",
+    "title": "Shortwave broadcasts",
+    "description": "Find active broadcasts by frequency.",
+    "url": "https://short-wave.info/"
+  },
+  {
+    "id": "canada",
+    "title": "Canada satellite",
+    "description": "Environment Canada satellite imagery.",
+    "url": "https://weather.gc.ca/satellite/index_e.html"
+  },
+  {
+    "id": "solar",
+    "title": "Solar & HF outlook",
+    "description": "NOAA space-weather forecasts and alerts.",
+    "url": "https://www.swpc.noaa.gov/"
+  },
+  {
+    "id": "radar",
+    "title": "Local radar",
+    "description": "Interactive US National Weather Service radar.",
+    "url": "https://radar.weather.gov/"
+  }
+]

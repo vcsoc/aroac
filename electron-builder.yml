@@ -1,0 +1,33 @@
+appId: org.openamateurradio.oar
+productName: OAR
+asar: true
+npmRebuild: false
+directories:
+  output: releases
+files:
+  - desktop/**
+  - dist/**
+  - shared/sources.json
+  - data/cities.json
+  - data/README.md
+  - public/icon-512.png
+  - package.json
+  - "!node_modules/**"
+linux:
+  syncDesktopName: true
+  icon: public/icon-512.png
+  category: Network
+  target:
+    - AppImage
+    - tar.gz
+mac:
+  category: public.app-category.utilities
+  target:
+    - dmg
+    - zip
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

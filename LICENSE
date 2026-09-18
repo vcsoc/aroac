@@ -1,0 +1,65 @@
+OAR Free Noncommercial Use License
+Version 1.0
+
+Copyright (c) 2026 Chris Visser (GitHub: vcsoc). All rights reserved.
+
+1. Scope
+"Software" means the original OAR source code, application, documentation,
+and assets owned by the copyright holder. Third-party materials are excluded
+and remain subject to their respective licenses.
+
+2. Free noncommercial use
+You may download, inspect, copy, install, and run the unmodified Software,
+without a license fee, solely for noncommercial purposes. You may build the
+unmodified source code for such use; ordinary compilation and configuration
+through documented settings do not count as modification. You may share
+unmodified copies without charge for noncommercial purposes, provided this
+license and all copyright and attribution notices accompany them.
+
+3. No modifications
+Without the copyright holder's prior written consent, you may not alter,
+adapt, translate, or create derivative works of the Software, or incorporate
+any of its code or other original materials into another application or work.
+This does not restrict changing your own user data or using the application's
+built-in configuration and customization features.
+
+4. No commercial use without consent
+Without the copyright holder's prior written consent, you may not sell,
+rent, sublicense for a fee, monetize, or otherwise use or distribute the
+Software, in whole or in part, for monetary compensation, commercial
+advantage, or revenue generation. This includes paid products or services,
+commercial business operations, paid hosting, advertising-supported offerings,
+and bundling any part of the Software with a paid offering. These restrictions
+apply even if the Software itself is supplied without a separate charge.
+
+5. Permissions and reserved rights
+Request permission from Chris Visser through https://github.com/vcsoc/oar.
+Permission must be expressly granted in writing; silence is not consent.
+No rights are granted except those expressly stated here. No trademark or
+endorsement rights are granted. Rights that applicable law does not permit
+to be restricted remain unaffected. This is a source-available license,
+not an open-source license.
+
+6. Future releases
+The copyright holder may offer future versions under different terms or
+charge for future versions. Such changes do not retroactively change this
+license for copies already received under it. No updates, support, or
+continued free availability of future versions are promised.
+
+7. Termination
+Your permissions under this license terminate automatically if you breach
+its terms. Upon termination, stop using and distributing the Software and
+delete your copies, except copies required to be retained by law.
+
+8. Third-party materials
+Dependencies, fonts, datasets, external services, and other third-party
+materials retain their own licenses and terms. This license does not
+supersede or restrict rights granted by those licenses. You are responsible
+for complying with applicable third-party terms.
+
+9. Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NONINFRINGEMENT. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER
+SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM,
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.

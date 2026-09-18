@@ -1,0 +1,285 @@
+.muf-legend {
+  position: absolute;
+  top: 30px;
+  left: 6px;
+  z-index: 4;
+  max-width: min(290px, calc(100% - 55px));
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 10px;
+}
+.muf-legend summary {
+  padding: 4px 6px;
+  cursor: pointer;
+}
+.muf-legend > div {
+  max-height: 180px;
+  overflow: auto;
+  padding: 0 6px 6px;
+}
+.muf-legend p {
+  font-size: 10px;
+  margin: 5px 0;
+}
+.muf-legend small {
+  display: block;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+.muf-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 6px 0;
+}
+.muf-key i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 2px;
+}
+.muf-popup {
+  font-size: 11px;
+  color: var(--text);
+}
+.muf-popup p {
+  font-size: 11px;
+  margin: 5px 0;
+}
+.maplibregl-popup-content:has(.muf-popup) {
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+:root {
+  --left-width: 350px;
+}
+.location-pane .weather-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+}
+.weather-facts > div {
+  min-width: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.weather-facts dt {
+  font-size: 10px;
+}
+.weather-facts dd {
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.location-pane .forecast-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.forecast-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.weather-icon {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.weather-icon-clear,
+.weather-icon-partlyCloudy {
+  color: #e6bd68;
+}
+.weather-icon-rain,
+.weather-icon-drizzle,
+.weather-icon-snow {
+  color: #8bc9e6;
+}
+/* Let the map consume the remaining space, rather than subtracting guessed
+   header heights from the viewport. MapLibre's ResizeObserver follows it. */
+.app.map-page {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.map-page .workspace {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.map-page .topbar {
+  flex-shrink: 0;
+}
+.map-page main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.map-page main > * {
+  flex-shrink: 0;
+}
+.map-page main > .atlas {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.map-page .atlas .map-wrap {
+  height: auto;
+  min-height: 0;
+  flex: 1;
+}
+.map-page .atlas .panel-heading,
+.map-page .atlas .map-footer {
+  flex-shrink: 0;
+}
+.map-page .world-clocks {
+  max-height: 24dvh;
+  overflow: auto;
+}
+.map-page .stats-grid {
+  max-height: 18dvh;
+  overflow: auto;
+}
+.map-page .stat {
+  min-width: 0;
+}
+.map-page .notice {
+  max-height: 12dvh;
+  overflow: auto;
+}
+.atlas .panel-heading > .weather-switch {
+  flex: 0 0 132px;
+  max-width: 132px;
+  margin: 2px 4px;
+}
+.weather-controls {
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+}
+.weather-controls > .weather-switch {
+  max-width: 100px;
+  display: flex;
+  flex-direction: column;
+}
+.weather-controls .weather-switch > span {
+  flex: 1;
+}
+.weather-switch > button {
+  font-size: 10px;
+  min-height: 25px;
+}
+.settings-dialog {
+  width: min(760px, calc(100vw - 24px));
+  height: min(680px, calc(100dvh - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 15px 70px #0009;
+  overflow: hidden;
+}
+.settings-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.settings-dialog::backdrop {
+  background: #0009;
+}
+.settings-dialog > .drawer-heading {
+  min-height: 36px;
+  padding: 0 8px;
+}
+.settings-tabs {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  gap: 2px;
+  padding: 4px;
+  flex-wrap: wrap;
+}
+.settings-tabs > button {
+  border: 0;
+  border-radius: 3px;
+  font-size: 12px;
+  padding: 6px 12px;
+  background: transparent;
+}
+.settings-tabs > button[aria-selected="true"] {
+  background: var(--selection);
+  color: var(--accent);
+}
+.settings-tabs > button:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.settings-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 10px;
+}
+.settings-body h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+.settings-body .appearance-settings {
+  border: 0;
+}
+.map-home-control {
+  position: absolute;
+  right: 10px;
+  top: 76px;
+  z-index: 2;
+  width: 29px;
+  height: 29px;
+  min-height: 29px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 0 0 2px #0002;
+}
+.map-home-control:hover {
+  background: #eee;
+}
+.map-home-control:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .map-page .location-pane,
+  .map-page .map-drawer {
+    position: fixed;
+    top: 32px;
+    bottom: calc(44px + env(safe-area-inset-bottom));
+    max-height: none;
+    width: min(350px, calc(100vw - 24px));
+  }
+  .map-page .location-pane {
+    left: 0;
+    right: auto;
+  }
+  .map-page .map-drawer {
+    left: auto;
+    right: 0;
+  }
+}
+@media (max-height: 650px) {
+  .map-page .world-clocks {
+    max-height: 100px;
+  }
+}
