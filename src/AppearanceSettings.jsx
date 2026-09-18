@@ -3,11 +3,12 @@ import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
 export default function AppearanceSettings({ value, onSave, onPreview }) {
   const [scale, setScale] = useState(value.fontScale),
+    [small, setSmall] = useState(value.smallFontScale ?? 1),
     [zoom, setZoom] = useState(1),
     [status, setStatus] = useToastStatus();
   useEffect(() => {
-    onPreview(scale);
-  }, [scale, onPreview]);
+    onPreview({ fontScale: scale, smallFontScale: small });
+  }, [scale, small, onPreview]);
   useEffect(() => () => onPreview(null), [onPreview]);
   useEffect(() => {
     if (!window.oarDesktop) return;
@@ -42,11 +43,28 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
           }}
         />
       </label>
+      <label>
+        Small text size · {Math.round(small * 100)}%
+        <input
+          type="range"
+          min=".9"
+          max="1.8"
+          step=".01"
+          aria-label="Small interface text size"
+          value={small}
+          onChange={(e) => setSmall(Number(e.target.value))}
+        />
+      </label>
+      <Help label="About small text size">
+        Adjusts small OAR labels, clock dates, status lines and panel details in
+        addition to the main text-size setting. Map-provider labels and
+        third-party pages retain their own sizing.
+      </Help>
       <div className="button-row">
         <button
           onClick={async () => {
             try {
-              await onSave({ fontScale: scale });
+              await onSave({ fontScale: scale, smallFontScale: small });
               setStatus(
                 `Interface text size saved at ${Math.round(scale * 100)}%.`,
               );
@@ -57,7 +75,14 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
         >
           Apply text size
         </button>
-        <button onClick={() => setScale(1.12)}>Default (112%)</button>
+        <button
+          onClick={() => {
+            setScale(1.12);
+            setSmall(1);
+          }}
+        >
+          Default (112%)
+        </button>
       </div>
       <Help label="About text size preview">
         Preview changes text, not the map’s geographic scale. Leaving this tab

@@ -19,6 +19,8 @@ import {
   ArrowUpRight,
   Plus,
   Search,
+  Camera,
+  CircleHelp,
   Send,
   Download,
   LogOut,
@@ -32,10 +34,10 @@ import {
   ChevronRight,
   RefreshCw,
 } from "lucide-react";
-import { api, post, gridCenter } from "./lib";
+import { api, post, gridCenter, invalidateSessionRequests } from "./lib";
 import LinkPlanner from "./LinkPlanner";
 import Tutorial from "./Tutorial";
-import { toast, ToastHost } from "./Toasts";
+import { toast, ToastHost, clearToasts } from "./Toasts";
 import { APP_VERSION } from "./version";
 import SourcesEditor, { SourceHost } from "./Sources";
 import UpdateNotice, { checkForUpdates } from "./Updates";
@@ -372,9 +374,45 @@ function Atlas({
   );
 }
 export default function App() {
-  const [page, setPage] = useState("dashboard"),
-    [user, setUser] = useState(null),
-    [auth, setAuth] = useState(false),
+  const [session, setSession] = useState(undefined);
+  const [page, setPage] = useState("dashboard");
+  const identity = useRef(undefined);
+  const change = useCallback((value) => {
+    const id = value?.id ?? null;
+    if (identity.current !== id) {
+      invalidateSessionRequests();
+      clearToasts();
+      identity.current = id;
+    }
+    setSession(value);
+  }, []);
+  useEffect(() => {
+    let live = true;
+    api("/me")
+      .then((value) => {
+        if (live) change(value);
+      })
+      .catch(() => {
+        if (live) change(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [change]);
+  if (session === undefined)
+    return <p role="status">Opening your local workspace…</p>;
+  return (
+    <Workspace
+      key={session?.id ?? "general"}
+      user={session}
+      setUser={change}
+      page={page}
+      setPage={setPage}
+    />
+  );
+}
+function Workspace({ user, setUser, page, setPage }) {
+  const [auth, setAuth] = useState(false),
     [accountScreen, setAccountScreen] = useState(null),
     [accountMenu, setAccountMenu] = useState(false),
     [aboutOpen, setAboutOpen] = useState(false),
@@ -466,7 +504,15 @@ export default function App() {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--font-scale",
-      String(previewFont ?? appearanceSettings.value.fontScale),
+      String(previewFont?.fontScale ?? appearanceSettings.value.fontScale),
+    );
+    document.documentElement.style.setProperty(
+      "--small-font-scale",
+      String(
+        previewFont?.smallFontScale ??
+          appearanceSettings.value.smallFontScale ??
+          1,
+      ),
     );
   }, [previewFont, appearanceSettings.value]);
   const theme = previewTheme || themeSettings.value;
@@ -602,7 +648,7 @@ export default function App() {
     try {
       const pin = await pinStore.update(id, point);
       setMovingPinId(null);
-      setActivePinId(id);
+      setActivePinId(pin.id);
       toast(
         `Moved saved location “${pin.label}” to ${pin.lat.toFixed(5)}°, ${pin.lng.toFixed(5)}°.`,
       );
@@ -687,7 +733,7 @@ export default function App() {
             setPage("dashboard");
           }}
         >
-          <Radio />
+          <img className="brand-logo" src="./oar-logo-sq.png" alt="OAR" />
           <strong>
             OAR<span>OPEN AMATEUR RADIO</span>
           </strong>
@@ -784,6 +830,25 @@ export default function App() {
           <div className="top-actions">
             <button
               className="icon-button"
+              aria-label="Save application screenshot"
+              title="Save application screenshot to Pictures (may include private data)"
+              onClick={async () => {
+                try {
+                  if (!window.oarDesktop?.screenshot)
+                    throw Error(
+                      "Screenshot saving is available in the installed desktop application.",
+                    );
+                  const result = await window.oarDesktop.screenshot();
+                  toast("Screenshot saved to " + result.path);
+                } catch (e) {
+                  toast(e.message);
+                }
+              }}
+            >
+              <Camera size={18} />
+            </button>
+            <button
+              className="icon-button"
               aria-label="Saved locations"
               title="Saved locations"
               aria-controls="map-drawer"
@@ -821,6 +886,14 @@ export default function App() {
             >
               <SlidersHorizontal size={18} />
             </button>
+            <button
+              className="icon-button"
+              aria-label="Start tutorial"
+              title="Help · Start tutorial"
+              onClick={startTutorial}
+            >
+              <CircleHelp size={18} />
+            </button>
             <span className={"connection " + (!online ? "offline" : "")}>
               <i className="dot" />
               {forcedOffline
@@ -831,9 +904,9 @@ export default function App() {
             </span>
             <button
               className="profile-button"
-              aria-haspopup={user ? "menu" : "dialog"}
-              aria-expanded={user ? accountMenu : auth}
-              onClick={() => (user ? setAccountMenu((v) => !v) : setAuth(true))}
+              aria-haspopup="menu"
+              aria-expanded={accountMenu}
+              onClick={() => setAccountMenu((v) => !v)}
             >
               {user?.callsign || "Sign in"}
               <span>
@@ -857,8 +930,10 @@ export default function App() {
                 )}
               </span>
             </button>
-            {user && accountMenu && (
+            {accountMenu && (
               <AccountMenu
+                signedIn={!!user}
+                onSignIn={() => setAuth(true)}
                 onClose={() => setAccountMenu(false)}
                 onUpdates={checkForUpdates}
                 onTutorial={startTutorial}
@@ -1322,7 +1397,11 @@ export default function App() {
                 pins={pinStore.pins}
                 error={pinStore.error}
                 activeId={activePinId}
-                onUpdate={pinStore.update}
+                onUpdate={async (id, patch) => {
+                  const pin = await pinStore.update(id, patch);
+                  if (pin.id !== id) setActivePinId(pin.id);
+                  return pin;
+                }}
                 onFocus={focusPin}
                 onDelete={deletePin}
                 onMove={beginMove}

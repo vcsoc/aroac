@@ -83,7 +83,7 @@ export function Help({ children, label = "More information" }) {
   );
 }
 
-export function Modal({ title, children, onClose, defaultFocusRef }) {
+export function Modal({ title, children, onClose, defaultFocusRef, heading }) {
   const ref = useRef();
   useEffect(() => {
     const previous = document.activeElement;
@@ -119,7 +119,7 @@ export function Modal({ title, children, onClose, defaultFocusRef }) {
       aria-label={title}
     >
       <header>
-        <h2>{title}</h2>
+        <h2>{heading || title}</h2>
         <button
           className="icon-button"
           aria-label="Close dialog"
@@ -180,7 +180,17 @@ export function ConfirmationHost() {
 export function AboutOAR({ onClose, offline }) {
   const [tab, setTab] = useState("about");
   return (
-    <Modal title="About OAR" onClose={onClose}>
+    <Modal
+      title="About OAR"
+      heading={
+        <img
+          className="about-logo"
+          src="./oar-logo-full.png"
+          alt="OAR · Open Amateur Radio"
+        />
+      }
+      onClose={onClose}
+    >
       <div
         className="about-tabs"
         role="tablist"
@@ -236,8 +246,15 @@ export function AboutOAR({ onClose, offline }) {
             <p>
               <strong>OAR · Open Amateur Radio</strong> · v{APP_VERSION}
             </p>
-            <p>Your local-first amateur radio workspace.</p>
-            <p>
+            <p className="about-description">
+              OAR is a local-first amateur radio workspace combining world maps,
+              station clocks, propagation and weather observations, saved
+              locations, contacts, a logbook and equipment records. Your
+              application logic and database live on this device; internet
+              access supplies online maps and observations, not a separate
+              account service.
+            </p>
+            <p className="about-developer">
               Developed by{" "}
               <a
                 href="https://github.com/vcsoc"
@@ -286,6 +303,8 @@ export function WindowControls() {
   );
 }
 export function AccountMenu({
+  signedIn = true,
+  onSignIn,
   onEdit,
   onAbout,
   onLogout,
@@ -352,10 +371,10 @@ export function AccountMenu({
         </div>
       )}
       {[
-        ["Edit Profile", onEdit],
+        ...(signedIn ? [["Edit Profile", onEdit]] : []),
         ["About OAR", onAbout],
         ["Check for updates", onUpdates],
-        ["Logout", onLogout],
+        signedIn ? ["Logout", onLogout] : ["Sign in", onSignIn],
       ].map(([label, action]) => (
         <button
           role="menuitem"

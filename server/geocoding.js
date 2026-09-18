@@ -1,3 +1,4 @@
+import { ownerId, visible } from "./privacy.js";
 export function addressResults(payload) {
   return (payload.features || []).slice(0, 6).flatMap((feature, index) => {
     const [lng, lat] = feature.geometry?.coordinates || [];
@@ -43,13 +44,30 @@ export function installGeocoding(
   db.exec(
     "CREATE TABLE IF NOT EXISTS geocode_corrections(query TEXT PRIMARY KEY, payload TEXT NOT NULL, pin_id INTEGER)",
   );
-  const corrected = (key, results) => {
+  db.exec(
+    `CREATE TABLE IF NOT EXISTS scoped_geocode_corrections(query TEXT NOT NULL,owner INTEGER NOT NULL,payload TEXT NOT NULL,pin_id INTEGER,PRIMARY KEY(query,owner))`,
+  );
+  if (
+    db
+      .prepare("PRAGMA table_info(pins)")
+      .all()
+      .some((c) => c.name === "owner")
+  )
+    db.exec(
+      `INSERT OR IGNORE INTO scoped_geocode_corrections SELECT query,COALESCE(p.owner,0),payload,pin_id FROM geocode_corrections g JOIN pins p ON p.id=g.pin_id; DELETE FROM geocode_corrections;`,
+    );
+  const corrected = (key, results, req) => {
     const saved = db
-      .prepare("SELECT * FROM geocode_corrections WHERE query=?")
-      .get(key);
+      .prepare(
+        "SELECT * FROM scoped_geocode_corrections WHERE query=? AND owner IN (0,?) ORDER BY owner DESC LIMIT 1",
+      )
+      .get(key, ownerId(req) ?? 0);
     if (!saved) return results;
     const value = JSON.parse(saved.payload),
-      pin = db.prepare("SELECT lat,lng FROM pins WHERE id=?").get(saved.pin_id);
+      pin = db
+        .prepare(`SELECT lat,lng FROM pins WHERE id=? AND ${visible}`)
+        .get(saved.pin_id, ownerId(req));
+    if (!pin) return results;
     const location = { ...value, ...(pin || {}), corrected: true };
     return [location, ...results.filter((r) => r.id !== location.id)];
   };
@@ -64,7 +82,9 @@ export function installGeocoding(
       return res
         .status(400)
         .json({ error: "Choose an address result and a saved pin." });
-    const pin = db.prepare("SELECT * FROM pins WHERE id=?").get(req.body.pinId);
+    const pin = db
+      .prepare(`SELECT * FROM pins WHERE id=? AND ${visible}`)
+      .get(req.body.pinId, ownerId(req));
     if (!pin) return res.status(404).json({ error: "Saved pin not found." });
     const key = query.toLowerCase(),
       cached = db
@@ -85,17 +105,17 @@ export function installGeocoding(
       lng: pin.lng,
       corrected: true,
     };
-    db.prepare("INSERT OR REPLACE INTO geocode_corrections VALUES(?,?,?)").run(
-      key,
-      JSON.stringify(value),
-      pin.id,
-    );
+    db.prepare(
+      "INSERT OR REPLACE INTO scoped_geocode_corrections VALUES(?,?,?,?)",
+    ).run(key, ownerId(req) ?? 0, JSON.stringify(value), pin.id);
     res.json({ ...value, searchQuery: query });
   });
   app.delete("/api/geocode/correction", (req, res) => {
     const query =
       typeof req.query.q === "string" ? req.query.q.trim().toLowerCase() : "";
-    db.prepare("DELETE FROM geocode_corrections WHERE query=?").run(query);
+    db.prepare(
+      "DELETE FROM scoped_geocode_corrections WHERE query=? AND owner=?",
+    ).run(query, ownerId(req) ?? 0);
     res.json({ ok: true });
   });
   app.get("/api/geocode", async (req, res) => {
@@ -115,7 +135,7 @@ export function installGeocoding(
     const source = "Photon / OpenStreetMap";
     if (cached && (isOffline() || Date.now() - saved.fetched < 7 * 86400000))
       return res.json({
-        results: corrected(key, cached),
+        results: corrected(key, cached, req),
         source,
         cached: true,
         offline: isOffline(),
@@ -144,13 +164,13 @@ export function installGeocoding(
         "INSERT INTO geocode_cache VALUES(?,?,?) ON CONFLICT(query) DO UPDATE SET results=excluded.results,fetched=excluded.fetched",
       ).run(key, JSON.stringify(results), Date.now());
       res.json({
-        results: corrected(key, results),
+        results: corrected(key, results, req),
         source: response.oarSource?.attribution || source,
       });
     } catch {
       if (cached)
         return res.json({
-          results: corrected(key, cached),
+          results: corrected(key, cached, req),
           source,
           cached: true,
           stale: true,

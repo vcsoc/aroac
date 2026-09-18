@@ -7,6 +7,7 @@ directories:
 files:
   - desktop/**
   - dist/**
+  - "!dist/brand/**" # Untracked artwork drafts are not release assets.
   - shared/sources.json
   - shared/roadmap.js
   - LICENSE
@@ -30,14 +31,17 @@ linux:
     - AppImage
     - tar.gz
 mac:
+  icon: public/icon.icns
   category: public.app-category.utilities
   target:
     - dmg
     - zip
 win:
-  icon: public/icon-512.png
+  icon: public/icon.ico
   target:
     - nsis
 nsis:
+  installerIcon: public/icon.ico
+  uninstallerIcon: public/icon.ico
   oneClick: false
   allowToChangeInstallationDirectory: true

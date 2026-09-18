@@ -1,3 +1,4 @@
+import { addOwnership, ownerId, visible } from "./privacy.js";
 export function installPins(app, db) {
   db.exec(
     `CREATE TABLE IF NOT EXISTS pins(id INTEGER PRIMARY KEY,label TEXT NOT NULL,callsign TEXT NOT NULL DEFAULT '',lat REAL NOT NULL,lng REAL NOT NULL,notes TEXT NOT NULL DEFAULT '',created TEXT NOT NULL,updated TEXT NOT NULL)`,
@@ -9,7 +10,11 @@ export function installPins(app, db) {
       .some((c) => c.name === "name")
   )
     db.exec("ALTER TABLE pins ADD COLUMN name TEXT NOT NULL DEFAULT ''");
-  const get = (id) => db.prepare("SELECT * FROM pins WHERE id=?").get(id);
+  addOwnership(db, "pins");
+  const get = (id, req) =>
+    db
+      .prepare(`SELECT * FROM pins WHERE id=? AND ${visible}`)
+      .get(id, ownerId(req));
   const validate = (data, existing = {}) => {
     const result = { ...existing },
       fields = {};
@@ -47,8 +52,12 @@ export function installPins(app, db) {
     }
     return { result, fields };
   };
-  app.get("/api/pins", (_req, res) =>
-    res.json(db.prepare("SELECT * FROM pins ORDER BY id DESC").all()),
+  app.get("/api/pins", (req, res) =>
+    res.json(
+      db
+        .prepare(`SELECT * FROM pins WHERE ${visible} ORDER BY id DESC`)
+        .all(ownerId(req)),
+    ),
   );
   app.post("/api/pins", (req, res) => {
     const { result: p, fields } = validate(req.body || {});
@@ -57,21 +66,53 @@ export function installPins(app, db) {
     const now = new Date().toISOString();
     const record = db
       .prepare(
-        "INSERT INTO pins(label,callsign,lat,lng,notes,created,updated,name) VALUES(?,?,?,?,?,?,?,?)",
+        "INSERT INTO pins(label,callsign,lat,lng,notes,created,updated,name,owner) VALUES(?,?,?,?,?,?,?,?,?)",
       )
-      .run(p.label, p.callsign, p.lat, p.lng, p.notes, now, now, p.name);
-    res.status(201).json(get(Number(record.lastInsertRowid)));
+      .run(
+        p.label,
+        p.callsign,
+        p.lat,
+        p.lng,
+        p.notes,
+        now,
+        now,
+        p.name,
+        ownerId(req),
+      );
+    res.status(201).json(get(Number(record.lastInsertRowid), req));
   });
   app.patch("/api/pins/:id", (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isSafeInteger(id))
       return res.status(404).json({ error: "Saved location not found" });
-    const existing = get(id);
+    const existing = get(id, req);
     if (!existing)
       return res.status(404).json({ error: "Saved location not found" });
     const { result: p, fields } = validate(req.body || {}, existing);
     if (Object.keys(fields).length)
       return res.status(400).json({ error: Object.values(fields)[0], fields });
+    if (existing.owner == null && req.user) {
+      const now = new Date().toISOString();
+      const copy = db
+        .prepare(
+          "INSERT INTO pins(label,callsign,lat,lng,notes,created,updated,name,owner) VALUES(?,?,?,?,?,?,?,?,?)",
+        )
+        .run(
+          p.label,
+          p.callsign,
+          p.lat,
+          p.lng,
+          p.notes,
+          now,
+          now,
+          p.name,
+          req.user.id,
+        );
+      return res.json({
+        ...get(Number(copy.lastInsertRowid), req),
+        copiedFromGeneral: true,
+      });
+    }
     db.prepare(
       "UPDATE pins SET label=?,callsign=?,lat=?,lng=?,notes=?,updated=?,name=? WHERE id=?",
     ).run(
@@ -84,13 +125,15 @@ export function installPins(app, db) {
       p.name,
       id,
     );
-    res.json(get(id));
+    res.json(get(id, req));
   });
   app.delete("/api/pins/:id", (req, res) => {
     const id = Number(req.params.id);
     if (
       !Number.isSafeInteger(id) ||
-      !db.prepare("DELETE FROM pins WHERE id=?").run(id).changes
+      !db
+        .prepare(`DELETE FROM pins WHERE id=? AND ${visible}`)
+        .run(id, ownerId(req)).changes
     )
       return res.status(404).json({ error: "Saved location not found" });
     res.json({ ok: true, id });

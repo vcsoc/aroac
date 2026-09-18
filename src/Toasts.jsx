@@ -9,6 +9,10 @@ const subscribe = (fn) => {
   return () => subscribers.delete(fn);
 };
 const snapshot = () => messages;
+export function clearToasts() {
+  messages = [];
+  emit();
+}
 export function toast(message) {
   if (!message) return;
   const id = crypto.randomUUID();

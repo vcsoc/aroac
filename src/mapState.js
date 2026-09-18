@@ -60,7 +60,11 @@ export function usePins() {
       method: "PATCH",
       body: JSON.stringify(changes),
     });
-    setPins((rows) => rows.map((row) => (row.id === id ? pin : row)));
+    setPins((rows) =>
+      pin.id !== id
+        ? [pin, ...rows]
+        : rows.map((row) => (row.id === id ? pin : row)),
+    );
     return pin;
   };
   const remove = async (id) => {

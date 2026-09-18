@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld(
     loginSettings: (value, allowUnencrypted) =>
       ipcRenderer.invoke("oar:login-settings", value, allowUnencrypted),
     backup: () => ipcRenderer.invoke("oar:backup"),
+    screenshot: () => ipcRenderer.invoke("oar:screenshot"),
     zoom: (factor) => ipcRenderer.invoke("oar:zoom", factor),
     zoomStep: (action) => ipcRenderer.invoke("oar:zoom-step", action),
     onZoomChanged: (callback) => {

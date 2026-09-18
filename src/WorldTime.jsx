@@ -116,6 +116,7 @@ export function WorldTime({
         </label>
         <input
           id="clock-offset"
+          style={{ "--range-progress": `${((offset + 1440) / 11520) * 100}%` }}
           type="range"
           min="-1440"
           max="10080"

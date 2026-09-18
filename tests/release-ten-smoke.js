@@ -1,9 +1,17 @@
 import { _electron, expect } from "@playwright/test";
-import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+} from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import assert from "node:assert/strict";
-const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+const version = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+).version;
 const userData = mkdtempSync(path.join(os.tmpdir(), "oar-release-ten-"));
 let app;
 try {
@@ -84,6 +92,7 @@ try {
       return "";
     };
   });
+  await page.locator(".third-party-licenses > summary").click();
   await page
     .getByRole("button", { name: "Open bundled Chromium license notices" })
     .click();

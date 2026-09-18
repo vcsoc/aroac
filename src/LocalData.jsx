@@ -63,8 +63,10 @@ export default function LocalData() {
       </button>
       {status && <p role="status">{status}</p>}
       <Help label="About database backups">
-        Backups contain all local profiles and private records. The database is
-        not encrypted; keep your device and backups protected. Maps and fresh
+        Full database backup requires sign-in and is only offered on
+        single-profile installations, since it includes private records.
+        Multi-profile installations must use scoped exports. The database is not
+        encrypted; keep your device and backups protected. Maps and fresh
         observations use online providers.
       </Help>
       {info && !info.secureSessionStorage && (

@@ -10,11 +10,22 @@ export default defineConfig({
           postcssPlugin: "oar-text-size",
           Declaration(decl) {
             if (
+              decl.prop === "font" &&
+              !decl.value.includes('var(--font-scale') &&
+              !decl.source?.input.file?.includes("/node_modules/")
+            ) {
+              decl.value = decl.value.replace(
+                /\b(\d+(?:\.\d+)?)px(?=\/|\s)/,
+                (match, size) =>
+                  `calc(${size}px * var(--font-scale, 1.12)${Number(size) <= 12 ? " * var(--small-font-scale, 1)" : ""})`,
+              );
+            }
+            if (
               decl.prop === "font-size" &&
               /^\d+(?:\.\d+)?px$/.test(decl.value) &&
               !decl.source?.input.file?.includes("/node_modules/")
             )
-              decl.value = `calc(${decl.value} * var(--font-scale, 1.12))`;
+              decl.value = `calc(${decl.value} * var(--font-scale, 1.12)${parseFloat(decl.value) <= 12 ? " * var(--small-font-scale, 1)" : ""})`;
           },
         },
       ],

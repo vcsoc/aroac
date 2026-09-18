@@ -17,7 +17,15 @@ export default function LoginSettings() {
         Sign-in memory{" "}
         <Help label="About sign-in memory">
           By default you stay signed in while OAR is running, until you sign out
-          or quit. No password is saved.
+          or quit. No password is saved. On a trusted device, persistence
+          restores your session until you sign out; anyone with access to your
+          unlocked desktop can use it.{" "}
+          {prefs && !prefs.secureStorage
+            ? "OS secret storage is unavailable. Enabling persistence requires confirmation to save an unencrypted session token restricted to your OS user. Prefer configuring or unlocking an OS secret store."
+            : "Persistent tokens use the OS secret store when available."}{" "}
+          Turning persistence off removes the saved token but keeps you signed
+          in until you quit or sign out. Remember my callsign is separate and
+          never saves your password.
         </Help>
       </h3>
       {prefs ? (
@@ -51,22 +59,7 @@ export default function LoginSettings() {
                 setError(e.message);
               }
             }}
-            description="On this trusted device, restore your session until you manually sign out. Anyone with access to your desktop can use your local profile."
           />
-          {!prefs.secureStorage && (
-            <p>
-              OS secret storage is unavailable. Enabling persistence requires
-              confirmation to save an unencrypted session token in a file
-              restricted to your OS user. Prefer configuring/unlocking an OS
-              secret store; enable this fallback only on a trusted, protected
-              device.
-            </p>
-          )}
-          <Help label="About disabling sign-in memory">
-            Turning this off removes the saved session but keeps you signed in
-            until you quit or sign out. The login screen’s Remember my callsign
-            slider is separate and never stores your password.
-          </Help>
         </>
       ) : (
         <p>

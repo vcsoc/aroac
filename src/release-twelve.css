@@ -1,0 +1,134 @@
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../public/fonts/JetBrainsMono-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.license-content {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+}
+.license-content * {
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+.license-content pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.third-party-licenses {
+  margin-top: 16px;
+}
+.third-party-licenses > summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.about-logo {
+  display: block;
+  width: min(280px, 55vw);
+  height: 105px;
+  object-fit: contain;
+}
+.record-scope {
+  display: block;
+  padding: 3px 6px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.maplibregl-canvas[data-escape-focus="true"] {
+  outline: none !important;
+}
+#clock-offset {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  accent-color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+}
+#clock-offset::-webkit-slider-runnable-track {
+  height: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0 var(--range-progress),
+    var(--surface) var(--range-progress) 100%
+  );
+}
+#clock-offset::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--accent);
+}
+#clock-offset::-moz-range-track {
+  height: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+}
+#clock-offset::-moz-range-progress {
+  height: 6px;
+  background: var(--accent);
+}
+#clock-offset::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--accent);
+}
+#clock-offset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.about-description {
+  line-height: 1.65;
+}
+.about-developer {
+  margin-top: 24px !important;
+}
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto !important;
+    scrollbar-color: auto !important;
+  }
+}
+*::-webkit-scrollbar-button {
+  display: none !important;
+}
+*::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border-radius: 4px;
+}
+.oar-scrolling::-webkit-scrollbar-thumb {
+  background: var(--muted) !important;
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent !important;
+  }
+  .oar-scrolling {
+    scrollbar-color: var(--muted) transparent !important;
+  }
+}

@@ -1,5 +1,16 @@
 import { isNative, nativeRequest, exportNative } from "./platform.js";
+let sessionEpoch = 0;
+export const invalidateSessionRequests = () => {
+  sessionEpoch++;
+};
 export async function api(path, options = {}) {
+  const epoch = sessionEpoch;
+  const value = await request(path, options);
+  if (epoch !== sessionEpoch)
+    throw Error("Session changed; the old response was discarded.");
+  return value;
+}
+async function request(path, options = {}) {
   if (isNative) return nativeRequest(path, options);
   const res = await fetch("/api" + path, {
     ...options,

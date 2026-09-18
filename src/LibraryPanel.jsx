@@ -75,7 +75,7 @@ export function LibraryTransfer({ onImported, children }) {
         <button
           className="icon-button"
           aria-label="About locations and contacts transfer"
-          title="JSON file: device-wide saved locations/address book and, when signed in, your logbook contacts. No passwords or sessions. Imported records merge; exact duplicates are skipped."
+          title="JSON export includes General and your own signed-in records only. Imports belong to your signed-in profile, or General when signed out. No passwords or sessions. Exact duplicates are skipped."
         >
           <CircleHelp size={16} />
         </button>
@@ -147,8 +147,10 @@ export default function LibraryContacts({
   return (
     <section>
       <Help label="About the address book">
-        Device-wide address book. These contacts do not create operator accounts
-        or send messages.
+        Signed-in saves belong to your private profile and disappear on
+        sign-out. Signed-out saves belong to General and remain visible to
+        everyone on this device. Contacts do not create operator accounts or
+        send messages.
       </Help>
       <button onClick={() => setAdding(true)}>Add contact</button>
       {error && <p role="alert">{error}</p>}
@@ -185,11 +187,12 @@ export default function LibraryContacts({
             value={row}
             onFocus={onFocus}
             onSave={async (value) => {
-              await api("/address-book/" + row.id, {
+              const saved = await api("/address-book/" + row.id, {
                 method: "PUT",
                 body: JSON.stringify(value),
               });
               await load();
+              return saved;
             }}
             onDelete={async () => {
               if (await confirmAction("Delete this address-book contact?")) {
@@ -249,11 +252,13 @@ function ContactEditor({
         e.preventDefault();
         setBusy(true);
         try {
-          await onSave(draft);
+          const saved = await onSave(draft);
           if (value.id) setEditing(false);
           setError("");
           toast(
-            `Saved address-book contact “${draft.name || draft.callsign}” on this device.`,
+            saved?.copiedFromGeneral
+              ? "Saved a private contact copy. The General original is unchanged."
+              : `Saved address-book contact “${draft.name || draft.callsign}” on this device.`,
           );
         } catch (e) {
           setError(e.message);

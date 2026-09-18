@@ -279,15 +279,17 @@ export default function WorldMap({
       map.current.getCanvas().style.cursor = movingPinId ? "crosshair" : "";
   }, [movingPinId]);
   useEffect(() => {
-    const m = map.current;
-    if (!ready || !m) return;
     let last = 0;
     const key = (e) => {
+      const m = map.current;
+      if (!m) return;
       if (e.key !== "Escape") {
+        delete m.getCanvas().dataset.escapeFocus;
         last = 0;
         return;
       }
-      if (e.repeat) return;
+      m.getCanvas().dataset.escapeFocus = "true";
+      if (!ready || e.repeat) return;
       if (document.querySelector("dialog[open],[popover]:popover-open")) {
         last = 0;
         return;

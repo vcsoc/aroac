@@ -1,4 +1,5 @@
 import express from "express";
+import { sessionScope } from "./privacy.js";
 import { installSources } from "./sources.js";
 import { installGeocoding } from "./geocoding.js";
 import { installCities } from "./cities.js";
@@ -59,6 +60,24 @@ export function createApp({
         if (e.code !== "ENOENT") throw e;
       }
     }
+  if (
+    dbPath !== ":memory:" &&
+    db.prepare("SELECT name FROM sqlite_master WHERE name='pins'").get() &&
+    !db
+      .prepare("PRAGMA table_info(pins)")
+      .all()
+      .some((c) => c.name === "owner")
+  ) {
+    const folder = path.join(path.dirname(dbPath), "backups");
+    mkdirSync(folder, { recursive: true, mode: 0o700 });
+    chmodSync(folder, 0o700);
+    const backup = path.join(
+      folder,
+      "before-profile-ownership-" + Date.now() + ".sqlite",
+    );
+    db.prepare("VACUUM INTO ?").run(backup);
+    chmodSync(backup, 0o600);
+  }
   db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
  CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY,callsign TEXT UNIQUE NOT NULL,name TEXT NOT NULL,email TEXT NOT NULL,password TEXT NOT NULL,grid TEXT NOT NULL,bio TEXT NOT NULL DEFAULT '');
  CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,expires INTEGER NOT NULL);
@@ -168,6 +187,24 @@ export function createApp({
         )
         .get(req.token, Date.now());
     }
+    if (
+      !req.user &&
+      req.token &&
+      !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
+      !["/login", "/register", "/logout"].includes(req.path)
+    )
+      return fail(
+        res,
+        401,
+        "Your session expired. Sign in again; nothing was saved to General.",
+      );
+    if (!req.user && req.token && req.path === "/me" && !req.nativeClient)
+      res.clearCookie("oar_session", { path: "/" });
+    next();
+  });
+  app.use((req, res, next) => sessionScope.run(req.user?.id ?? 0, next));
+  app.use("/api", (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
     next();
   });
   const requireUser = (req, res, next) =>

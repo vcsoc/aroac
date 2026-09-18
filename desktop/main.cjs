@@ -160,7 +160,7 @@ async function request(route, options = {}) {
     storeSession();
     return data.user;
   }
-  if (route === "/logout") {
+  if (route === "/logout" || (route === "/me" && !data)) {
     sessionToken = null;
     delete config.session;
     delete config.sessionPlain;
@@ -304,8 +304,43 @@ async function start() {
     clipboard.writeText(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
     return { ok: true };
   });
+  ipcMain.handle("oar:screenshot", async (event) => {
+    authorized(event);
+    const directory = app.getPath("pictures");
+    fs.mkdirSync(directory, { recursive: true });
+    const d = new Date(),
+      pad = (n) => String(n).padStart(2, "0");
+    const stamp =
+      String(d.getFullYear()).slice(-2) +
+      pad(d.getMonth() + 1) +
+      pad(d.getDate()) +
+      pad(d.getHours()) +
+      pad(d.getMinutes()) +
+      pad(d.getSeconds());
+    const filename = path.join(directory, "oar-screenshot-" + stamp + ".png");
+    const image = await win.webContents.capturePage();
+    if (image.isEmpty())
+      throw Error("The application screenshot could not be captured.");
+    try {
+      fs.writeFileSync(filename, image.toPNG(), { flag: "wx", mode: 0o600 });
+    } catch (e) {
+      if (e.code === "EEXIST")
+        throw Error(
+          "A screenshot was already saved this second. Please try again.",
+        );
+      throw e;
+    }
+    return { path: filename };
+  });
   ipcMain.handle("oar:backup", async (event) => {
     authorized(event);
+    const current = await request("/me");
+    if (!current?.id)
+      throw Error("Sign in before exporting a private database backup.");
+    if (db.prepare("SELECT COUNT(*) AS count FROM users").get().count > 1)
+      throw Error(
+        "Full database export is disabled for multi-profile installations to protect other profiles. Use your scoped locations/logbook export instead.",
+      );
     const result = await dialog.showSaveDialog(win, {
       title: "Back up local OAR database",
       defaultPath:

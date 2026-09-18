@@ -1,63 +1,51 @@
-import { chromium } from "@playwright/test";
-import { readFileSync, readdirSync } from "node:fs";
-const svg =
-  "data:image/svg+xml;base64," +
-  readFileSync("public/icon.svg").toString("base64");
-const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
-});
-try {
-  const page = await browser.newPage();
-  async function image(file, w, h, size) {
-    await page.setViewportSize({ width: w, height: h });
-    await page.setContent(
-      `<body style="margin:0;background:#101816;display:grid;place-items:center;width:100vw;height:100vh"><img width="${size}" height="${size}" src="${svg}"></body>`,
-    );
-    await page.locator("img").evaluate((img) => img.decode());
-    await page.screenshot({ path: file });
-  }
-  for (const [density, size] of Object.entries({
-    mdpi: 48,
-    hdpi: 72,
-    xhdpi: 96,
-    xxhdpi: 144,
-    xxxhdpi: 192,
-  })) {
-    const base = `android/app/src/main/res/mipmap-${density}`;
-    for (const name of ["ic_launcher", "ic_launcher_round"])
-      await image(`${base}/${name}.png`, size, size, size);
-    await image(
-      `${base}/ic_launcher_foreground.png`,
-      Math.round(size * 2.25),
-      Math.round(size * 2.25),
-      Math.round(size * 1.3),
-    );
-  }
-  const splashes = readdirSync("android/app/src/main/res")
-    .filter((x) => x.startsWith("drawable"))
-    .map((x) => `android/app/src/main/res/${x}/splash.png`);
-  splashes.push(
-    ...readdirSync("ios/App/App/Assets.xcassets/Splash.imageset")
-      .filter((x) => x.endsWith(".png"))
-      .map((x) => "ios/App/App/Assets.xcassets/Splash.imageset/" + x),
+// Native ImageMagick + Node only. Never invoke legacy Android/Gradle tooling.
+import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+const input = "public/oar-logo-sq.png";
+execFileSync("magick", [input, "-resize", "512x512", "public/icon-512.png"]);
+execFileSync("magick", [
+  input,
+  "-define",
+  "icon:auto-resize=256,128,64,48,32,16",
+  "public/icon.ico",
+]);
+const blocks = [];
+for (const [type, size] of [
+  ["icp4", 16],
+  ["icp5", 32],
+  ["icp6", 64],
+  ["ic07", 128],
+  ["ic08", 256],
+  ["ic09", 512],
+  ["ic10", 1024],
+]) {
+  const png = execFileSync(
+    "magick",
+    [input, "-resize", `${size}x${size}`, "png:-"],
+    { maxBuffer: 8 * 1024 * 1024 },
   );
-  for (const file of splashes) {
-    let png;
-    try {
-      png = readFileSync(file);
-    } catch {
-      continue;
-    }
-    const w = png.readUInt32BE(16),
-      h = png.readUInt32BE(20);
-    await image(file, w, h, Math.round(Math.min(w, h) * 0.22));
-  }
-  await image(
-    "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
-    1024,
-    1024,
-    1024,
-  );
-} finally {
-  await browser.close();
+  const header = Buffer.alloc(8);
+  header.write(type);
+  header.writeUInt32BE(png.length + 8, 4);
+  blocks.push(header, png);
 }
+const data = Buffer.concat(blocks),
+  header = Buffer.alloc(8);
+header.write("icns");
+header.writeUInt32BE(data.length + 8, 4);
+writeFileSync("public/icon.icns", Buffer.concat([header, data]));
+execFileSync("magick", [
+  input,
+  "-resize",
+  "1024x1024",
+  "-background",
+  "#101513",
+  "-alpha",
+  "remove",
+  "-alpha",
+  "off",
+  "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+]);
+console.log(
+  "Generated Linux PNG, Windows ICO, macOS ICNS and iOS app-icon assets. Android uses the shared source logo when its native app is ready; legacy scaffold untouched.",
+);

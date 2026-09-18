@@ -18,6 +18,7 @@ import {
   SOURCE_LIMIT,
   safeSourceUrl,
 } from "../shared/sourceConfig.js";
+import { preference } from "./privacy.js";
 import { normalizeMuf } from "./muf.js";
 import { normalizeRepeaters } from "./repeaters.js";
 import { validateContours } from "./mufContours.js";
@@ -208,13 +209,7 @@ export function installSources(
   };
   const homeCountry = () => {
     try {
-      const home = JSON.parse(
-        db
-          .prepare(
-            "SELECT value FROM workspace_preferences WHERE key='world-time'",
-          )
-          .get()?.value || "{}",
-      ).home;
+      const home = JSON.parse(preference(db, "world-time") || "{}").home;
       return countryAt(home?.lat, home?.lng);
     } catch {
       return "";

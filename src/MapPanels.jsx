@@ -283,11 +283,13 @@ function PinEditor({
                 throw Error("Coordinates cannot be blank");
               patch[key] = Number(patch[key]);
             }
-          await onUpdate(pin.id, patch);
+          const saved = await onUpdate(pin.id, patch);
           setDraft({});
           setEditing(false);
           setStatus(
-            `Updated saved location “${patch.label || pin.label}” on this device. ${Object.keys(patch).some((k) => k === "lat" || k === "lng") ? "Its map position has been updated." : "Your location details have been saved."}`,
+            saved?.copiedFromGeneral
+              ? "Saved a private copy. The General original is unchanged."
+              : `Updated saved location “${patch.label || pin.label}” on this device. ${Object.keys(patch).some((k) => k === "lat" || k === "lng") ? "Its map position has been updated." : "Your location details have been saved."}`,
           );
         } catch (error) {
           setStatus(error.message);

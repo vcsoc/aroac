@@ -17,8 +17,11 @@ import "./release-seven.css";
 import "./interface-ui.css";
 import "./guidance.css";
 import "./release-ten.css";
+import "./release-twelve.css";
+import Scrollbars from "./Scrollbars";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <Scrollbars />
     <NativeRoot />
   </React.StrictMode>,
 );

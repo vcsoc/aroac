@@ -257,12 +257,20 @@ export default function SavedItemList({
         }));
     }
   }, [activeId, focusRequest, items, group.field]);
-  const render = (item) =>
-    children({
-      item,
-      collapsed: !!collapsed[item.id],
-      onToggle: () => setCollapsed((c) => ({ ...c, [item.id]: !c[item.id] })),
-    });
+  const render = (item) => (
+    <div key={item.id} className="scoped-record">
+      <small className="record-scope">
+        {item.owner == null
+          ? "General · shared on this device"
+          : "Private · signed-in profile"}
+      </small>
+      {children({
+        item,
+        collapsed: !!collapsed[item.id],
+        onToggle: () => setCollapsed((c) => ({ ...c, [item.id]: !c[item.id] })),
+      })}
+    </div>
+  );
   return (
     <>
       <div className="saved-list-toolbar" ref={host}>
