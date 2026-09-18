@@ -128,7 +128,7 @@ Maps/imagery and new observations normally require internet. The saved feed cach
 - **Mobile:** not a release. The old remote-server mobile approach is disabled rather than presented as a standalone implementation. iOS still needs a local SQLite adapter and testing on macOS/Xcode. Android remains blocked until a genuinely JDK-free build path is verified.
 - Specialist provider tools are embedded websites, not native/local feed integrations; website failures, login requirements and provider restrictions still apply.
 - No HF prediction engine, ISS pass/orbit predictions, rig control, push notifications or cloud sync.
-- Windows/macOS packaging is configured but has not been built/tested here. Signing and notarization are not configured. Linux AppImage updates are supported from 0.3.10 onward; other platform installers/update flows require target-platform validation.
+- Windows x64 NSIS packaging has been built on Windows 11, and the packaged application passed the desktop smoke test (offline accounts, SQLite persistence across restart, backup and map controls). The installer wizard itself has not been tested. macOS packaging is configured but has not been built/tested here. Signing and notarization are not configured. Linux AppImage updates are supported from 0.3.10 onward; other platform installers/update flows require target-platform validation.
 
 **No Java, no JDK, no .NET**, including development tooling. Legacy Android files are rejected prior work; do not build or distribute them.
 
@@ -150,7 +150,10 @@ npm run build
 npm start                         # self-contained Electron application
 npm run desktop:dev               # desktop with UI hot reload
 npm run desktop:build -- --linux AppImage
+npm run desktop:build -- --win --x64 # Windows: releases/OAR Setup 0.3.10.exe
 ```
+
+Before packaging a fresh checkout, generate the offline city directory: download and extract `cities500.zip` and download `admin1CodesASCII.txt` from https://download.geonames.org/export/dump/, then run `node scripts/build-cities.js /path/cities500.txt /path/admin1CodesASCII.txt`. The generated `data/cities.json` and attribution file are ignored by Git but included in the package.
 
 Build on the corresponding platform for Windows NSIS or macOS DMG/ZIP. The generated embedded service is bundled with esbuild, so the packaged application does not rely on a system Node installation or external server packages.
 

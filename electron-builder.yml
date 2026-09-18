@@ -35,6 +35,7 @@ mac:
     - dmg
     - zip
 win:
+  icon: public/icon-512.png
   target:
     - nsis
 nsis:

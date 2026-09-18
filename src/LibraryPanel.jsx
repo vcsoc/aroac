@@ -8,7 +8,7 @@ import SavedItemList, {
   ItemTitle,
   CollapseButton,
 } from "./SavedItemUI";
-import ContactContext from "./ContactContext";
+import ContactContext from "./ContactContext.jsx";
 import { confirmAction, Help } from "./InterfaceUI";
 import { toast, useToastStatus } from "./Toasts";
 export function LibraryTransfer({ onImported, children }) {

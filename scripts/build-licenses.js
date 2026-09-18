@@ -2,12 +2,15 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 const paths = execFileSync(
-  "npm",
-  ["ls", "--omit=dev", "--all", "--parseable"],
-  { encoding: "utf8", maxBuffer: 8e6 },
+  process.env.npm_execpath ? process.execPath : "npm",
+  [
+    ...(process.env.npm_execpath ? [process.env.npm_execpath] : []),
+    "ls", "--omit=dev", "--all", "--parseable",
+  ],
+  { encoding: "utf8", maxBuffer: 8e6, shell: !process.env.npm_execpath && process.platform === "win32" },
 )
   .trim()
-  .split("\n")
+  .split(/\r?\n/)
   .slice(1);
 const rows = new Map();
 for (const dir of paths) {

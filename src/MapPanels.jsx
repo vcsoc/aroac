@@ -21,7 +21,7 @@ import SavedItemList, {
   ItemTitle,
   CollapseButton,
 } from "./SavedItemUI";
-import ContactContext from "./ContactContext";
+import ContactContext from "./ContactContext.jsx";
 import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
 export function Switch({
