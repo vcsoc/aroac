@@ -9,3 +9,13 @@ await build({
   external: ["node:*"],
   logLevel: "info",
 });
+await build({
+  entryPoints: ["desktop/updates.cjs"],
+  outfile: "desktop/generated/updates.cjs",
+  bundle: true,
+  platform: "node",
+  format: "cjs",
+  target: "node24",
+  external: ["electron", "node:*"],
+  logLevel: "info",
+});

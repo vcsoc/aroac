@@ -125,9 +125,11 @@ async function request(route, options = {}) {
           route,
         ) || /^\/devices\/\d+\/invoices$/.test(route)
           ? 8_000_000
-          : /^\/devices(?:\/\d+)?$/.test(route)
-            ? 65536
-            : 16384))
+          : route === "/sources"
+            ? 256000
+            : /^\/devices(?:\/\d+)?$/.test(route)
+              ? 65536
+              : 16384))
   )
     throw Error("Request too large");
   // Private, ephemeral loopback transport inside this Electron process. No separately
@@ -172,6 +174,8 @@ async function start() {
   const service = createApp({
     dbPath: dataPath(),
     citiesPath: path.join(__dirname, "../data/cities.json"),
+    sourcesPath: path.join(app.getPath("userData"), "sources.yaml"),
+    defaultSourcesPath: path.join(__dirname, "../sources.yaml"),
     localKey,
     isOffline: () => !!config.offline,
   });
@@ -211,6 +215,29 @@ async function start() {
       return new Response("Not found", { status: 404 });
     if (file === root) file = path.join(root, "index.html");
     return net.fetch(pathToFileURL(file).href);
+  });
+  require("./generated/updates.cjs")({
+    authorized,
+    getWindow: () => win,
+    getConfig: () => config,
+    save,
+    backup: async (version) => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      const directory = path.join(app.getPath("userData"), "backups");
+      fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+      fs.chmodSync(directory, 0o700);
+      const filename = path.join(
+        directory,
+        `before-update-${version}-${Date.now()}.sqlite`,
+      );
+      db.prepare("VACUUM INTO ?").run(filename);
+      fs.chmodSync(filename, 0o600);
+      const sources = path.join(app.getPath("userData"), "sources.yaml");
+      if (fs.existsSync(sources)) {
+        fs.copyFileSync(sources, filename + ".sources.yaml");
+        fs.chmodSync(filename + ".sources.yaml", 0o600);
+      }
+    },
   });
   const zoom = require("./zoom.cjs")({
     authorized,
@@ -320,6 +347,17 @@ async function start() {
     if (!result.canceled)
       await fs.promises.writeFile(result.filePath, text, "utf8");
   });
+  ipcMain.handle("oar:runtime-licenses", async (event) => {
+    authorized(event);
+    const filename = path.join(
+      path.dirname(process.execPath),
+      "LICENSES.chromium.html",
+    );
+    if (!fs.existsSync(filename))
+      throw Error("Chromium notices are not present in this package.");
+    const error = await shell.openPath(filename);
+    if (error) throw Error(error);
+  });
   ipcMain.handle("oar:roadmap", async (event) => {
     authorized(event);
     const { fetchRoadmap } = await import("../shared/roadmap.js");
@@ -392,8 +430,19 @@ async function start() {
     if (BrowserWindow.getAllWindows().length === 0) create();
   });
 }
-if (!app.requestSingleInstanceLock()) app.quit();
-else {
+function acquireInstance(attempt = 0) {
+  if (!app.requestSingleInstanceLock()) {
+    // AppImageUpdater starts the replacement just before the old process quits.
+    // Allow its database shutdown to finish before taking the instance lock.
+    if (
+      process.platform === "linux" &&
+      process.env.APPIMAGE_SILENT_INSTALL === "true" &&
+      attempt < 40
+    )
+      setTimeout(() => acquireInstance(attempt + 1), 250);
+    else app.quit();
+    return;
+  }
   app.on("second-instance", () => {
     if (win) {
       if (win.isMinimized()) win.restore();
@@ -412,6 +461,7 @@ else {
       app.exit(1);
     });
 }
+acquireInstance();
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });

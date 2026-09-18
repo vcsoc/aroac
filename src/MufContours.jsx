@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "./lib";
+import { useSourceRevision } from "./sourceEvents";
 export function useMufContours(enabled) {
+  const sourceRevision = useSourceRevision();
   const [state, setState] = useState({});
   useEffect(() => {
     if (!enabled) {
@@ -27,7 +29,7 @@ export function useMufContours(enabled) {
       live = false;
       clearInterval(timer);
     };
-  }, [enabled]);
+  }, [enabled, sourceRevision]);
   return state;
 }
 export function useContourLayer(map, ready, enabled, state) {

@@ -59,6 +59,7 @@ test("contours keep publication metadata, persist in SQLite, coalesce downloads 
   const { app, db } = createApp({
     dbPath: ":memory:",
     isOffline: () => offline,
+    sourceFetcher: (url, options) => fetch(String(url), options),
   });
   const server = app.listen(0, "127.0.0.1");
   await new Promise((r) => server.once("listening", r));

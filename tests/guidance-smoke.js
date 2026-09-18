@@ -20,7 +20,10 @@ try {
   });
   const page = await app.firstWindow();
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("pageerror", (e) => {
+    errors.push(e.message);
+    console.error("Renderer error:", e.message);
+  });
   await expect(page.locator(".app-statusbar")).toContainText(
     "OAR v" + pkg.version,
   );

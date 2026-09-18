@@ -30,7 +30,7 @@ export const tutorialSteps = [
     target: "[data-tutorial='location-panel']",
     view: "locations",
     title: "Home and selected location",
-    text: "The left panel shows your home and selected point, local time, grid, weather and forecasts. Click a title to locate it; double-click to collapse it. Home weather needs coordinates. Question-mark buttons explain sources and limitations. The topbar left-panel button opens or closes this panel.",
+    text: "The left panel shows your home and selected points, local time, grid, weather and forecasts. Use Save to store a point, or Pin to keep its card while selecting another point. Each card collapses beside its title. Temporary pins last for this session. Home weather needs coordinates. Question-mark buttons explain sources and limitations.",
   },
   {
     target: "#map-drawer",
@@ -47,7 +47,7 @@ export const tutorialSteps = [
   {
     target: ".topbar [aria-label='Map settings']",
     title: "Settings and appearance",
-    text: "Open Settings for map options, sign-in memory, text and app zoom, custom themes, and local-data backups. Apply a theme to keep it. Your database and backups contain private data and are not encrypted—protect them.",
+    text: "Open Settings for the Sources YAML editor, sign-in memory, text and app zoom, custom themes, and backups. Sources need compatible data formats; validation keeps the last working configuration when edits fail. Use Reset config to restore defaults. Your database and backups contain private data and are not encrypted—protect them.",
   },
   {
     target: "[data-tutorial='main']",

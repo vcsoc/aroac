@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import { api } from "./lib";
+import { useSourceRevision } from "./sourceEvents";
 import { useMufContours, useContourLayer } from "./MufContours";
 export const MUF_COLORS = [
   "#5289d8",
@@ -10,6 +11,7 @@ export const MUF_COLORS = [
   "#db75bb",
 ];
 export function useMuf(enabled) {
+  const sourceRevision = useSourceRevision();
   const contours = useMufContours(enabled);
   const [state, setState] = useState({});
   useEffect(() => {
@@ -37,7 +39,7 @@ export function useMuf(enabled) {
       live = false;
       clearInterval(timer);
     };
-  }, [enabled]);
+  }, [enabled, sourceRevision]);
   return { ...state, contours };
 }
 export function useMufLayer(map, ready, enabled, state, movingPinId) {

@@ -16,6 +16,7 @@ import "./saved-items.css";
 import "./release-seven.css";
 import "./interface-ui.css";
 import "./guidance.css";
+import "./release-ten.css";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <NativeRoot />

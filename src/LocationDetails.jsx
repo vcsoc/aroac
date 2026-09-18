@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { homeDifference } from "./contactContext";
 import { Help } from "./InterfaceUI";
+import { useSourceRevision } from "./sourceEvents";
 import {
   Pin,
   PinOff,
@@ -97,6 +98,7 @@ const direction = (d) =>
       ][Math.round(d / 22.5) % 16]
     : "";
 export function useWeather(place, enabled = true) {
+  const sourceRevision = useSourceRevision();
   const [state, setState] = useState({}),
     [revision, setRevision] = useState(0);
   const lat = place?.lat,
@@ -120,10 +122,12 @@ export function useWeather(place, enabled = true) {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [lat, lng, revision, enabled]);
+  }, [lat, lng, revision, enabled, sourceRevision]);
   return { ...state, retry: () => setRevision((n) => n + 1) };
 }
 function LocationCard({
+  locked,
+  onLock,
   homeZone,
   onFocus,
   onHome,
@@ -148,6 +152,7 @@ function LocationCard({
     return () => clearInterval(timer);
   }, []);
   const [selectedClosed, setSelectedClosed] = useState(false);
+  const [saving, setSaving] = useState(false);
   const closed = home ? homeClosed : selectedClosed;
   const toggle = () =>
     home ? setHomeClosed(!homeClosed) : setSelectedClosed(!selectedClosed);
@@ -190,24 +195,31 @@ function LocationCard({
         }}
       >
         <div className="location-title-group">
-          <button
-            className="location-title"
-            title="Click to focus on map; double-click to expand or collapse"
-            onClick={(e) => {
-              clearTimeout(clickTimer.current);
-              if (e.detail === 0) {
-                onFocus?.(place);
-                return;
-              }
-              if (e.detail === 1)
-                clickTimer.current = setTimeout(() => onFocus?.(place), 280);
-            }}
-          >
-            <h3>
-              {home ? <Home size={14} /> : <MapPin size={14} />}{" "}
-              {home ? "Home location" : "Selected location"}
-            </h3>
-          </button>
+          <div className="location-heading-actions">
+            <CollapseButton
+              label={home ? "home location" : "selected location"}
+              collapsed={!!closed}
+              onToggle={toggle}
+            />
+            <button
+              className="location-title"
+              title="Click to focus on map; double-click to expand or collapse"
+              onClick={(e) => {
+                clearTimeout(clickTimer.current);
+                if (e.detail === 0) {
+                  onFocus?.(place);
+                  return;
+                }
+                if (e.detail === 1)
+                  clickTimer.current = setTimeout(() => onFocus?.(place), 280);
+              }}
+            >
+              <h3>
+                {home ? <Home size={14} /> : <MapPin size={14} />}{" "}
+                {home ? "Home location" : "Selected location"}
+              </h3>
+            </button>
+          </div>
           <div className="location-subtitle">
             <strong>{place?.name || place?.title || "Map location"}</strong>
             <Help label={home ? "About home location" : "About map location"}>
@@ -235,11 +247,41 @@ function LocationCard({
         >
           <Home size={15} />
         </button>
-        <CollapseButton
-          label={home ? "home location" : "selected location"}
-          collapsed={!!closed}
-          onToggle={toggle}
-        />
+        {!home && (
+          <>
+            <button
+              className="icon-button"
+              aria-label="Save selected location"
+              title="Save selected location"
+              disabled={!located || saving}
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await onSave(place);
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              <Save size={15} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label={
+                locked ? "Unpin selected location" : "Pin selected location"
+              }
+              aria-pressed={!!locked}
+              title={
+                locked
+                  ? "Unpin this temporary location"
+                  : "Keep this location when selecting another point"
+              }
+              onClick={onLock}
+            >
+              {locked ? <PinOff size={15} /> : <Pin size={15} />}
+            </button>
+          </>
+        )}
         {!home && onDismiss && (
           <button
             className="icon-button"
@@ -401,13 +443,13 @@ function LocationCard({
                   <small className="weather-credit">
                     {data.stale ? "Saved weather — may be outdated · " : ""}
                     <a
-                      href="https://open-meteo.com/"
+                      href={data.sourceUrl || "https://open-meteo.com/"}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Open-Meteo
+                      {data.source || "Open-Meteo (CC BY 4.0)"}
                     </a>{" "}
-                    model estimates (CC BY 4.0) ·{" "}
+                    model estimates ·{" "}
                     {new Intl.DateTimeFormat("en", {
                       timeZone: zone,
                       dateStyle: "short",
@@ -416,22 +458,6 @@ function LocationCard({
                     . Forecasts, not guaranteed observations.
                   </small>
                 </>
-              )}
-              {onSave && (
-                <button
-                  className="icon-button"
-                  title="Save location as pin"
-                  aria-label="Save location as pin"
-                  onClick={() =>
-                    onSave({
-                      lat: place.lat,
-                      lng: place.lng,
-                      label: place.name || place.title || "Map location",
-                    })
-                  }
-                >
-                  <Save size={16} />
-                </button>
               )}
               {onStation && (
                 <button
@@ -461,7 +487,8 @@ export default function LocationDetails({
   setPinned,
   onClose,
   home,
-  selected,
+  selected = [],
+  onLock,
   onSave,
   onStation,
   pins = [],
@@ -541,26 +568,29 @@ export default function LocationDetails({
               units={fahrenheit ? "F" : "C"}
               days={week ? 7 : 3}
             />
-            {selected && (
+            {selected.map((item) => (
               <LocationCard
-                place={selected}
+                key={item.key}
+                place={item.place}
+                locked={item.locked}
+                onLock={() => onLock(item.key)}
                 homeZone={home?.zone}
                 onFocus={onFocus}
                 onHome={onHome}
-                onDismiss={onDismiss}
+                onDismiss={() => onDismiss(item.key)}
                 hovered={
                   hoveredPin &&
-                  Math.abs(hoveredPin.lat - selected.lat) < 0.000001 &&
-                  Math.abs(hoveredPin.lng - selected.lng) < 0.000001
+                  Math.abs(hoveredPin.lat - item.place.lat) < 0.000001 &&
+                  Math.abs(hoveredPin.lng - item.place.lng) < 0.000001
                 }
                 units={fahrenheit ? "F" : "C"}
                 days={week ? 7 : 3}
                 onSave={onSave}
                 onStation={onStation}
                 pins={pins}
-                onCorrect={onCorrect}
+                onCorrect={(place) => onCorrect(place, item.key)}
               />
-            )}
+            ))}
           </>
         )}
       </PanelScrollArea>

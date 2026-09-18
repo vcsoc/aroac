@@ -11,7 +11,7 @@ OAR is growing into a comprehensive, local-first amateur radio workspace. The id
 
 ## Maps, conditions, and planning
 
-- Additional propagation data and a clearly labeled, path-specific HF prediction engine.
+- More country-specific source adapters beyond the configurable endpoints supported by Sources YAML, plus additional propagation data and a clearly labeled, path-specific HF prediction engine.
 - Terrain/elevation profiles and Fresnel-clearance tools for more informed link planning.
 - Satellite pass predictions, tracking improvements, and observation alerts.
 - Optional DX spotting, activation feeds, and reception-report overlays, subject to provider terms.
@@ -26,7 +26,7 @@ OAR is growing into a comprehensive, local-first amateur radio workspace. The id
 
 ## Desktop and mobile
 
-- Tested Windows and macOS packages, signing/notarization, and a trustworthy update workflow.
+- Tested Windows and macOS packages, signing/notarization, and further cross-platform update validation (Linux AppImage update support starts with 0.3.10).
 - Continued Linux packaging and desktop integration improvements.
 - A standalone, local-first iOS application, subject to macOS/Xcode development and signing requirements.
 - Android only if a genuinely JDK-free approach can be demonstrated. Android is currently blocked and is not a supported release.

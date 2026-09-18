@@ -1,5 +1,6 @@
 import { withTimezone } from "./locations";
 import { useEffect } from "react";
+import { useSources } from "./Sources";
 import * as maplibregl from "maplibre-gl";
 export const REPEATER_LAYERS = [
   "repeater-clusters",
@@ -8,6 +9,7 @@ export const REPEATER_LAYERS = [
 ];
 export const STREET_LAYERS = ["street-names-major", "street-names-minor"];
 export function useStreetLabels(mapRef, ready, enabled, host) {
+  const sources = useSources();
   useEffect(() => {
     const m = mapRef.current;
     if (!m || !ready) return;
@@ -15,8 +17,10 @@ export function useStreetLabels(mapRef, ready, enabled, host) {
     if (!enabled) return;
     m.addSource("streets", {
       type: "vector",
-      url: "https://tiles.openfreemap.org/planet",
-      attribution: "© OpenStreetMap contributors · OpenFreeMap",
+      url: sources.mapVector?.url || "https://tiles.openfreemap.org/planet",
+      attribution:
+        sources.mapVector?.attribution ||
+        "© OpenStreetMap contributors · OpenFreeMap",
     });
     for (const [index, id] of STREET_LAYERS.entries())
       m.addLayer({
@@ -86,7 +90,7 @@ export function useStreetLabels(mapRef, ready, enabled, host) {
       });
       if (m.getSource("streets")) m.removeSource("streets");
     };
-  }, [ready, enabled]);
+  }, [ready, enabled, sources.mapVector]);
 }
 export function useSavedPins(mapRef, ready, pins, callbacks) {
   useEffect(() => {

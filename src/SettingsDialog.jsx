@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
-export default function SettingsDialog({ initialTab = "Map", tabs, onClose }) {
+export default function SettingsDialog({
+  initialTab = "Sources",
+  tabs,
+  onClose,
+}) {
   const host = useRef();
   const [active, setActive] = useState(initialTab);
   const names = Object.keys(tabs);

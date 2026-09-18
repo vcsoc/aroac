@@ -47,7 +47,11 @@ export function validateContours(data) {
   });
   return { type: "FeatureCollection", features };
 }
-export function installMufContours(app, db, { isOffline = () => false } = {}) {
+export function installMufContours(
+  app,
+  db,
+  { isOffline = () => false, fetcher = fetch } = {},
+) {
   let pending;
   const cached = () => {
     try {
@@ -60,7 +64,7 @@ export function installMufContours(app, db, { isOffline = () => false } = {}) {
     }
   };
   async function download() {
-    const response = await fetch(MUF_CONTOURS, {
+    const response = await fetcher(MUF_CONTOURS, {
       signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw Error("Contour provider unavailable");
@@ -87,7 +91,8 @@ export function installMufContours(app, db, { isOffline = () => false } = {}) {
         ? new Date(modified).toISOString()
         : null,
       fetchedAt: new Date().toISOString(),
-      source: MUF_CONTOURS,
+      source: response.oarSource?.url || MUF_CONTOURS,
+      attribution: response.oarSource?.attribution,
     };
     db.prepare(
       "INSERT INTO feed_cache VALUES('muf-contours',?,?) ON CONFLICT(name) DO UPDATE SET value=excluded.value,fetched=excluded.fetched",
@@ -106,12 +111,10 @@ export function installMufContours(app, db, { isOffline = () => false } = {}) {
     const row = cached();
     if (isOffline()) {
       if (row) return res.json(view(row.value, true));
-      return res
-        .status(503)
-        .json({
-          error:
-            "Offline: no saved MUF contours. Connect once to download modeled contour lines.",
-        });
+      return res.status(503).json({
+        error:
+          "Offline: no saved MUF contours. Connect once to download modeled contour lines.",
+      });
     }
     if (row && Date.now() - row.fetched < 300000)
       return res.json(view(row.value));
@@ -123,12 +126,10 @@ export function installMufContours(app, db, { isOffline = () => false } = {}) {
       res.json(view(await pending, isOffline()));
     } catch {
       if (row) return res.json(view(row.value, true));
-      res
-        .status(502)
-        .json({
-          error:
-            "Modeled MUF contour lines are unavailable. Station points are a separate observation feed.",
-        });
+      res.status(502).json({
+        error:
+          "Modeled MUF contour lines are unavailable. Station points are a separate observation feed.",
+      });
     }
   });
 }

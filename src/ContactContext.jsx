@@ -95,8 +95,8 @@ export default function ContactContext({ place, error, home }) {
                 {current.cloud_cover ?? "—"}%
               </small>
               <small className="weather-credit">
-                {weather.data.stale ? "Cached / stale · " : ""}Open-Meteo model
-                ·{" "}
+                {weather.data.stale ? "Cached / stale · " : ""}
+                {weather.data.source || "Open-Meteo model"}·{" "}
                 {Number.isFinite(current.time) &&
                 Math.abs(current.time) < 8.64e12
                   ? new Intl.DateTimeFormat("en-GB", {

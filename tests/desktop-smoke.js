@@ -19,7 +19,7 @@ async function launch() {
     env: { ...process.env, OAR_SERVER_URL: "", OAR_DEV_URL: "" },
   });
   const page = await electron.firstWindow();
-  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("pageerror", (e) => { errors.push(e.message); console.error('Desktop renderer:',e.stack); });
   await page
     .getByRole("heading", { name: "Good to have you on air." })
     .waitFor();

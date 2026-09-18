@@ -1,4 +1,5 @@
 import { imageDimensions } from "../shared/media.js";
+import { validateContacts } from "../shared/profile.js";
 const limits = {
   name: 120,
   manufacturer: 120,
@@ -140,21 +141,20 @@ export function installAccount(
     "/api/account",
     requireUser,
     handler((req, res) => {
-      const v = fields(req.body, {
-        name: 80,
-        firstName: 80,
-        lastName: 80,
-        mobile: 40,
-        email: 254,
-        address: 500,
-        grid: 6,
-        bio: 500,
-      });
-      if (
-        !v.name ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email) ||
-        (v.grid && !/^[A-R]{2}\d{2}([A-X]{2})?$/i.test(v.grid))
-      )
+      const v = validateContacts(
+        fields(req.body, {
+          name: 80,
+          firstName: 80,
+          lastName: 80,
+          mobile: 40,
+          mobileCountry: 2,
+          email: 254,
+          address: 500,
+          grid: 6,
+          bio: 500,
+        }),
+      );
+      if (!v.name || (v.grid && !/^[A-R]{2}\d{2}([A-X]{2})?$/i.test(v.grid)))
         throw Error("Check your display name, email and optional grid.");
       db.exec("BEGIN");
       try {

@@ -1,0 +1,92 @@
+.oar-tooltip[popover] {
+  margin: 0;
+  inset: auto;
+}
+.action-toast {
+  position: fixed;
+  inset: auto 16px 42px auto;
+  margin: 0;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 70px);
+  overflow: auto;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 18px;
+  box-shadow: 0 8px 40px #0008;
+  font-size: 13px;
+}
+.action-toast p {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.action-toast progress {
+  display: block;
+  width: 100%;
+  accent-color: var(--accent);
+}
+.action-toast a {
+  color: var(--accent);
+}
+.sources-editor textarea {
+  width: 100%;
+  min-height: 45vh;
+  resize: vertical;
+  font: 12px/1.6 monospace;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.sources-editor > small {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-bottom: 8px;
+}
+.license-content {
+  max-height: 60vh;
+  overflow: auto;
+}
+.license-content pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.license-content details {
+  margin: 8px 0;
+}
+.about-tabs ~ [role="tabpanel"] a > svg {
+  display: inline;
+  vertical-align: middle;
+}
+.mobile-fields {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(120px, 1fr);
+  gap: 8px;
+}
+.mobile-fields select {
+  width: 100%;
+  min-width: 0;
+}
+.profile-field-mobile {
+  grid-column: 1 / -1;
+}
+.location-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.location-heading-actions > .location-title {
+  flex: 1;
+}
+.location-heading-actions h3 {
+  margin-bottom: 0;
+}
+.location-title-row {
+  align-items: flex-start;
+}
+@media (max-width: 640px) {
+  .action-toast {
+    bottom: 78px;
+  }
+}

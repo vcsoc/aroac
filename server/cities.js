@@ -89,8 +89,12 @@ export function installCities(
               name,
               region: p.state || "",
               country: p.country || "",
+              countryCode: String(
+                p.countrycode || p.country_code || "",
+              ).toUpperCase(),
               kind: "mapped",
-              source: "Photon / OpenStreetMap",
+              source:
+                response.oarSource?.attribution || "Photon / OpenStreetMap",
             };
             db?.prepare("INSERT OR REPLACE INTO place_cache VALUES(?,?,?)").run(
               key,
@@ -126,18 +130,17 @@ export function installCities(
         name: best[0],
         region: best[2],
         country: country(best[1]),
+        countryCode: best[1],
         distanceKm: 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, min))),
         kind: "nearest",
         source: "GeoNames · CC BY 4.0",
         offline: isOffline(),
       });
     } catch {
-      res
-        .status(503)
-        .json({
-          error:
-            "Place name unavailable. Coordinates and timezone remain available.",
-        });
+      res.status(503).json({
+        error:
+          "Place name unavailable. Coordinates and timezone remain available.",
+      });
     }
   });
   app.get("/api/cities", async (req, res) => {

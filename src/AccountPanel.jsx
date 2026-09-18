@@ -11,6 +11,7 @@ import {
 import { api, post } from "./lib";
 import { confirmAction, Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
+import PrivateContacts from "./PrivateContacts";
 import { imageDimensions } from "../shared/media";
 const imageUrl = (a) => (a ? `data:${a.mime};base64,${a.data}` : null);
 export default function AccountPanel({
@@ -19,6 +20,7 @@ export default function AccountPanel({
   onUser,
   onLogout,
   initial = "summary",
+  home,
 }) {
   const ref = useRef(),
     file = useRef(),
@@ -239,8 +241,6 @@ export default function AccountPanel({
                         ["firstName", "First name", 80],
                         ["lastName", "Last name", 80],
                         ["name", "Display name (local directory)", 80],
-                        ["mobile", "Mobile number", 40],
-                        ["email", "Email address", 254],
                         ["address", "Address", 500],
                         ["grid", "Maidenhead grid (optional)", 6],
                       ].map(([key, label, max]) => (
@@ -261,6 +261,15 @@ export default function AccountPanel({
                           />
                         </label>
                       ))}
+                      <PrivateContacts
+                        key={JSON.stringify([
+                          account.mobile,
+                          account.mobileCountry,
+                          account.email,
+                        ])}
+                        account={account}
+                        home={home}
+                      />
                     </div>
                     <label>
                       About your station

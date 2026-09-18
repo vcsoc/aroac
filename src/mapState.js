@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, post } from "./lib";
+import { useSourceRevision } from "./sourceEvents";
 export const NO_REPEATERS = [];
 export function usePreference(key, fallback = false) {
   const [value, setValue] = useState(() => {
@@ -73,6 +74,7 @@ export function usePins() {
   return { pins, error, create, update, remove, reload };
 }
 export function useRepeaters(enabled) {
+  const sourceRevision = useSourceRevision();
   const [value, setValue] = useState(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(false),
@@ -96,6 +98,6 @@ export function useRepeaters(enabled) {
     return () => {
       generation.current++;
     };
-  }, [enabled, load]);
+  }, [enabled, load, sourceRevision]);
   return { value, error, loading, refresh: () => load(true) };
 }

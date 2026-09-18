@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSources } from "./Sources";
 import * as maplibregl from "maplibre-gl";
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 // MapLibre 6 cannot infer a worker URL from an app-bundled/custom-protocol module.
@@ -52,6 +53,7 @@ export default function WorldMap({
   onContext,
   onContextClose,
 }) {
+  const sources = useSources();
   const host = useRef(),
     map = useRef(),
     callback = useRef(onSelect),
@@ -116,16 +118,21 @@ export default function WorldMap({
         }),
         style: {
           version: 8,
-          glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+          glyphs:
+            sources.mapGlyphs?.url ||
+            "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
           projection: { type: preferences.globe ? "globe" : "mercator" },
           sources: {
             earth: {
               type: "raster",
               tiles: [
-                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                sources.mapRaster?.url ||
+                  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
               ],
               tileSize: 256,
-              attribution: "Imagery © Esri, Maxar, Earthstar Geographics",
+              attribution:
+                sources.mapRaster?.attribution ||
+                "Imagery © Esri, Maxar, Earthstar Geographics",
             },
             zones: { type: "geojson", data: meridians },
             night: {
@@ -255,6 +262,18 @@ export default function WorldMap({
       previousProjection.current = null;
     };
   }, []);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready) return;
+    if (sources.mapRaster) {
+      const source = m.getSource("earth");
+      if (source) {
+        source.attribution = sources.mapRaster.attribution;
+        source.setTiles([sources.mapRaster.url]);
+      }
+    }
+    if (sources.mapGlyphs) m.setGlyphs(sources.mapGlyphs.url);
+  }, [ready, sources.mapRaster, sources.mapGlyphs]);
   useEffect(() => {
     if (map.current)
       map.current.getCanvas().style.cursor = movingPinId ? "crosshair" : "";

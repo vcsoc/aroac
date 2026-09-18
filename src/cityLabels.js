@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSources } from "./Sources";
 export const CITY_LAYERS = [
   "cities-world",
   "cities-regional",
@@ -6,6 +7,7 @@ export const CITY_LAYERS = [
   "cities-neighbourhood",
 ];
 export function useCityLabels(mapRef, ready, enabled, host) {
+  const sources = useSources();
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
@@ -13,8 +15,10 @@ export function useCityLabels(mapRef, ready, enabled, host) {
     if (!enabled) return;
     map.addSource("city-names", {
       type: "vector",
-      url: "https://tiles.openfreemap.org/planet",
-      attribution: "© OpenStreetMap contributors · OpenFreeMap",
+      url: sources.mapVector?.url || "https://tiles.openfreemap.org/planet",
+      attribution:
+        sources.mapVector?.attribution ||
+        "© OpenStreetMap contributors · OpenFreeMap",
     });
     const tiers = [
       { min: 0, max: 5, rank: 3, classes: ["city"] },
@@ -85,5 +89,5 @@ export function useCityLabels(mapRef, ready, enabled, host) {
       for (const id of CITY_LAYERS) if (map.getLayer(id)) map.removeLayer(id);
       if (map.getSource("city-names")) map.removeSource("city-names");
     };
-  }, [ready, enabled]);
+  }, [ready, enabled, sources.mapVector]);
 }

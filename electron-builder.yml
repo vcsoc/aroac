@@ -11,11 +11,17 @@ files:
   - shared/roadmap.js
   - LICENSE
   - roadmap.md
+  - sources.yaml
   - data/cities.json
   - data/README.md
   - public/icon-512.png
   - package.json
   - "!node_modules/**"
+publish:
+  provider: github
+  owner: vcsoc
+  repo: oar
+  releaseType: release
 linux:
   syncDesktopName: true
   icon: public/icon-512.png

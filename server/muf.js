@@ -72,7 +72,11 @@ export function mufView(
     offline,
   };
 }
-export function installMuf(app, db, { isOffline = () => false } = {}) {
+export function installMuf(
+  app,
+  db,
+  { isOffline = () => false, fetcher = fetch } = {},
+) {
   let pending;
   const saved = () => {
     const row = db
@@ -86,7 +90,7 @@ export function installMuf(app, db, { isOffline = () => false } = {}) {
     }
   };
   const download = async () => {
-    const response = await fetch(MUF_SOURCE, {
+    const response = await fetcher(MUF_SOURCE, {
       signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw Error("MUF provider unavailable");
@@ -109,7 +113,8 @@ export function installMuf(app, db, { isOffline = () => false } = {}) {
     if (!observations.length) throw Error("No valid MUF observations received");
     const value = {
       observations,
-      source: MUF_SOURCE,
+      source: response.oarSource?.url || MUF_SOURCE,
+      attribution: response.oarSource?.attribution,
       fetchedAt: new Date().toISOString(),
     };
     db.prepare(

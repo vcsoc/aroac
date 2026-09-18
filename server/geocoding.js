@@ -74,11 +74,9 @@ export function installGeocoding(
       ? JSON.parse(cached.results).find((r) => r.id === req.body.resultId)
       : null;
     if (!result)
-      return res
-        .status(400)
-        .json({
-          error: "Search for the address again before correcting its position.",
-        });
+      return res.status(400).json({
+        error: "Search for the address again before correcting its position.",
+      });
     const value = {
       ...result,
       providerLat: result.lat,
@@ -138,11 +136,17 @@ export function installGeocoding(
         signal: AbortSignal.timeout(12000),
       });
       if (!response.ok) throw Error("Address provider unavailable");
-      const results = addressResults(await response.json());
+      const results = addressResults(await response.json()).map((result) => ({
+        ...result,
+        locationSource: response.oarSource?.attribution || source,
+      }));
       db.prepare(
         "INSERT INTO geocode_cache VALUES(?,?,?) ON CONFLICT(query) DO UPDATE SET results=excluded.results,fetched=excluded.fetched",
       ).run(key, JSON.stringify(results), Date.now());
-      res.json({ results: corrected(key, results), source });
+      res.json({
+        results: corrected(key, results),
+        source: response.oarSource?.attribution || source,
+      });
     } catch {
       if (cached)
         return res.json({

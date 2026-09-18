@@ -86,8 +86,8 @@ export function installRepeaters(
     const fetched = Date.now(),
       value = {
         repeaters,
-        source: "hearham.com",
-        sourceUrl: SOURCE,
+        source: response.oarSource?.attribution || "hearham.com",
+        sourceUrl: response.oarSource?.url || SOURCE,
         fetchedAt: new Date(fetched).toISOString(),
         providerCount: rows.length,
         omitted: rows.length - repeaters.length,
@@ -108,12 +108,10 @@ export function installRepeaters(
     if (isOffline())
       return cached
         ? res.json({ ...cached, cached: true, offline: true, stale: true })
-        : res
-            .status(503)
-            .json({
-              error:
-                "No repeater directory is saved yet. Go online once to download it; it will then be available offline.",
-            });
+        : res.status(503).json({
+            error:
+              "No repeater directory is saved yet. Go online once to download it; it will then be available offline.",
+          });
     if (
       cached &&
       Date.now() - saved.fetched < (req.query.refresh === "1" ? 60000 : DAY)
@@ -127,12 +125,10 @@ export function installRepeaters(
       res.json(await inFlight);
     } catch {
       if (cached) return res.json({ ...cached, cached: true, stale: true });
-      res
-        .status(502)
-        .json({
-          error:
-            "Repeater directory unavailable. No repeater positions have been invented. Please try again later.",
-        });
+      res.status(502).json({
+        error:
+          "Repeater directory unavailable. No repeater positions have been invented. Please try again later.",
+      });
     }
   });
 }

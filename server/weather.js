@@ -29,12 +29,10 @@ export function installWeather(
     if (isOffline())
       return cached
         ? res.json(fallback())
-        : res
-            .status(503)
-            .json({
-              error:
-                "No saved weather for this location. Connect once to download it.",
-            });
+        : res.status(503).json({
+            error:
+              "No saved weather for this location. Connect once to download it.",
+          });
     if (cached && Date.now() - cached.fetched < 15 * 60_000)
       return res.json(JSON.parse(cached.payload));
     try {
@@ -69,7 +67,8 @@ export function installWeather(
             const value = {
               ...data,
               fetchedAt: new Date().toISOString(),
-              source: "Open-Meteo",
+              source: response.oarSource?.attribution || "Open-Meteo",
+              sourceUrl: response.oarSource?.url,
               stale: false,
             };
             db.prepare(
@@ -85,14 +84,12 @@ export function installWeather(
     } catch (e) {
       if (cached) res.json(fallback());
       else
-        res
-          .status(503)
-          .json({
-            error:
-              e.message === "Weather provider unavailable."
-                ? e.message
-                : "Weather could not be downloaded. Try again when online.",
-          });
+        res.status(503).json({
+          error:
+            e.message === "Weather provider unavailable."
+              ? e.message
+              : "Weather could not be downloaded. Try again when online.",
+        });
     }
   });
 }

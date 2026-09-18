@@ -1,4 +1,5 @@
 import express from "express";
+import { installSources } from "./sources.js";
 import { installGeocoding } from "./geocoding.js";
 import { installCities } from "./cities.js";
 import { installAccount } from "./account.js";
@@ -39,6 +40,10 @@ const publicUser = (u) =>
 export function createApp({
   dbPath = "data/oar.sqlite",
   citiesPath,
+  sourcesPath,
+  defaultSourcesPath,
+  sourceFetcher,
+  apiRateLimit = 240,
   secure = process.env.COOKIE_SECURE === "true",
   localKey,
   isOffline = () => false,
@@ -84,6 +89,7 @@ export function createApp({
     express.json({ limit: "8mb" }),
   );
   app.use("/api/devices", express.json({ limit: "64kb" }));
+  app.use("/api/sources", express.json({ limit: "256kb" }));
   app.use(express.json({ limit: "16kb" }));
   app.use("/api", (req, res, next) => {
     res.set("Cache-Control", "no-store");
@@ -103,7 +109,7 @@ export function createApp({
     "/api",
     rateLimit({
       windowMs: 60000,
-      limit: 240,
+      limit: apiRateLimit,
       message: {
         error: "Too many requests. Please wait a minute and try again.",
       },
@@ -441,7 +447,18 @@ export function createApp({
     iss: "https://api.wheretheiss.at/v1/satellites/25544",
     radar: "https://api.rainviewer.com/public/weather-maps.json",
   };
+  const sourceConfig = installSources(app, db, {
+    sourcesPath,
+    defaultSourcesPath,
+    isOffline,
+    fetcher: sourceFetcher,
+  });
   const cache = new Map();
+  sourceConfig.onChange(() => cache.clear());
+  app.use("/api", (_req, _res, next) => {
+    sourceConfig.refresh();
+    next();
+  });
   app.get("/api/feeds/:name", async (req, res) => {
     const name = req.params.name;
     if (!feeds[name]) return fail(res, 404, "Unknown feed");
@@ -467,14 +484,15 @@ export function createApp({
     if (item && Date.now() - item.time < (name === "iss" ? 15000 : 300000))
       return res.json(item.value);
     try {
-      const response = await fetch(feeds[name], {
+      const response = await sourceConfig.fetch(feeds[name], {
         signal: AbortSignal.timeout(10000),
       });
       if (!response.ok) throw new Error("Upstream unavailable");
       const data = await response.json();
       const value = {
         data,
-        source: feeds[name],
+        source: response.oarSource?.url || feeds[name],
+        attribution: response.oarSource?.attribution,
         fetchedAt: new Date().toISOString(),
       };
       const fetched = Date.now();
@@ -488,15 +506,20 @@ export function createApp({
       fail(res, 502, "Live source unavailable; try again shortly");
     }
   });
-  installMuf(app, db, { isOffline });
-  installMufContours(app, db, { isOffline });
+  installMuf(app, db, { isOffline, fetcher: sourceConfig.fetch });
+  installMufContours(app, db, { isOffline, fetcher: sourceConfig.fetch });
   installPins(app, db);
-  installCities(app, { citiesPath, db, isOffline });
+  installCities(app, {
+    citiesPath,
+    db,
+    isOffline,
+    fetcher: sourceConfig.fetch,
+  });
   installWorkspace(app, db);
-  installWeather(app, db, { isOffline });
+  installWeather(app, db, { isOffline, fetcher: sourceConfig.fetch });
   installLibrary(app, db);
-  installRepeaters(app, db, { isOffline });
-  installGeocoding(app, db, { isOffline });
+  installRepeaters(app, db, { isOffline, fetcher: sourceConfig.fetch });
+  installGeocoding(app, db, { isOffline, fetcher: sourceConfig.fetch });
   app.use("/api", (req, res) => fail(res, 404, "API route not found"));
   app.use(express.static(path.resolve("dist")));
   app.get("/{*path}", (req, res) =>

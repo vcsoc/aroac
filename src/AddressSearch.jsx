@@ -120,7 +120,8 @@ export default function AddressSearch({ onSelect, onClear, onSavedSelect }) {
       setMessage(
         data.results.length
           ? (data.cached ? "Saved results · " : "") +
-              "Photon / OpenStreetMap · address positions may be approximate"
+              (data.source || "Photon / OpenStreetMap") +
+              " · address positions may be approximate"
           : "No matching address. Include the city and country.",
       );
     } catch (e) {

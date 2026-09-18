@@ -37,6 +37,9 @@ import LinkPlanner from "./LinkPlanner";
 import Tutorial from "./Tutorial";
 import { toast, ToastHost } from "./Toasts";
 import { APP_VERSION } from "./version";
+import SourcesEditor, { SourceHost } from "./Sources";
+import UpdateNotice, { checkForUpdates } from "./Updates";
+import { useSourceRevision } from "./sourceEvents";
 import {
   AboutOAR,
   Help,
@@ -85,6 +88,7 @@ const nav = [
   ["logbook", "Logbook", BookOpen],
 ];
 export function useFeed(name, interval = 300000) {
+  const sourceRevision = useSourceRevision();
   const [value, setValue] = useState(null),
     [error, setError] = useState("");
   useEffect(() => {
@@ -106,7 +110,7 @@ export function useFeed(name, interval = 300000) {
       live = false;
       clearInterval(id);
     };
-  }, [name, interval]);
+  }, [name, interval, sourceRevision]);
   return { value, error };
 }
 function ImageFeed({ title, subtitle, url, source }) {
@@ -385,7 +389,7 @@ export default function App() {
     [leftOpen, setLeftOpen] = useState(
       () => localStorage.getItem("oar-left-pinned") === "true",
     ),
-    [selectedLocation, setSelectedLocation] = useState(null),
+    [selectedLocations, setSelectedLocations] = useState([]),
     [clockEdit, setClockEdit] = useState(null),
     [clockOffset, setClockOffset] = useState(0),
     [settingsOpen, setSettingsOpen] = useState(null),
@@ -471,7 +475,14 @@ export default function App() {
       document.documentElement.style.setProperty(key, value);
   }, [theme]);
   const showLocation = (location) => {
-    setSelectedLocation(withTimezone(location));
+    setSelectedLocations((items) => [
+      ...items.filter((item) => item.locked),
+      {
+        key: crypto.randomUUID(),
+        place: withTimezone(location),
+        locked: false,
+      },
+    ]);
     setLeftOpen(true);
   };
   const [grey, setGrey] = usePreference("oar-grey", true),
@@ -510,10 +521,7 @@ export default function App() {
   const selectedRepeater =
     matches.find((r) => r.id === activeRepeaterId) || matches[0];
   useEffect(() => {
-    if (mapLocation && !mapLocation.focusOnly) {
-      setSelectedLocation(withTimezone(mapLocation));
-      setLeftOpen(true);
-    }
+    if (mapLocation && !mapLocation.focusOnly) showLocation(mapLocation);
   }, [mapLocation]);
   useEffect(() => {
     if (!["dashboard", "atlas"].includes(page) && !leftPinned)
@@ -522,7 +530,7 @@ export default function App() {
   const closeContext = useCallback(() => setMapContext(null), []);
   const toggleDrawer = (kind) =>
     kind === "settings"
-      ? setSettingsOpen("Map")
+      ? setSettingsOpen("Sources")
       : setDrawer((current) =>
           current === kind && !rightPinned ? null : kind,
         );
@@ -536,7 +544,7 @@ export default function App() {
     setPage("atlas");
     setActivePinId(pin.id);
   };
-  const createPin = async (data) => {
+  const createPin = async (data, { select = true } = {}) => {
     const where = withTimezone(data);
     const pin = await pinStore.create({
       label: data.label || data.title || "Location " + where.grid.toUpperCase(),
@@ -545,7 +553,8 @@ export default function App() {
       lat: data.lat,
       lng: data.lng,
     });
-    selectPin(pin);
+    if (select) selectPin(pin);
+    else setActivePinId(pin.id);
     toast(
       `Saved location “${pin.label}” to your device at ${pin.lat.toFixed(5)}°, ${pin.lng.toFixed(5)}°.`,
     );
@@ -797,6 +806,7 @@ export default function App() {
             {user && accountMenu && (
               <AccountMenu
                 onClose={() => setAccountMenu(false)}
+                onUpdates={checkForUpdates}
                 onTutorial={startTutorial}
                 onEdit={() => setAccountScreen("profile")}
                 onAbout={() => setAboutOpen(true)}
@@ -1046,16 +1056,37 @@ export default function App() {
         setPinned={setLeftPinned}
         onClose={() => setLeftOpen(false)}
         home={timeSettings.value.home}
-        selected={selectedLocation}
+        selected={selectedLocations}
+        onLock={(key) =>
+          setSelectedLocations((items) => {
+            const item = items.find((i) => i.key === key);
+            if (!item?.locked && items.filter((i) => i.locked).length >= 20) {
+              toast(
+                "You can temporarily pin up to 20 selected locations. Unpin or close one first.",
+              );
+              return items;
+            }
+            return items.map((i) =>
+              i.key === key ? { ...i, locked: !i.locked } : i,
+            );
+          })
+        }
         hoveredPin={hoveredPin}
-        onDismiss={() => setSelectedLocation(null)}
+        onDismiss={(key) =>
+          setSelectedLocations((items) => items.filter((i) => i.key !== key))
+        }
         pins={pinStore.pins}
-        onCorrect={(place) => {
+        onCorrect={(place, key) => {
           const location = withTimezone(place);
+          setSelectedLocations((items) =>
+            items.map((i) => (i.key === key ? { ...i, place: location } : i)),
+          );
           setMapLocation(location);
           setSearchLocation(location);
         }}
-        onSave={(p) => createPin(p).catch((e) => setNotice(e.message))}
+        onSave={(p) =>
+          createPin(p, { select: false }).catch((e) => setNotice(e.message))
+        }
         onStation={
           user
             ? async (place) => {
@@ -1113,22 +1144,7 @@ export default function App() {
           initialTab={settingsOpen}
           onClose={() => setSettingsOpen(null)}
           tabs={{
-            Map: (
-              <>
-                <p>
-                  Map layer switches have moved to Quick Switch beside the
-                  settings icon.
-                </p>
-                <button
-                  onClick={() => {
-                    setSettingsOpen(null);
-                    setQuickOpen(true);
-                  }}
-                >
-                  Open Quick Switch
-                </button>
-              </>
-            ),
+            Sources: <SourcesEditor />,
             Login: <LoginSettings />,
             Appearance: appearanceSettings.ready ? (
               <AppearanceSettings
@@ -1357,6 +1373,8 @@ export default function App() {
             : "Set up your station"}
         </span>
       </div>
+      <SourceHost home={timeSettings.value.home} />
+      <UpdateNotice />
       <ToastHost />
       <ConfirmationHost />
       {tutorialOpen && (
@@ -1369,6 +1387,7 @@ export default function App() {
         <AccountPanel
           key={user.id}
           initial={accountScreen}
+          home={timeSettings.value.home}
           user={user}
           onUser={setUser}
           onClose={() => setAccountScreen(null)}

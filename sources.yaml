@@ -1,0 +1,86 @@
+# OAR source configuration, schema 1.
+# '*' applies in every country. To prefer a compatible country-specific provider,
+# add another entry of the SAME kind/adapter with countries: [CA] (ISO alpha-2).
+# Order defines fallback priority within each country. Keep a global fallback.
+# URLs alone cannot adapt a different API schema. Do not put passwords in this file.
+# This is a catalog of supported providers, not an exhaustive list of all providers.
+version: 1
+sources:
+  - id: open-meteo
+    kind: weather
+    adapter: open-meteo
+    countries: ['*']
+    url: https://api.open-meteo.com/v1/forecast
+    attribution: Open-Meteo model forecasts (CC BY 4.0)
+  - id: rainviewer
+    kind: radar
+    adapter: rainviewer
+    countries: ['*']
+    url: https://api.rainviewer.com/public/weather-maps.json
+    attribution: RainViewer
+  - id: kc2g-stations
+    kind: muf
+    adapter: giro-stations
+    countries: ['*']
+    url: https://prop.kc2g.com/api/stations.json
+    attribution: KC2G / GIRO ionosonde observations
+  - id: kc2g-contours
+    kind: mufContours
+    adapter: muf-geojson
+    countries: ['*']
+    url: https://prop.kc2g.com/renders/current/mufd-normal-now.geojson
+    attribution: KC2G modeled MUF contours
+  - id: hearham
+    kind: repeaters
+    adapter: hearham
+    countries: ['*']
+    url: https://hearham.com/api/repeaters/v1
+    attribution: hearham.com repeater directory
+  - id: noaa-kp
+    kind: kp
+    adapter: noaa-kp
+    countries: ['*']
+    url: https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json
+    attribution: NOAA SWPC
+  - id: noaa-solar
+    kind: solar
+    adapter: noaa-flux
+    countries: ['*']
+    url: https://services.swpc.noaa.gov/json/f107_cm_flux.json
+    attribution: NOAA SWPC
+  - id: iss
+    kind: iss
+    adapter: wheretheiss
+    countries: ['*']
+    url: https://api.wheretheiss.at/v1/satellites/25544
+    attribution: Where the ISS at
+  - id: photon-search
+    kind: geocoding
+    adapter: photon
+    countries: ['*']
+    url: https://photon.komoot.io/api/
+    attribution: Photon / OpenStreetMap
+  - id: photon-reverse
+    kind: reverseGeocoding
+    adapter: photon
+    countries: ['*']
+    url: https://photon.komoot.io/reverse
+    attribution: Photon / OpenStreetMap
+  - id: esri-imagery
+    kind: mapRaster
+    adapter: xyz-raster
+    countries: ['*']
+    url: https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}
+    attribution: Imagery © Esri, Maxar, Earthstar Geographics
+  - id: openfreemap-vector
+    kind: mapVector
+    adapter: openmaptiles
+    countries: ['*']
+    url: https://tiles.openfreemap.org/planet
+    attribution: © OpenStreetMap contributors · OpenFreeMap
+  - id: openfreemap-fonts
+    kind: mapGlyphs
+    adapter: maplibre-glyphs
+    countries: ['*']
+    url: https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf
+    attribution: Noto Sans / OpenFreeMap

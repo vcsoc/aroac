@@ -14,6 +14,7 @@ export default defineConfig({
   webServer: {
     command: "npm run dev",
     env: {
+      NODE_ENV: "test",
       DATABASE_PATH: "data/browser-tests.sqlite",
       PORT: "3002",
       VITE_PORT: "5174",

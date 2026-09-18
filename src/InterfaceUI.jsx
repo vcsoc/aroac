@@ -1,9 +1,25 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { CircleHelp, Minus, Square, X } from "lucide-react";
+import { CircleHelp, Github, Minus, Square, X } from "lucide-react";
 import Roadmap from "./Roadmap";
+import LicenseView from "./LicenseView";
 import { APP_VERSION } from "./version";
 
+function Tooltip({ children, ...props }) {
+  const ref = useRef();
+  useEffect(() => {
+    const el = ref.current;
+    el.showPopover();
+    return () => {
+      if (el.matches(":popover-open")) el.hidePopover();
+    };
+  }, []);
+  return (
+    <span ref={ref} popover="manual" {...props}>
+      {children}
+    </span>
+  );
+}
 export function Help({ children, label = "More information" }) {
   const id = useId(),
     ref = useRef();
@@ -53,10 +69,15 @@ export function Help({ children, label = "More information" }) {
       </button>
       {position &&
         createPortal(
-          <span id={id} className="oar-tooltip" role="tooltip" style={position}>
+          <Tooltip
+            id={id}
+            className="oar-tooltip"
+            role="tooltip"
+            style={position}
+          >
             {children}
-          </span>,
-          ref.current.closest("dialog") || document.body,
+          </Tooltip>,
+          ref.current.closest("dialog,[popover]") || document.body,
         )}
     </span>
   );
@@ -153,6 +174,7 @@ export function AboutOAR({ onClose, offline }) {
         {[
           ["about", "About"],
           ["roadmap", "Roadmap"],
+          ["license", "License"],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -169,10 +191,12 @@ export function AboutOAR({ onClose, offline }) {
                   e.key === "Home"
                     ? "about"
                     : e.key === "End"
-                      ? "roadmap"
-                      : tab === "about"
-                        ? "roadmap"
-                        : "about";
+                      ? "license"
+                      : ["about", "roadmap", "license"][
+                          (["about", "roadmap", "license"].indexOf(tab) +
+                            (e.key === "ArrowRight" ? 1 : 2)) %
+                            3
+                        ];
                 setTab(next);
                 document.getElementById("about-tab-" + next)?.focus();
               }
@@ -190,6 +214,8 @@ export function AboutOAR({ onClose, offline }) {
       >
         {tab === "roadmap" ? (
           <Roadmap offline={offline} />
+        ) : tab === "license" ? (
+          <LicenseView />
         ) : (
           <>
             <p>
@@ -197,7 +223,14 @@ export function AboutOAR({ onClose, offline }) {
             </p>
             <p>Your local-first amateur radio workspace.</p>
             <p>
-              Developed by <strong>Chris Visser</strong>
+              Developed by{" "}
+              <a
+                href="https://github.com/vcsoc"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <strong>Chris Visser</strong>
+              </a>
             </p>
             <p>
               <a
@@ -205,7 +238,7 @@ export function AboutOAR({ onClose, offline }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                github.com/vcsoc/oar
+                <Github size={15} aria-hidden="true" /> github.com/vcsoc/oar
               </a>
             </p>
           </>
@@ -242,6 +275,7 @@ export function AccountMenu({
   onAbout,
   onLogout,
   onTutorial,
+  onUpdates,
   onClose,
 }) {
   const ref = useRef();
@@ -305,6 +339,7 @@ export function AccountMenu({
       {[
         ["Edit Profile", onEdit],
         ["About OAR", onAbout],
+        ["Check for updates", onUpdates],
         ["Logout", onLogout],
       ].map(([label, action]) => (
         <button

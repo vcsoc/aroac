@@ -11,6 +11,15 @@ written consent from Chris Visser ([vcsoc](https://github.com/vcsoc)). Third-par
 components retain their own licenses. Future versions may use different terms;
 see the license for details.
 
+## Version 0.3.10
+
+- Startup update checks and **Callsign → Check for updates**. A persistent update toast offers Update and restart, Later, or Skip this version; explicit checks can re-offer a skipped version. Downloads use the matching OS/architecture/package metadata and SHA-512 integrity verification. Before installation OAR backs up SQLite and `sources.yaml`; Linux also keeps a hidden executable recovery copy beside the AppImage. Install 0.3.10 manually to bootstrap updates from older versions. Linux AppImage updates are distro-independent; tar archives, distro packages and development runs cannot self-install. Windows NSIS and macOS updater code remains untested here and needs appropriately signed, tested platform assets. No newer production version was available for a live end-to-end upgrade during this release's testing.
+- **Settings → Sources** edits the per-user `sources.yaml`. The repository YAML supplies defaults for supported weather/forecast, radar, MUF, repeater, geocoding, map and observation adapters. `countries: ['*']` covers every country; compatible country-specific entries take priority, followed by global fallbacks. This is not an exhaustive worldwide provider directory and arbitrary API formats need new adapters. Weather routes by requested coordinates; other feeds/maps use home country. Boundaries are approximate (country-coder); users can manually choose their mobile country.
+- Source edits are syntax/schema checked before activation, direct file edits are polled, and the last valid configuration is retained in SQLite. Invalid edits offer Reset config / Ignore. Reset downloads the fixed GitHub `main/sources.yaml`; offline, unavailable or incompatible remote content falls back to bundled defaults. Compatible endpoints use public HTTPS hosts, bounded responses and no redirects; credentials/private hosts are not supported. Keep provider attribution and comply with provider terms. Map sources refresh immediately and active data feeds reload after configuration changes. Feed adapters try country-specific endpoints followed by global fallbacks within their request timeout; map layers select the first matching configured endpoint and report tile errors.
+- Quick Switch help uses top-layer tooltips. About includes License, developer-profile and GitHub links, dependency/font licenses, and access to bundled Chromium notices.
+- Private profile contact fields reveal on focus or hover. Country flags/calling prefixes default from known home coordinates. The optional mobile field uses the requested **10-digit** local `###-###-####` format (not a universal international-number validation rule); email is optional and syntax-checked. Masking is display-only, not encryption.
+- Selected-location headers have Save and temporary Pin controls, with expand/collapse beside each title. Up to 20 cards can be temporarily pinned while subsequent map clicks add another selection. Cards close independently; temporary pins are not saved across restarts.
+
 ## Version 0.3.9
 
 - Action notifications are themed toasts that fade out after four seconds. Saved-location and home changes identify what changed instead of saying “Saved locally.” Field validation and feed/offline status remain visible where needed.
@@ -46,11 +55,11 @@ Version **0.3.1** fixed the clock editor/search layout and adds offline search o
 ## Linux release
 
 Download the AppImage, Linux archive and SHA-256 checksums from
-[GitHub Releases — v0.3.9](https://github.com/vcsoc/oar/releases/tag/v0.3.9).
+[GitHub Releases — v0.3.10](https://github.com/vcsoc/oar/releases/tag/v0.3.10).
 Release binaries are distributed as release assets, not stored in Git history.
 
 ```text
-releases/OAR-0.3.9.AppImage
+releases/OAR-0.3.10.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
@@ -119,7 +128,7 @@ Maps/imagery and new observations normally require internet. The saved feed cach
 - **Mobile:** not a release. The old remote-server mobile approach is disabled rather than presented as a standalone implementation. iOS still needs a local SQLite adapter and testing on macOS/Xcode. Android remains blocked until a genuinely JDK-free build path is verified.
 - Specialist provider tools are embedded websites, not native/local feed integrations; website failures, login requirements and provider restrictions still apply.
 - No HF prediction engine, ISS pass/orbit predictions, rig control, push notifications or cloud sync.
-- Windows/macOS packaging is configured but has not been built/tested here. Signing, notarization and automatic updates are not configured.
+- Windows/macOS packaging is configured but has not been built/tested here. Signing and notarization are not configured. Linux AppImage updates are supported from 0.3.10 onward; other platform installers/update flows require target-platform validation.
 
 **No Java, no JDK, no .NET**, including development tooling. Legacy Android files are rejected prior work; do not build or distribute them.
 
@@ -164,8 +173,9 @@ npm run test:panels                # resizing/persistence, auto-hidden themed sc
 npm run test:items                 # read-only/edit, private saved search, grouping, context, home persistence
 npm run test:seven                 # link planner, clock colors, hover, menus, icons and responsive forecasts
 npm run test:account               # private profile/avatar/devices, password change, original invoices in PDF
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.9.AppImage" npm run test:desktop
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.9.AppImage" npm run test:guidance
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.10.AppImage" npm run test:desktop
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.10.AppImage" npm run test:guidance
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.10.AppImage" npm run test:release-ten
 npm run test:browser               # development harness / responsive UI
 npm audit
 ```
