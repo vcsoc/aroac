@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-export default function ActionToast({ children, label }) {
+export default function ActionToast({ children, label, onExpire }) {
+  const [visible, setVisible] = useState(true);
+  const expire = useRef(onExpire);
+  expire.current = onExpire;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(false);
+      expire.current?.();
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, []);
   const [target, setTarget] = useState(
     () =>
       [...document.querySelectorAll("dialog[open]")].at(-1) || document.body,
@@ -19,6 +29,7 @@ export default function ActionToast({ children, label }) {
     });
     return () => observer.disconnect();
   }, []);
+  if (!visible) return null;
   return createPortal(
     <ToastSurface
       key={target === document.body ? "body" : target.className}

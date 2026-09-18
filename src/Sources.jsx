@@ -4,6 +4,7 @@ import { parseSources } from "../shared/sourceConfig";
 import { toast } from "./Toasts";
 import { Help } from "./InterfaceUI";
 import ActionToast from "./ActionToast";
+import YamlEditor from "./YamlEditor";
 let snapshot = {},
   revision = null,
   listeners = new Set();
@@ -32,7 +33,7 @@ export async function reloadSources() {
 function Fault({ error, onIgnore, onReset }) {
   const [busy, setBusy] = useState(false);
   return (
-    <ActionToast label="Source configuration error">
+    <ActionToast label="Source configuration error" onExpire={onIgnore}>
       <strong>Source configuration needs attention</strong>
       <p>{error}</p>
       <p>
@@ -171,9 +172,7 @@ export default function SourcesEditor() {
       <small>{path}</small>
       <label>
         Sources YAML
-        <textarea
-          aria-label="Sources YAML"
-          spellCheck={false}
+        <YamlEditor
           disabled={!ready || busy}
           value={text}
           onChange={(e) => setText(e.target.value)}

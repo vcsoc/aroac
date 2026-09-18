@@ -544,24 +544,59 @@ export default function App() {
     setPage("atlas");
     setActivePinId(pin.id);
   };
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  useEffect(() => {
+    let live = true;
+    setProfilePhoto(null);
+    if (user)
+      api("/account")
+        .then((account) => {
+          if (live) setProfilePhoto({ owner: user.id, avatar: account.avatar });
+        })
+        .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [user?.id]);
+  const savingPin = useRef(false);
   const createPin = async (data, { select = true } = {}) => {
-    const where = withTimezone(data);
-    const pin = await pinStore.create({
-      label: data.label || data.title || "Location " + where.grid.toUpperCase(),
-      callsign: data.callsign || "",
-      notes: data.notes || "",
-      lat: data.lat,
-      lng: data.lng,
-    });
-    if (select) selectPin(pin);
-    else setActivePinId(pin.id);
-    toast(
-      `Saved location “${pin.label}” to your device at ${pin.lat.toFixed(5)}°, ${pin.lng.toFixed(5)}°.`,
-    );
-    setEditingPinId(pin.id);
-    setLibraryTab("pins");
-    setDrawer("pins");
-    return pin;
+    if (savingPin.current) return;
+    savingPin.current = true;
+    try {
+      // Read current records, rather than a render snapshot, before each save.
+      const existing = (await api("/pins")).find(
+        (pin) =>
+          Math.abs(pin.lat - data.lat) <= 0.00001 &&
+          Math.abs(pin.lng - data.lng) <= 0.00001,
+      );
+      if (
+        existing &&
+        !(await confirmAction(
+          `“${existing.label}” is already saved at this location. Create a duplicate?`,
+        ))
+      )
+        return;
+      const where = withTimezone(data);
+      const pin = await pinStore.create({
+        label:
+          data.label || data.title || "Location " + where.grid.toUpperCase(),
+        callsign: data.callsign || "",
+        notes: data.notes || "",
+        lat: data.lat,
+        lng: data.lng,
+      });
+      if (select) selectPin(pin);
+      else setActivePinId(pin.id);
+      toast(
+        `Saved location “${pin.label}” to your device at ${pin.lat.toFixed(5)}°, ${pin.lng.toFixed(5)}°.`,
+      );
+      setEditingPinId(pin.id);
+      setLibraryTab("pins");
+      setDrawer("pins");
+      return pin;
+    } finally {
+      savingPin.current = false;
+    }
   };
   const movePin = async (id, point) => {
     try {
@@ -801,7 +836,26 @@ export default function App() {
               onClick={() => (user ? setAccountMenu((v) => !v) : setAuth(true))}
             >
               {user?.callsign || "Sign in"}
-              <span>{user ? user.callsign.slice(0, 2) : "↗"}</span>
+              <span>
+                {user &&
+                profilePhoto?.owner === user.id &&
+                profilePhoto.avatar ? (
+                  <img
+                    src={`data:${profilePhoto.avatar.mime};base64,${profilePhoto.avatar.data}`}
+                    alt="Your profile photo"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                ) : user ? (
+                  user.callsign.slice(0, 2)
+                ) : (
+                  "↗"
+                )}
+              </span>
             </button>
             {user && accountMenu && (
               <AccountMenu
@@ -1390,6 +1444,7 @@ export default function App() {
           home={timeSettings.value.home}
           user={user}
           onUser={setUser}
+          onAvatar={(avatar) => setProfilePhoto({ owner: user.id, avatar })}
           onClose={() => setAccountScreen(null)}
           onLogout={async () => {
             await post("/logout", {});

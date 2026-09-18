@@ -29,13 +29,90 @@
 .action-toast a {
   color: var(--accent);
 }
-.sources-editor textarea {
-  width: 100%;
-  min-height: 45vh;
-  resize: vertical;
+.settings-body {
+  scrollbar-width: none;
+}
+.settings-body::-webkit-scrollbar {
+  display: none;
+}
+.settings-body:has(.sources-editor) {
+  overflow: hidden;
+}
+.sources-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 6px;
+}
+.sources-editor > label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 4px;
+}
+.sources-editor > .button-row {
+  flex-shrink: 0;
+}
+.yaml-editor {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.5ch minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
   font: 12px/1.6 monospace;
-  white-space: pre;
-  overflow-wrap: normal;
+}
+.sources-editor .yaml-editor textarea {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  padding: 8px;
+  resize: none;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+  overflow-y: auto;
+  tab-size: 2;
+  border-radius: 0;
+}
+.yaml-gutter {
+  overflow: hidden;
+  color: var(--muted);
+  opacity: 0.55;
+  user-select: none;
+  text-align: right;
+  border-right: 1px solid var(--border);
+}
+.yaml-gutter > div {
+  padding-top: 8px;
+  padding-right: 6px;
+}
+.yaml-gutter > div > div {
+  min-height: 1.6em;
+}
+.yaml-mirror {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  tab-size: 2;
+}
+.yaml-mirror > div {
+  min-height: 1.6em;
 }
 .sources-editor > small {
   display: block;

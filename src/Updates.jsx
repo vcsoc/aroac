@@ -6,6 +6,7 @@ export async function checkForUpdates() {
     return toast(
       "Updates are installed by the desktop application. Download a packaged release from github.com/vcsoc/oar/releases.",
     );
+  window.dispatchEvent(new Event("oar-update-notice"));
   try {
     await window.oarDesktop.update("check");
   } catch (e) {
@@ -14,6 +15,12 @@ export async function checkForUpdates() {
 }
 export default function UpdateNotice() {
   const [state, setState] = useState({ phase: "idle" });
+  const [noticeId, setNoticeId] = useState(0);
+  useEffect(() => {
+    const show = () => setNoticeId((id) => id + 1);
+    window.addEventListener("oar-update-notice", show);
+    return () => window.removeEventListener("oar-update-notice", show);
+  }, []);
   useEffect(() => {
     if (!window.oarDesktop?.onUpdate) return;
     let live = true;
@@ -43,7 +50,7 @@ export default function UpdateNotice() {
     }
   };
   return (
-    <ActionToast label="OAR update">
+    <ActionToast key={`${noticeId}-${state.phase}`} label="OAR update">
       <strong>
         {state.version ? "Update to OAR " + state.version : "OAR updates"}
       </strong>
@@ -51,7 +58,8 @@ export default function UpdateNotice() {
       {state.phase === "available" && (
         <p>
           Save unfinished edits first. OAR backs up your local database before
-          restarting. This notification stays until you choose.
+          restarting. This notice hides after six seconds; use Check for updates
+          to show it again.
         </p>
       )}
       {state.phase === "downloading" && (

@@ -1,8 +1,9 @@
 import { _electron, expect } from "@playwright/test";
-import { mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import assert from "node:assert/strict";
+const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 const userData = mkdtempSync(path.join(os.tmpdir(), "oar-release-ten-"));
 let app;
 try {
@@ -19,7 +20,7 @@ try {
   const page = await app.firstWindow(),
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await expect(page.locator(".app-statusbar")).toContainText("0.3.10");
+  await expect(page.locator(".app-statusbar")).toContainText(version);
   await page.evaluate(() => window.oarDesktop.setOffline(true));
   await page.evaluate(() =>
     window.oarDesktop.request("/register", {
@@ -169,7 +170,7 @@ try {
   ]);
   assert.deepEqual(errors, []);
   console.log(
-    "Release 0.3.10 native smoke passed: update control/offline handling, owned source YAML recovery, bundled dependency and Chromium licenses.",
+    `Release ${version} native smoke passed: update control/offline handling, owned source YAML recovery, bundled dependency and Chromium licenses.`,
   );
 } finally {
   await app?.close();

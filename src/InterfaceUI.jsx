@@ -83,11 +83,12 @@ export function Help({ children, label = "More information" }) {
   );
 }
 
-export function Modal({ title, children, onClose }) {
+export function Modal({ title, children, onClose, defaultFocusRef }) {
   const ref = useRef();
   useEffect(() => {
     const previous = document.activeElement;
     ref.current.showModal();
+    defaultFocusRef?.current?.focus();
     return () => {
       previous?.focus();
     };
@@ -96,6 +97,18 @@ export function Modal({ title, children, onClose }) {
     <dialog
       ref={ref}
       className="oar-dialog"
+      onKeyDown={(e) => {
+        if (
+          defaultFocusRef &&
+          ["Enter", " "].includes(e.key) &&
+          !e.target.closest(
+            "button, a, input, select, textarea, [contenteditable]",
+          )
+        ) {
+          e.preventDefault();
+          if (!e.repeat) defaultFocusRef.current?.click();
+        }
+      }}
       onCancel={(e) => {
         e.preventDefault();
         onClose();
@@ -124,11 +137,12 @@ let queue = [],
   notify = () => {};
 export function confirmAction(message) {
   return new Promise((resolve) => {
-    queue.push({ message, resolve });
+    queue.push({ message, resolve, id: crypto.randomUUID() });
     notify();
   });
 }
 export function ConfirmationHost() {
+  const defaultButton = useRef();
   const [, refresh] = useState(0);
   useEffect(() => {
     notify = () => refresh((v) => v + 1);
@@ -146,13 +160,14 @@ export function ConfirmationHost() {
   };
   return (
     <Modal
-      key={current.message}
+      key={current.id}
+      defaultFocusRef={defaultButton}
       title="Please confirm"
       onClose={() => finish(false)}
     >
       <p>{current.message}</p>
       <footer>
-        <button autoFocus onClick={() => finish(false)}>
+        <button ref={defaultButton} autoFocus onClick={() => finish(false)}>
           Cancel
         </button>
         <button className="primary" onClick={() => finish(true)}>

@@ -18,6 +18,7 @@ export default function AccountPanel({
   user,
   onClose,
   onUser,
+  onAvatar,
   onLogout,
   initial = "summary",
   home,
@@ -28,7 +29,11 @@ export default function AccountPanel({
     [account, setAccount] = useState(null),
     [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
-  const load = () => api("/account").then(setAccount);
+  const load = () =>
+    api("/account").then((value) => {
+      setAccount(value);
+      onAvatar?.(value.avatar);
+    });
   useEffect(() => {
     const node = ref.current;
     node.showModal();

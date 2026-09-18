@@ -11,6 +11,14 @@ written consent from Chris Visser ([vcsoc](https://github.com/vcsoc)). Third-par
 components retain their own licenses. Future versions may use different terms;
 see the license for details.
 
+## Version 0.3.11
+
+- Repeated map-location saves check current saved coordinates and ask before creating a duplicate; overlapping saves are blocked. Confirmation dialogs focus Cancel by default, with Enter/Space activation and normal Tab navigation to Confirm.
+- The top-right profile circle shows your saved photo, including immediate upload/removal updates and restoration after sign-in.
+- All toast notifications hide within six seconds (ordinary status toasts still use four seconds). Hiding update progress does not cancel a consented update; Check for updates can reopen its notice.
+- Sources YAML wraps without horizontal scrolling, has muted line numbers aligned with wrapped lines, and uses the left panel's narrow, themed, scrolling-only scrollbar. Settings' outer scrollbar is hidden; the Sources editor fits inside the dialog.
+- Theme color controls use a compact, thin-bordered three-column grid at normal Settings width, adapting to narrower windows.
+
 ## Version 0.3.10
 
 - Startup update checks and **Callsign → Check for updates**. A persistent update toast offers Update and restart, Later, or Skip this version; explicit checks can re-offer a skipped version. Downloads use the matching OS/architecture/package metadata and SHA-512 integrity verification. Before installation OAR backs up SQLite and `sources.yaml`; Linux also keeps a hidden executable recovery copy beside the AppImage. Install 0.3.10 manually to bootstrap updates from older versions. Linux AppImage updates are distro-independent; tar archives, distro packages and development runs cannot self-install. Windows NSIS and macOS updater code remains untested here and needs appropriately signed, tested platform assets. No newer production version was available for a live end-to-end upgrade during this release's testing.
@@ -55,11 +63,11 @@ Version **0.3.1** fixed the clock editor/search layout and adds offline search o
 ## Linux release
 
 Download the AppImage, Linux archive and SHA-256 checksums from
-[GitHub Releases — v0.3.10](https://github.com/vcsoc/oar/releases/tag/v0.3.10).
+[GitHub Releases — v0.3.11](https://github.com/vcsoc/oar/releases/tag/v0.3.11).
 Release binaries are distributed as release assets, not stored in Git history.
 
 ```text
-releases/OAR-0.3.10.AppImage
+releases/OAR-0.3.11.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
@@ -176,9 +184,9 @@ npm run test:panels                # resizing/persistence, auto-hidden themed sc
 npm run test:items                 # read-only/edit, private saved search, grouping, context, home persistence
 npm run test:seven                 # link planner, clock colors, hover, menus, icons and responsive forecasts
 npm run test:account               # private profile/avatar/devices, password change, original invoices in PDF
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.10.AppImage" npm run test:desktop
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.10.AppImage" npm run test:guidance
-OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.10.AppImage" npm run test:release-ten
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.11.AppImage" npm run test:desktop
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.11.AppImage" npm run test:guidance
+OAR_DESKTOP_EXECUTABLE="$PWD/releases/OAR-0.3.11.AppImage" npm run test:release-ten
 npm run test:browser               # development harness / responsive UI
 npm audit
 ```

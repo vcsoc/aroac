@@ -450,24 +450,32 @@ small,
 }
 .theme-colors {
   display: grid;
-  gap: 3px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 8px;
 }
 .theme-colors label {
   display: grid;
-  grid-template-columns: 1fr 35px 78px;
+  grid-template-columns: minmax(0, 1fr) 28px 74px;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
   font-size: 11px;
   text-transform: capitalize;
 }
 .theme-colors input[type="color"] {
   padding: 0;
-  width: 35px;
+  width: 28px;
   height: 25px;
   border: 0;
   background: transparent;
 }
 .theme-colors input:not([type="color"]) {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 3px;
   font-family: monospace;
 }
@@ -536,7 +544,9 @@ small,
   }
 }
 @media (max-width: 700px) {
-  .app { display: block; }
+  .app {
+    display: block;
+  }
   .left-open .workspace > main {
     margin-left: 0;
   }
