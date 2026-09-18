@@ -72,6 +72,25 @@ releases/OAR-0.3.11.AppImage
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
 
+## macOS Apple Silicon release
+
+[GitHub Releases — v0.3.11](https://github.com/vcsoc/oar/releases/tag/v0.3.11) includes
+`OAR-0.3.11-arm64.dmg`, `OAR-0.3.11-arm64-mac.zip` and macOS SHA-256 checksums.
+This standalone Electron application bundles its Chromium interface, local SQLite
+and application logic; no separate server or system Node installation is needed.
+Intel Macs were not built or tested.
+
+Built and tested on macOS 26.5.2 (Apple Silicon). All 41 unit tests, the packaged
+desktop smoke test (offline accounts, persistence, backup and map controls), and
+guidance smoke test passed. DMG and ZIP integrity checks passed. The extended
+release-ten smoke test did not pass: after canonicalizing macOS's temporary path,
+it failed opening bundled Chromium license notices. The DMG installation workflow
+and automatic updates were not tested.
+
+This build is not Developer ID signed or notarized; Gatekeeper may block opening
+it. macOS automatic-update metadata is deliberately not published for this
+manual-install build. Packaging uses the default Electron application icon.
+
 ## Workspace controls
 
 - **Clocks:** double-click any clock (or focus it and press Enter) to change its city/timezone. **Add clock** adds another, up to 24 additional clocks. The home clock always says **Home Location Time**. Add/edit dialogs offer a **Clock color** foreground; the selected text color persists across themes, with a subtle contrasting outline and unchanged theme backgrounds. **Use theme color** removes the override. Colors are saved with each clock, including home. Its initial timezone comes from your device; precise coordinates are not guessed. Search a place or use the optional device-location button to configure home weather. Device positioning may be unavailable on Linux; address/coordinate search is the fallback.
@@ -136,7 +155,7 @@ Maps/imagery and new observations normally require internet. The saved feed cach
 - **Mobile:** not a release. The old remote-server mobile approach is disabled rather than presented as a standalone implementation. iOS still needs a local SQLite adapter and testing on macOS/Xcode. Android remains blocked until a genuinely JDK-free build path is verified.
 - Specialist provider tools are embedded websites, not native/local feed integrations; website failures, login requirements and provider restrictions still apply.
 - No HF prediction engine, ISS pass/orbit predictions, rig control, push notifications or cloud sync.
-- Windows x64 NSIS packaging has been built on Windows 11, and the packaged application passed the desktop smoke test (offline accounts, SQLite persistence across restart, backup and map controls). The installer wizard itself has not been tested. macOS packaging is configured but has not been built/tested here. Signing and notarization are not configured. Linux AppImage updates are supported from 0.3.10 onward; other platform installers/update flows require target-platform validation.
+- Windows x64 NSIS packaging has been built on Windows 11, and the packaged application passed the desktop smoke test (offline accounts, SQLite persistence across restart, backup and map controls). The installer wizard itself has not been tested. macOS ARM64 packaging and basic packaged-app tests passed; see the macOS release section for known test failures and installation limitations. Signing and notarization are not configured. Linux AppImage updates are supported from 0.3.10 onward; other platform installers/update flows require target-platform validation.
 
 **No Java, no JDK, no .NET**, including development tooling. Legacy Android files are rejected prior work; do not build or distribute them.
 
@@ -159,6 +178,7 @@ npm start                         # self-contained Electron application
 npm run desktop:dev               # desktop with UI hot reload
 npm run desktop:build -- --linux AppImage
 npm run desktop:build -- --win --x64 # Windows: releases/OAR Setup 0.3.11.exe
+CSC_IDENTITY_AUTO_DISCOVERY=false npm run desktop:build -- --mac --arm64 # unsigned macOS DMG/ZIP
 ```
 
 Before packaging a fresh checkout, generate the offline city directory: download and extract `cities500.zip` and download `admin1CodesASCII.txt` from https://download.geonames.org/export/dump/, then run `node scripts/build-cities.js /path/cities500.txt /path/admin1CodesASCII.txt`. The generated `data/cities.json` and attribution file are ignored by Git but included in the package.
