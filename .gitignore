@@ -2,6 +2,11 @@ node_modules/
 dist/
 data/
 .env
+# Relay provisioning can contain enrollment credentials; vault files are private.
+settings.yaml
+settings.yml
+private-relay/
+*.sealed
 .env.*
 !.env.example
 *.sqlite

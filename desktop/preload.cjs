@@ -3,6 +3,7 @@ contextBridge.exposeInMainWorld(
   "oarDesktop",
   Object.freeze({
     platform: process.platform,
+    relay: (action, input) => ipcRenderer.invoke("oar:relay", action, input),
     roadmap: () => ipcRenderer.invoke("oar:roadmap"),
     runtimeLicenses: () => ipcRenderer.invoke("oar:runtime-licenses"),
     update: (action) => ipcRenderer.invoke("oar:update", action),

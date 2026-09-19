@@ -11,6 +11,10 @@ written consent from Chris Visser ([vcsoc](https://github.com/vcsoc)). Third-par
 components retain their own licenses. Future versions may use different terms;
 see the license for details.
 
+## Unreleased optional relay preview
+
+Current source adds consented, profile-private device messaging through an optional `oarsvr` relay: adjacent `settings.yaml` auto-import only when unset, manual override, OS-vault-protected identities, signed registration, independently verified peer keys, libsodium sealed messages, persistent outbox and explicit quarantine/discard. Core accounts/data remain entirely local. **This is not included in published 0.3.12 and has not had an independent security audit.** See [setup, privacy, test scope and limitations](docs/relay.md).
+
 ## Version 0.3.12
 
 - Signed-out account menu, a tutorial Help shortcut after Quick Switch, expanded About information, supplied OAR branding and refreshed Linux/Windows/macOS/iOS icon assets. Only Linux packages are built here.
@@ -179,7 +183,7 @@ Maps/imagery and new observations normally require internet. The saved feed cach
 
 ## Not complete yet
 
-- **Inter-operator messaging:** a local database cannot deliver messages to other installations. Peer-to-peer/relay transport and discovery are not implemented. The standalone UI explicitly says so; it does not pretend local records are online deliveries. Legacy messaging API/UI remains only in development tests.
+- **Inter-operator messaging:** published 0.3.12 is local-only. Current source has an optional [encrypted device-relay preview](docs/relay.md); server settings alone never grant enrollment consent. No public discovery, callsign verification, groups, key recovery or forward secrecy. Legacy browser messaging remains a local-only development fixture.
 - **Mobile:** not a release. The old remote-server mobile approach is disabled rather than presented as a standalone implementation. iOS still needs a local SQLite adapter and testing on macOS/Xcode. A [JDK-free native APK packaging/signing probe](research/android-jdk-free/README.md) passed host-side checks, but it is not OAR and has not run on a device. Android remains blocked pending device validation and a compliant local-engine/UI implementation.
 - Specialist provider tools are embedded websites, not native/local feed integrations; website failures, login requirements and provider restrictions still apply.
 - No HF prediction engine, ISS pass/orbit predictions, rig control, push notifications or cloud sync.
@@ -189,7 +193,7 @@ Maps/imagery and new observations normally require internet. The saved feed cach
 
 ## Implementation
 
-Electron’s main process owns SQLite and the embedded data service. The service is bundled into `desktop/generated/local-service.cjs`; it is not another application or a spawned backend process. It uses an ephemeral loopback-only port as internal transport, protected by a per-launch random capability that never reaches the renderer. No fixed port, remote server, address prompt or manual startup is involved. The renderer uses a restricted preload/IPC bridge, with Node integration disabled and context isolation/sandboxing enabled.
+Electron’s main process owns SQLite and the embedded data service. The service is bundled into `desktop/generated/local-service.cjs`; it is not another application or a spawned backend process. It uses an ephemeral loopback-only port as internal transport, protected by a per-launch random capability that never reaches the renderer. Core operation needs no fixed port, remote server, address prompt or manual startup. Optional relay messaging is separate network transport, not an account or local-data backend. The renderer uses a restricted preload/IPC bridge, with Node integration disabled and context isolation/sandboxing enabled.
 
 Closing OAR shuts down the internal service and database. macOS retains the usual app-until-Quit behaviour. One instance per application-data directory is permitted.
 

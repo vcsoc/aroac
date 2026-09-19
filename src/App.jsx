@@ -54,6 +54,7 @@ import { PanelLeft, Info } from "lucide-react";
 import AccountPanel from "./AccountPanel";
 import { Auth, Messages, Logbook, Profile } from "./Station.jsx";
 import LocalData from "./LocalData.jsx";
+import RelayPanel from "./RelayPanel.jsx";
 import AddressSearch from "./AddressSearch.jsx";
 import { isNative, connection } from "./platform.js";
 import { usePreference, usePins, useRepeaters, NO_REPEATERS } from "./mapState";
@@ -1113,22 +1114,7 @@ function Workspace({ user, setUser, page, setPage }) {
               </div>
             ) : page === "messages" ? (
               isNative ? (
-                <div className="panel welcome">
-                  <MessageSquare size={40} />
-                  <h2>Operator messaging</h2>
-                  <p>
-                    Your profile and records are local to this device.
-                    <br />
-                    Messaging between installations requires a peer-to-peer or
-                    relay transport.
-                    <br />
-                    That transport is not implemented in this standalone
-                    release.
-                  </p>
-                  <small>
-                    No messages are represented as delivered to other devices.
-                  </small>
-                </div>
+                <RelayPanel user={user} />
               ) : (
                 <Messages user={user} />
               )
@@ -1275,6 +1261,7 @@ function Workspace({ user, setUser, page, setPage }) {
           tabs={{
             Sources: <SourcesEditor />,
             Login: <LoginSettings />,
+            Relay: <RelayPanel user={user} />,
             Appearance: appearanceSettings.ready ? (
               <AppearanceSettings
                 value={appearanceSettings.value}

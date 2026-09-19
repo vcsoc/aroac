@@ -27,7 +27,9 @@ protocol.registerSchemesAsPrivileged([
 let win,
   config = {},
   sessionToken = null,
+  authenticationSequence = 0,
   localServer,
+  relayClient,
   db,
   localOrigin,
   closing = false;
@@ -134,6 +136,12 @@ async function request(route, options = {}) {
     throw Error("Request too large");
   // Private, ephemeral loopback transport inside this Electron process. No separately
   // installed server, fixed port, user configuration or remote account service.
+  const changesSession =
+    method === "POST" && ["/login", "/register", "/logout"].includes(route);
+  const sequence = changesSession
+    ? ++authenticationSequence
+    : authenticationSequence;
+  const requestToken = sessionToken;
   const response = await net.fetch(localOrigin + "/api" + route, {
     method,
     body,
@@ -143,11 +151,28 @@ async function request(route, options = {}) {
       "Content-Type": "application/json",
       "X-OAR-Client": "native",
       "X-OAR-Local-Key": localKey,
-      ...(sessionToken ? { Authorization: "Bearer " + sessionToken } : {}),
+      ...(requestToken ? { Authorization: "Bearer " + requestToken } : {}),
     },
     signal: AbortSignal.timeout(route.startsWith("/repeaters") ? 65000 : 20000),
   });
   const data = await response.json();
+  if (
+    sequence !== authenticationSequence ||
+    (requestToken !== sessionToken &&
+      route !== "/login" &&
+      route !== "/register")
+  ) {
+    if ((route === "/login" || route === "/register") && data.token)
+      db.prepare("DELETE FROM sessions WHERE token=?").run(
+        createHash("sha256").update(data.token).digest("hex"),
+      );
+    return {
+      $oarError: {
+        message: "Session changed. Retry in the current profile.",
+        fields: {},
+      },
+    };
+  }
   if (!response.ok)
     return {
       $oarError: {
@@ -156,11 +181,13 @@ async function request(route, options = {}) {
       },
     };
   if ((route === "/login" || route === "/register") && data.token) {
+    relayClient?.pause();
     sessionToken = data.token;
     storeSession();
     return data.user;
   }
   if (route === "/logout" || (route === "/me" && !data)) {
+    relayClient?.pause();
     sessionToken = null;
     delete config.session;
     delete config.sessionPlain;
@@ -199,6 +226,28 @@ async function start() {
         : "",
     );
   if (!config.persistLogin) storeSession();
+  try {
+    relayClient = require("./generated/relay.cjs").installRelay({
+      app,
+      db,
+      ipcMain,
+      dialog,
+      authorized,
+      request,
+      canEncrypt,
+      safeStorage,
+      isOffline: () => !!config.offline,
+      getWindow: () => win,
+    });
+  } catch {
+    ipcMain.removeHandler("oar:relay");
+    ipcMain.handle("oar:relay", (event) => {
+      authorized(event);
+      throw Error(
+        "Optional relay could not initialize. Local OAR features remain available.",
+      );
+    });
+  }
   protocol.handle("oar", (request) => {
     const url = new URL(request.url);
     const root = path.resolve(__dirname, "../dist");
@@ -282,7 +331,10 @@ async function start() {
     authorized(event);
     if (typeof value !== "boolean") throw Error("Invalid offline mode");
     config.offline = value;
-    if (value) features.close();
+    if (value) {
+      features.close();
+      relayClient?.pause();
+    }
     save();
     return connection();
   });
