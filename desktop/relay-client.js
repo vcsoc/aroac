@@ -182,7 +182,7 @@ export class RelayClient {
     for (const controller of this.controllers) controller.abort();
     this.controllers.clear();
   }
-  async request(context, method, route, payload) {
+  assertActive(context) {
     if (
       context.generation !== this.generation ||
       context.origin !== this.configuration?.relay.url ||
@@ -191,6 +191,9 @@ export class RelayClient {
       this.offline()
     )
       throw Error("Relay changed, is disabled or OAR is offline.");
+  }
+  async request(context, method, route, payload) {
+    this.assertActive(context);
     if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0")
       throw Error("Relay transport requires TLS verification.");
     const body = payload === undefined ? "" : JSON.stringify(payload),
@@ -232,6 +235,9 @@ export class RelayClient {
       } finally {
         await reader.cancel();
       }
+      // Cancellation can race a completed response (or a reader's cleanup).
+      // Never commit its receipt, decrypt its inbox or ack after access ended.
+      this.assertActive(context);
       return JSON.parse(Buffer.concat(chunks).toString("utf8"));
     } finally {
       clearTimeout(timer);
@@ -248,6 +254,7 @@ export class RelayClient {
         "/v1/devices/register",
         { ...card, ...(token ? { enrollmentToken: token } : {}) },
       );
+      this.assertActive(context);
       if (response.deviceId !== deviceId || response.status !== "active")
         throw Error("Relay registration identity mismatch.");
       state.registered = true;
@@ -320,6 +327,7 @@ export class RelayClient {
     for (const id of ids) state.seen[id] = Date.now() + 7 * 86400000;
     this.write(context.key, state); // Record the explicit discard before acknowledgement.
     await this.request(context, "POST", "/v1/messages/ack", { ids });
+    this.assertActive(context);
     state.issues = state.issues.filter((issue) => !ids.includes(issue.id));
     this.write(context.key, state);
   }
@@ -337,6 +345,7 @@ export class RelayClient {
     const { state, key } = context;
     if (!state.consent || this.offline()) return;
     await this.register(context);
+    this.assertActive(context);
     for (const envelope of [...state.outbox]) {
       if (Date.parse(envelope.expiresAt) <= Date.now()) {
         state.outbox = state.outbox.filter((e) => e.id !== envelope.id);
@@ -349,6 +358,7 @@ export class RelayClient {
         recipientId: envelope.recipientId,
         envelope,
       });
+      this.assertActive(context);
       if (response.id !== envelope.id)
         throw Error("Relay delivery acknowledgement mismatch.");
       state.outbox = state.outbox.filter((e) => e.id !== envelope.id);
@@ -357,6 +367,7 @@ export class RelayClient {
       this.write(key, state);
     }
     const response = await this.request(context, "GET", "/v1/messages");
+    this.assertActive(context);
     if (!Array.isArray(response.messages) || response.messages.length > 100)
       throw Error("Invalid inbox response.");
     const acknowledge = [];
