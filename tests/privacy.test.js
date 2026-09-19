@@ -262,7 +262,10 @@ for (const profiles of [1, 2])
         "backups",
         readdirSync(path.join(dir, "backups"))[0],
       );
-      assert.equal(statSync(backup).mode & 0o777, 0o600);
+      // Windows uses ACLs; Node's mode bits cannot verify POSIX permissions there.
+      assert.ok(statSync(backup).isFile());
+      if (process.platform !== "win32")
+        assert.equal(statSync(backup).mode & 0o777, 0o600);
       const old = new DatabaseSync(backup, { readOnly: true });
       assert.equal(
         old.prepare("SELECT label FROM pins").get().label,

@@ -13,7 +13,7 @@ see the license for details.
 
 ## Version 0.3.12
 
-- Signed-out account menu, a tutorial Help shortcut after Quick Switch, expanded About information, supplied OAR branding and refreshed Linux/Windows/macOS/iOS icon assets. Only Linux packages are built here.
+- Signed-out account menu, a tutorial Help shortcut after Quick Switch, expanded About information, supplied OAR branding and refreshed Linux/Windows/macOS/iOS icon assets. Linux and Windows x64 packages have been built for this release.
 - Camera button saves the application view to Pictures as `oar-screenshot-YYMMddHHmmss.png`; images can contain private information.
 - Uniform monospace License typography, collapsed third-party notices, thin themed scrollbars shown only during scrolling, small-text scaling, and consolidated Login help.
 - The comparison timeline follows the theme. Escape no longer adds an orange keyboard-focus border to the map.
@@ -99,6 +99,16 @@ releases/OAR-0.3.12.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
+
+## Windows x64 release
+
+[GitHub Releases — v0.3.12](https://github.com/vcsoc/oar/releases/tag/v0.3.12) includes
+`OAR-Setup-0.3.12.exe`, its blockmap, Windows update metadata and SHA-256 checksums.
+Built on Windows 11: 44 unit tests passed; four Linux installer tests were skipped.
+The packaged desktop, update/source/license and screenshot/backup-protection smoke tests passed.
+The installer is unsigned; the installer wizard and end-to-end automatic upgrade were not tested.
+POSIX permission assertions do not validate Windows ACLs. The Electron package includes
+Chromium, Node and SQLite; no separate runtime or server installation is needed.
 
 ## macOS Apple Silicon release
 
@@ -205,7 +215,7 @@ npm run build
 npm start                         # self-contained Electron application
 npm run desktop:dev               # desktop with UI hot reload
 npm run desktop:build -- --linux AppImage
-npm run desktop:build -- --win --x64 # Windows: releases/OAR Setup 0.3.11.exe
+npm run desktop:build -- --win --x64 # Windows: releases/OAR Setup 0.3.12.exe
 CSC_IDENTITY_AUTO_DISCOVERY=false npm run desktop:build -- --mac --arm64 # unsigned macOS DMG/ZIP
 ```
 
