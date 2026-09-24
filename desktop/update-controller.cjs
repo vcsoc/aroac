@@ -63,7 +63,7 @@ module.exports = function createUpdateController({
       return explicit
         ? set({
             phase: "error",
-            message: "OAR is offline. Go online and check for updates again.",
+            message: "AROAC is offline. Go online and check for updates again.",
           })
         : state;
     checking = true;
@@ -98,7 +98,7 @@ module.exports = function createUpdateController({
         phase: "available",
         version: candidate.version,
         message:
-          "OAR " +
+          "AROAC " +
           candidate.version +
           " is available. Update and restart automatically, remind yourself later, or skip this version.",
       });
@@ -147,7 +147,7 @@ module.exports = function createUpdateController({
       set({
         phase: "installing",
         version: candidate.version,
-        message: "Backup complete. Installing the update and restarting OAR…",
+        message: "Backup complete. Installing the update and restarting AROAC…",
       });
       schedule(() => {
         try {

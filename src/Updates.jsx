@@ -57,7 +57,7 @@ export default function UpdateNotice() {
       <p>{state.message}</p>
       {state.phase === "available" && (
         <p>
-          Save unfinished edits first. OAR backs up your local database before
+          Save unfinished edits first. AROAC backs up your local database before
           restarting. This notice hides after six seconds; use Check for updates
           to show it again.
         </p>

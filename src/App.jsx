@@ -43,7 +43,7 @@ import SourcesEditor, { SourceHost } from "./Sources";
 import UpdateNotice, { checkForUpdates } from "./Updates";
 import { useSourceRevision } from "./sourceEvents";
 import {
-  AboutOAR,
+  AboutAROAC,
   Help,
   AccountMenu,
   WindowControls,
@@ -205,8 +205,8 @@ function Conditions() {
       <SpecialistViews />
       <p className="disclaimer">
         Imagery coverage and website availability vary by provider. Specialist
-        tools open inside OAR’s isolated browser; they require internet. Never
-        use OAR as a safety-critical weather service.
+        tools open inside AROAC’s isolated browser; they require internet. Never
+        use AROAC as a safety-critical weather service.
       </p>
     </>
   );
@@ -1659,7 +1659,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
         <Tutorial onPrepare={prepareTutorial} onEnd={endTutorial} />
       )}
       {aboutOpen && (
-        <AboutOAR offline={!online} onClose={() => setAboutOpen(false)} />
+        <AboutAROAC offline={!online} onClose={() => setAboutOpen(false)} />
       )}
       {user && accountScreen && (
         <AccountPanel

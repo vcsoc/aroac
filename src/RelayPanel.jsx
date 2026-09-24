@@ -62,7 +62,7 @@ export default function RelayPanel({ user }) {
     <section className="relay-panel">
       <h2>Device messaging · preview</h2>
       <p>
-        OAR remains local-first. This optional relay carries encrypted
+        AROAC remains local-first. This optional relay carries encrypted
         one-to-one messages between explicitly verified devices. It is not a
         radio-licence or callsign identity service.
       </p>
@@ -103,18 +103,18 @@ export default function RelayPanel({ user }) {
           <p>
             {state.storage?.message ||
               (!state.secureStorage
-                ? "OS-protected credential storage is unavailable. Unlock your OS credential vault, then retry or restart OAR. Plaintext key storage is not permitted."
+                ? "OS-protected credential storage is unavailable. Unlock your OS credential vault, then retry or restart AROAC. Plaintext key storage is not permitted."
                 : "OS-protected credential storage is available.")}
           </p>
           <button disabled={busy} onClick={() => run("retry-storage")}>
             Retry credential storage
           </button>{" "}
           <button disabled={busy} onClick={() => run("restart-storage")}>
-            Restart OAR
+            Restart AROAC
           </button>
           <p>
             Retry after unlocking your vault. If it is still unavailable, fully
-            restart OAR. Never delete saved relay data to fix a vault error.
+            restart AROAC. Never delete saved relay data to fix a vault error.
           </p>
         </div>
       )}

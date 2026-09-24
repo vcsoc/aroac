@@ -86,7 +86,7 @@ export function Auth({ onClose, onUser }) {
         <X />
       </button>
       <Radio className="accent" size={34} />
-      <span className="eyebrow">WELCOME TO OAR</span>
+      <span className="eyebrow">WELCOME TO AROAC</span>
       <h2>
         {register ? "Your station starts here." : "Welcome back, operator."}
       </h2>
@@ -507,7 +507,7 @@ export function Logbook() {
         <div className="button-row">
           <button
             onClick={() =>
-              download("oar-logbook.adi", adif(rows)).catch((e) =>
+              download("aroac-logbook.adi", adif(rows)).catch((e) =>
                 setError(e.message),
               )
             }
@@ -712,7 +712,7 @@ export function Profile({ user, setUser, onLogout, onEdit }) {
         {status && <p role="status">{status}</p>}
       </form>
       <article className="panel install-help">
-        <h3>OAR on every device</h3>
+        <h3>AROAC on every device</h3>
         <p>
           The desktop application includes its own database. Your profiles and
           logbook work offline; online providers supply maps and observations.

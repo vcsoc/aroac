@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-// Capture scroll events from every OAR-owned scroll surface, including portals.
+// Capture scroll events from every AROAC-owned scroll surface, including portals.
 // Third-party specialist WebViews and native OS dialogs retain their own styles.
 export default function Scrollbars() {
   useEffect(() => {

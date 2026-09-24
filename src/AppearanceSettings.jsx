@@ -56,8 +56,8 @@ export default function AppearanceSettings({ value, onSave, onPreview }) {
         />
       </label>
       <Help label="About small text size">
-        Adjusts small OAR labels, clock dates, status lines and panel details in
-        addition to the main text-size setting. Map-provider labels and
+        Adjusts small AROAC labels, clock dates, status lines and panel details
+        in addition to the main text-size setting. Map-provider labels and
         third-party pages retain their own sizing.
       </Help>
       <div className="button-row">

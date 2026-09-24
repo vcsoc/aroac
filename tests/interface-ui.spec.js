@@ -23,8 +23,8 @@ test("compact topbar, themed help/about and saved-location confirmation", async 
   const pin = await page.locator(".topbar-location-button").boundingBox();
   const breadcrumb = await page.locator(".breadcrumb").boundingBox();
   expect(breadcrumb.x).toBeGreaterThan(pin.x);
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
-  const about = page.getByRole("dialog", { name: "About OAR" });
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
+  const about = page.getByRole("dialog", { name: "About AROAC" });
   await expect(about).toContainText("Chris Visser");
   await page.evaluate(() =>
     document.documentElement.style.setProperty("--panel", "#254963"),
@@ -98,8 +98,8 @@ test("authenticated callsign opens an account menu", async ({ page }) => {
   const menu = page.getByRole("menu");
   await expect(menu).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await menu.getByRole("menuitem", { name: "About OAR" }).click();
-  await expect(page.getByRole("dialog", { name: "About OAR" })).toBeVisible();
+  await menu.getByRole("menuitem", { name: "About AROAC" }).click();
+  await expect(page.getByRole("dialog", { name: "About AROAC" })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.locator(".profile-button").click();
   await menu.getByRole("menuitem", { name: "Edit Profile" }).click();

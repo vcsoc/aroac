@@ -53,7 +53,7 @@ export function installRepeaters(
   async function download() {
     const response = await fetcher(SOURCE, {
       headers: {
-        "User-Agent": "OAR/0.3 (standalone amateur radio application)",
+        "User-Agent": "AROAC/0.4 (standalone amateur radio application)",
       },
       signal: AbortSignal.timeout(45000),
     });

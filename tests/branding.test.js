@@ -7,7 +7,7 @@ const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 test("AROAC source logo, desktop icons, iOS asset and license are consistent", () => {
   assert.equal(
     digest(image("public/aroac-logo.png")),
-    "718964573916daf1776275d84a3ed4f4b1d46a8dea6384bb328c2d8c81a2c97e",
+    "3efb1a154a124689164f35517f0fd9c66a25ae8045395ee15a9e17e54e5c3803",
   );
   for (const [file, expected] of [
     ["public/icon-192.png", "192x192"],

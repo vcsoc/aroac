@@ -1,6 +1,6 @@
 # Topographic maps and estimated radio range
 
-OAR computes range geometry locally. This is a planning aid, not a coverage survey, terrain propagation engine or VOACAP implementation.
+AROAC computes range geometry locally. This is a planning aid, not a coverage survey, terrain propagation engine or VOACAP implementation.
 
 ## Use
 
@@ -49,4 +49,4 @@ RepeaterBook's documented fields include input/output frequency, PL/CTCSS, membe
 
 ## Follow-on propagation work
 
-The shared discussion's full VOACAP/GIRO/GloTEC architecture is broader than these initial local estimates. A future calibrated prediction feature needs a distributable local engine with reviewed licensing, validated outputs, timestamped observations with spatial uncertainty and clear offline/stale handling. OAR must not require users to install a separate propagation server. Never relabel this geometric model as live band reliability.
+The shared discussion's full VOACAP/GIRO/GloTEC architecture is broader than these initial local estimates. A future calibrated prediction feature needs a distributable local engine with reviewed licensing, validated outputs, timestamped observations with spatial uncertainty and clear offline/stale handling. AROAC must not require users to install a separate propagation server. Never relabel this geometric model as live band reliability.

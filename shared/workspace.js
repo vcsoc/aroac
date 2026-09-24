@@ -18,7 +18,7 @@ export const themeColors = {
 export const defaultTheme = {
   format: "oar-theme",
   version: 1,
-  name: "OAR dark",
+  name: "AROAC dark",
   colors: themeColors,
 };
 export function validateTheme(value) {
@@ -30,7 +30,7 @@ export function validateTheme(value) {
     typeof value.name !== "string" ||
     value.name.length > 80
   )
-    throw Error("Not a supported OAR theme (version 1).");
+    throw Error("Not a supported AROAC theme (version 1).");
   const colors = {};
   for (const key of Object.keys(themeColors)) {
     // Added to theme v1: older saved/imported themes remain valid. An explicitly

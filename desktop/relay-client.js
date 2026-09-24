@@ -14,7 +14,7 @@ import {
 } from "./relay-crypto.js";
 
 // Optional transport only. All persisted credentials, peer pins and message text
-// require OS-protected storage; this never uses OAR's plaintext session fallback.
+// require OS-protected storage; this never uses AROAC's plaintext session fallback.
 export class RelayClient {
   constructor({
     directory,
@@ -23,7 +23,7 @@ export class RelayClient {
     storageStatus = () => ({
       available: secure(),
       message:
-        "OS-protected credential storage is unavailable. Unlock your OS credential vault and restart OAR; plaintext relay storage is not permitted.",
+        "OS-protected credential storage is unavailable. Unlock your OS credential vault and restart AROAC; plaintext relay storage is not permitted.",
     }),
     offline = () => false,
     fetcher = fetch,
@@ -250,7 +250,7 @@ export class RelayClient {
       !this.secure() ||
       this.offline()
     )
-      throw Error("Relay changed, is disabled or OAR is offline.");
+      throw Error("Relay changed, is disabled or AROAC is offline.");
   }
   async request(context, method, route, payload) {
     this.assertActive(context);

@@ -88,7 +88,7 @@ export function parseSources(text) {
       throw Error(
         "Unsupported kind/adapter for " +
           s.id +
-          ". A different API format requires an OAR adapter.",
+          ". A different API format requires an AROAC adapter.",
       );
     if (
       !Array.isArray(s.countries) ||

@@ -33,7 +33,7 @@ module.exports = function install({
       max = theme ? 256000 : 8000000,
       filters = [
         {
-          name: theme ? "OAR theme YAML" : "OAR locations & contacts",
+          name: theme ? "AROAC theme YAML" : "AROAC locations & contacts",
           extensions: theme ? ["yaml", "yml"] : ["json"],
         },
       ];
@@ -55,7 +55,7 @@ module.exports = function install({
       throw Error("Invalid export content");
     const result = await dialog.showSaveDialog(getWindow(), {
       title: "Export " + kind,
-      defaultPath: theme ? "oar-theme.yaml" : "oar-locations.json",
+      defaultPath: theme ? "aroac-theme.yaml" : "aroac-locations.json",
       filters,
     });
     if (result.canceled) return { canceled: true };
@@ -98,7 +98,7 @@ module.exports = function install({
       throw Error("Invalid PDF export.");
     const result = await dialog.showSaveDialog(getWindow(), {
       title: "Export ownership and warranty record",
-      defaultPath: "oar-ownership.pdf",
+      defaultPath: "aroac-ownership.pdf",
       filters: [{ name: "PDF document", extensions: ["pdf"] }],
     });
     if (result.canceled) return { canceled: true };

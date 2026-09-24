@@ -48,7 +48,7 @@ try {
     page.getByRole("button", { name: "Retry credential storage", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Restart OAR", exact: true }),
+    page.getByRole("button", { name: "Restart AROAC", exact: true }),
   ).toBeVisible();
   assert.equal(typeof state.storage.backend, "string");
   assert.equal(typeof state.storage.message, "string");

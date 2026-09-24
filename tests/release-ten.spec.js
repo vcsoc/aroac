@@ -23,13 +23,13 @@ test("Quick Switch help renders above the popover and About shows licenses and d
   await expect(tooltip).toHaveCount(0);
   await expect(panel).toBeVisible();
   await panel.getByRole("button", { name: "Close Quick Switch" }).click();
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
-  const about = page.getByRole("dialog", { name: "About OAR" });
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
+  const about = page.getByRole("dialog", { name: "About AROAC" });
   await expect(
     about.getByRole("link", { name: "Chris Visser" }),
   ).toHaveAttribute("href", "https://github.com/vcsoc");
   await about.getByRole("tab", { name: "License", exact: true }).click();
-  await expect(about).toContainText("OAR Free Noncommercial Use License");
+  await expect(about).toContainText("AROAC Free Noncommercial Use License");
   await expect(about).toContainText("Third-party materials");
 });
 

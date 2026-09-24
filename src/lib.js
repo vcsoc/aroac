@@ -64,7 +64,7 @@ export const timeAt = (date, zone = "UTC") =>
 export function adif(rows) {
   const tag = (name, value) => `<${name}:${String(value).length}>${value}`;
   return (
-    "OAR ADIF export\n<ADIF_VER:5>3.1.4<EOH>\n" +
+    "AROAC ADIF export\n<ADIF_VER:5>3.1.4<EOH>\n" +
     rows
       .map((r) => {
         const d = new Date(r.created).toISOString();

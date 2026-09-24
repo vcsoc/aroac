@@ -177,7 +177,7 @@ export function ConfirmationHost() {
     </Modal>
   );
 }
-export function AboutOAR({ onClose, offline }) {
+export function AboutAROAC({ onClose, offline }) {
   const [tab, setTab] = useState("about");
   return (
     <Modal

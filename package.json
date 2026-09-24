@@ -1,6 +1,6 @@
 {
   "name": "aroac",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -74,6 +74,6 @@
   },
   "main": "desktop/main.cjs",
   "description": "AROAC (Amateur Radio Operations and Communications) local-first amateur radio workspace",
-  "author": "OAR Contributors",
+  "author": "AROAC Contributors",
   "desktopName": "org.openamateurradio.oar.desktop"
 }

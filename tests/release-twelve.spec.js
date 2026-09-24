@@ -42,7 +42,7 @@ test("guest menu, tutorial shortcut, branding, license typography and small text
     }),
   ).toBeVisible();
   await page.locator(".profile-button").click();
-  for (const name of ["Help", "About OAR", "Check for updates", "Sign in"])
+  for (const name of ["Help", "About AROAC", "Check for updates", "Sign in"])
     await expect(
       page.getByRole("menuitem", { name, exact: true }),
     ).toBeVisible();
@@ -52,7 +52,7 @@ test("guest menu, tutorial shortcut, branding, license typography and small text
     .click();
   await expect(page.locator(".tutorial-dialog")).toBeVisible();
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
   await expect(page.locator(".about-logo")).toBeVisible();
   await expect(page.locator(".about-description")).toContainText("local-first");
   await page.getByRole("tab", { name: "License", exact: true }).click();

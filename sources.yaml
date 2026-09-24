@@ -1,4 +1,4 @@
-# OAR source configuration, schema 1.
+# AROAC source configuration, schema 1.
 # '*' applies in every country. To prefer a compatible country-specific provider,
 # add another entry of the SAME kind/adapter with countries: [CA] (ISO alpha-2).
 # Order defines fallback priority within each country. Keep a global fallback.

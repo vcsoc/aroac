@@ -109,7 +109,7 @@ test("completed update checks automatically hide within six seconds and a manual
       message: "You are running the latest version.",
     }),
   );
-  const notice = page.getByRole("region", { name: "OAR update" });
+  const notice = page.getByRole("region", { name: "AROAC update" });
   await expect(notice).toBeVisible();
   await expect(notice).toHaveCount(0, { timeout: 6500 });
   await page.evaluate(() =>

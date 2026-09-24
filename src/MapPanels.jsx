@@ -660,7 +660,7 @@ export function RepeaterDetails({
           Cross-check details on RepeaterBook ↗
         </a>
         <p>
-          RepeaterBook is not an active OAR data feed: approved application
+          RepeaterBook is not an active AROAC data feed: approved application
           access and per-user tokens are required.
         </p>
       </section>

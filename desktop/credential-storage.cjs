@@ -34,9 +34,9 @@ function createCredentialStorage(storage, platform = process.platform) {
     }
     const help =
       platform === "linux"
-        ? "Unlock your desktop keyring or wallet. If none is installed, install and enable a Secret Service provider (such as GNOME Keyring) or KDE Wallet, then fully quit and reopen OAR."
+        ? "Unlock your desktop keyring or wallet. If none is installed, install and enable a Secret Service provider (such as GNOME Keyring) or KDE Wallet, then fully quit and reopen AROAC."
         : platform === "darwin"
-          ? "Unlock your login Keychain and allow OAR access, then retry."
+          ? "Unlock your login Keychain and allow AROAC access, then retry."
           : "Sign in to your original Windows account and retry. Windows account protection must be available.";
     return {
       backend,
@@ -45,7 +45,7 @@ function createCredentialStorage(storage, platform = process.platform) {
       message: !available
         ? `OS-protected credential storage is unavailable (${backend}). ${help} Plaintext relay storage is never used.`
         : failure
-          ? `The OS credential vault could not ${failure === "decrypt" ? "unlock saved OAR data" : "protect OAR data"}. ${help} Saved data has not been replaced. If this persists, the original OS account/key or an intact backup may be required.`
+          ? `The OS credential vault could not ${failure === "decrypt" ? "unlock saved AROAC data" : "protect AROAC data"}. ${help} Saved data has not been replaced. If this persists, the original OS account/key or an intact backup may be required.`
           : `OS credential backend: ${backend}. Access is verified when saving or unlocking data.`,
     };
   }

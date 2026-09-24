@@ -80,7 +80,9 @@ export default function SpecialistViews() {
     <section className="specialist-views">
       <div className="section-title compact">
         <h3>Specialist views</h3>
-        <small>Interactive provider tools inside OAR · internet required</small>
+        <small>
+          Interactive provider tools inside AROAC · internet required
+        </small>
       </div>
       <div className="resource-grid">
         {sources.map((s) => (

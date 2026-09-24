@@ -271,7 +271,7 @@ async function start() {
     ipcMain.handle("oar:relay", (event) => {
       authorized(event);
       throw Error(
-        "Optional relay could not initialize. Local OAR features remain available.",
+        "Optional relay could not initialize. Local AROAC features remain available.",
       );
     });
   }
@@ -458,7 +458,7 @@ async function start() {
       pad(d.getHours()) +
       pad(d.getMinutes()) +
       pad(d.getSeconds());
-    const filename = path.join(directory, "oar-screenshot-" + stamp + ".png");
+    const filename = path.join(directory, "aroac-screenshot-" + stamp + ".png");
     const image = await win.webContents.capturePage();
     if (image.isEmpty())
       throw Error("The application screenshot could not be captured.");
@@ -484,9 +484,9 @@ async function start() {
         "Full database export is disabled for multi-profile installations to protect other profiles. Use your scoped locations/logbook export instead.",
       );
     const result = await dialog.showSaveDialog(win, {
-      title: "Back up local OAR database",
+      title: "Back up local AROAC database",
       defaultPath:
-        "OAR-backup-" + new Date().toISOString().slice(0, 10) + ".sqlite",
+        "AROAC-backup-" + new Date().toISOString().slice(0, 10) + ".sqlite",
       filters: [{ name: "SQLite database", extensions: ["sqlite"] }],
     });
     if (result.canceled) return { canceled: true };
@@ -515,7 +515,7 @@ async function start() {
     if (
       typeof text !== "string" ||
       text.length > 5_000_000 ||
-      name !== "oar-logbook.adi"
+      name !== "aroac-logbook.adi"
     )
       throw Error("Invalid export");
     const result = await dialog.showSaveDialog(win, {
@@ -648,7 +648,7 @@ function acquireInstance(attempt = 0) {
     .then(start)
     .catch((error) => {
       dialog.showErrorBox(
-        "OAR could not open your local station",
+        "AROAC could not open your local station",
         error.message,
       );
       app.exit(1);

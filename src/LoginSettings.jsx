@@ -16,8 +16,8 @@ export default function LoginSettings() {
       <h3>
         Sign-in memory{" "}
         <Help label="About sign-in memory">
-          By default you stay signed in while OAR is running, until you sign out
-          or quit. No password is saved. On a trusted device, persistence
+          By default you stay signed in while AROAC is running, until you sign
+          out or quit. No password is saved. On a trusted device, persistence
           restores your session until you sign out; anyone with access to your
           unlocked desktop can use it.{" "}
           {prefs && !prefs.secureStorage
@@ -52,8 +52,8 @@ export default function LoginSettings() {
                 setError("");
                 toast(
                   value
-                    ? "Sign-in persistence enabled on this device. You will remain signed in after restarting OAR until you log out."
-                    : "Sign-in persistence disabled. You will need to sign in again after quitting OAR.",
+                    ? "Sign-in persistence enabled on this device. You will remain signed in after restarting AROAC until you log out."
+                    : "Sign-in persistence disabled. You will need to sign in again after quitting AROAC.",
                 );
               } catch (e) {
                 setError(e.message);

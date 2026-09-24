@@ -42,7 +42,7 @@ export async function documentFile(action, kind, content) {
       ),
       a = document.createElement("a");
     a.href = url;
-    a.download = kind === "theme" ? "oar-theme.yaml" : "oar-locations.json";
+    a.download = kind === "theme" ? "aroac-theme.yaml" : "aroac-locations.json";
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     return { path: a.download };

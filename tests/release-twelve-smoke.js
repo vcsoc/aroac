@@ -36,7 +36,7 @@ try {
     .poll(() => readdirSync(pictures).length, { timeout: 2500 })
     .toBe(1);
   const filename = readdirSync(pictures)[0];
-  assert.match(filename, /^oar-screenshot-\d{12}\.png$/);
+  assert.match(filename, /^aroac-screenshot-\d{12}\.png$/);
   const image = readFileSync(path.join(pictures, filename));
   assert.equal(image.subarray(1, 4).toString(), "PNG");
   assert.ok(image.readUInt32BE(16) > 300);

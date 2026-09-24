@@ -25,20 +25,20 @@ try {
     console.error("Renderer error:", e.message);
   });
   await expect(page.locator(".app-statusbar")).toContainText(
-    "OAR v" + pkg.version,
+    "AROAC v" + pkg.version,
   );
   assert.equal(await app.evaluate(({ app }) => app.getVersion()), pkg.version);
   await app.evaluate(({ net }) => {
     const original = net.fetch.bind(net);
     net.fetch = async (url, options) =>
-      url === "https://raw.githubusercontent.com/vcsoc/oar/main/roadmap.md"
+      url === "https://raw.githubusercontent.com/vcsoc/aroac/main/roadmap.md"
         ? new Response(
             "# Desktop roadmap test\n\n- **Safe Markdown** rendered through the packaged IPC route.",
             { headers: { "content-type": "text/plain" } },
           )
         : original(url, options);
   });
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
   await page.getByRole("tab", { name: "Roadmap" }).click();
   await expect(
     page.getByRole("heading", { name: "Desktop roadmap test" }),
@@ -46,7 +46,7 @@ try {
   await page.keyboard.press("Escape");
   await page.evaluate(() => window.oarDesktop.setOffline(true));
   await page.reload();
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
   await page.getByRole("tab", { name: "Roadmap" }).click();
   await expect(page.locator(".roadmap-fallback")).toContainText(
     "working offline",
@@ -76,8 +76,8 @@ try {
   await page.locator(".profile-button").click();
   await page.getByRole("menuitem", { name: "Help" }).click();
   await page.getByRole("menuitem", { name: "Tutorial" }).click();
-  const tour = page.getByRole("dialog", { name: "OAR tutorial" });
-  await expect(tour).toContainText("Welcome to OAR");
+  const tour = page.getByRole("dialog", { name: "AROAC tutorial" });
+  await expect(tour).toContainText("Welcome to AROAC");
   await tour.getByRole("button", { name: "Next" }).click();
   await expect(tour).toContainText("Choose a workspace");
   await page.keyboard.press("Escape");

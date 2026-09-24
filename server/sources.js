@@ -204,7 +204,7 @@ export function installSources(
       error =
         "Source configuration changes are causing configuration exceptions: " +
         e.message +
-        " OAR is using the last valid configuration.";
+        " AROAC is using the last valid configuration.";
     }
   };
   const homeCountry = () => {

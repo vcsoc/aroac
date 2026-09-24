@@ -15,11 +15,11 @@ see the license for details.
 
 ## Branding in current source
 
-The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 0.4.1 AppImage and archive include the new artwork. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The previous OAR application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
+The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 0.4.2 AppImage and archive include the updated round logo. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The previous OAR application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
 
-## Linux x64 release · 0.4.1
+## Linux x64 release · 0.4.2
 
-The [AROAC 0.4.1 release notes](docs/releases/0.4.1.md) describe the Linux AppImage/archive, SHA-256 verification, branding, demo, toggles, testing and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.1); the large executable assets are GitHub release assets, not Git blobs. The [0.3.13 preview notes](docs/releases/0.3.13-preview.12.md) remain available for historical comparison.
+The [AROAC 0.4.2 release notes](docs/releases/0.4.2.md) describe the Linux AppImage/archive, SHA-256 verification, new round logo, display-name cleanup, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.2); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.1.md) remain available.
 
 ## Optional relay preview (0.4.1 desktop)
 
@@ -28,14 +28,14 @@ Current source adds consented, profile-private device messaging through an optio
 ## Version 0.3.12
 
 - Signed-out account menu, a tutorial Help shortcut after Quick Switch, expanded About information, supplied OAR branding and refreshed Linux/Windows/macOS/iOS icon assets. Linux, Windows x64 and macOS ARM64 packages have been built for this release.
-- Camera button saves the application view to Pictures as `oar-screenshot-YYMMddHHmmss.png`; images can contain private information.
+- Camera button saves the application view to Pictures as `aroac-screenshot-YYMMddHHmmss.png`; images can contain private information.
 - Uniform monospace License typography, collapsed third-party notices, thin themed scrollbars shown only during scrolling, small-text scaling, and consolidated Login help.
 - The comparison timeline follows the theme. Escape no longer adds an orange keyboard-focus border to the map.
 - Account-owned locations, contacts, corrections, preferences, search and transfers; General remains shared. Editing General while signed in makes a private copy. Expired sessions cannot silently save private work into General. Devices/invoices remain account-owned.
 
 ### Existing data and privacy
 
-Ownership migrations are transactional and preserve records. A permission-restricted `backups/before-profile-ownership-*.sqlite` snapshot is made before migrating a legacy on-disk pin database. With no profiles, legacy unlabelled locations/contacts remain General; with one profile, they become private to it. With multiple profiles, ambiguous old records and home settings are preserved in locked owner `-1` scope, invisible to normal application reads. **There is not yet an in-app recovery screen:** close OAR, retain the migration backup, and ask for per-record recovery assistance; do not assign ambiguous records wholesale to General. No records are deleted by ownership migration.
+Ownership migrations are transactional and preserve records. A permission-restricted `backups/before-profile-ownership-*.sqlite` snapshot is made before migrating a legacy on-disk pin database. With no profiles, legacy unlabelled locations/contacts remain General; with one profile, they become private to it. With multiple profiles, ambiguous old records and home settings are preserved in locked owner `-1` scope, invisible to normal application reads. **There is not yet an in-app recovery screen:** close AROAC, retain the migration backup, and ask for per-record recovery assistance; do not assign ambiguous records wholesale to General. No records are deleted by ownership migration.
 
 This is application-level access control, **not encryption**. The OS user/admin can read SQLite, screenshots and backups. Profile display name/callsign/grid/biography remain available to signed-in local operator-directory searches. Full SQLite export is restricted to signed-in, single-profile installations; multi-profile users have scoped JSON/ADIF exports, but no in-app full device/invoice export yet.
 
@@ -49,7 +49,7 @@ This is application-level access control, **not encryption**. The OS user/admin 
 
 ## Version 0.3.10
 
-- Startup update checks and **Callsign → Check for updates**. A persistent update toast offers Update and restart, Later, or Skip this version; explicit checks can re-offer a skipped version. Downloads use the matching OS/architecture/package metadata and SHA-512 integrity verification. Before installation OAR backs up SQLite and `sources.yaml`; Linux also keeps a hidden executable recovery copy beside the AppImage. Install 0.3.10 manually to bootstrap updates from older versions. Linux AppImage updates are distro-independent; tar archives, distro packages and development runs cannot self-install. Windows NSIS and macOS updater code remains untested here and needs appropriately signed, tested platform assets. No newer production version was available for a live end-to-end upgrade during this release's testing.
+- Startup update checks and **Callsign → Check for updates**. A persistent update toast offers Update and restart, Later, or Skip this version; explicit checks can re-offer a skipped version. Downloads use the matching OS/architecture/package metadata and SHA-512 integrity verification. Before installation AROAC backs up SQLite and `sources.yaml`; Linux also keeps a hidden executable recovery copy beside the AppImage. Install 0.3.10 manually to bootstrap updates from older versions. Linux AppImage updates are distro-independent; tar archives, distro packages and development runs cannot self-install. Windows NSIS and macOS updater code remains untested here and needs appropriately signed, tested platform assets. No newer production version was available for a live end-to-end upgrade during this release's testing.
 - **Settings → Sources** edits the per-user `sources.yaml`. The repository YAML supplies defaults for supported weather/forecast, radar, MUF, repeater, geocoding, map and observation adapters. `countries: ['*']` covers every country; compatible country-specific entries take priority, followed by global fallbacks. This is not an exhaustive worldwide provider directory and arbitrary API formats need new adapters. Weather routes by requested coordinates; other feeds/maps use home country. Boundaries are approximate (country-coder); users can manually choose their mobile country.
 - Source edits are syntax/schema checked before activation, direct file edits are polled, and the last valid configuration is retained in SQLite. Invalid edits offer Reset config / Ignore. Reset downloads the fixed GitHub `main/sources.yaml`; offline, unavailable or incompatible remote content falls back to bundled defaults. Compatible endpoints use public HTTPS hosts, bounded responses and no redirects; credentials/private hosts are not supported. Keep provider attribution and comply with provider terms. Map sources refresh immediately and active data feeds reload after configuration changes. Feed adapters try country-specific endpoints followed by global fallbacks within their request timeout; map layers select the first matching configured endpoint and report tile errors.
 - Quick Switch help uses top-layer tooltips. About includes License, developer-profile and GitHub links, dependency/font licenses, and access to bundled Chromium notices.
@@ -59,7 +59,7 @@ This is application-level access control, **not encryption**. The OS user/admin 
 ## Version 0.3.9
 
 - Action notifications are themed toasts that fade out after four seconds. Saved-location and home changes identify what changed instead of saying “Saved locally.” Field validation and feed/offline status remain visible where needed.
-- **About OAR → Roadmap** fetches `https://raw.githubusercontent.com/vcsoc/oar/main/roadmap.md` only when opened. It renders safe Markdown without raw HTML or remote images. Offline, missing, oversized or unreachable content shows a contribution/sponsorship invitation instead. The repository file must be published on `main` before the live roadmap can load.
+- **About AROAC → Roadmap** fetches `https://raw.githubusercontent.com/vcsoc/aroac/main/roadmap.md` only when opened. It renders safe Markdown without raw HTML or remote images. Offline, missing, oversized or unreachable content shows a contribution/sponsorship invitation instead. The repository file must be published on `main` before the live roadmap can load.
 - **Callsign → Help → Tutorial** starts a 13-step guided tour with highlighted sections and Previous, Next and End controls. End/Escape restores the previous workspace view; the tour does not edit saved records.
 - A persistent bottom status line shows the installed package version on the left and station callsign/grid on the right.
 - Clock editors use a compact color swatch beside the foreground-color title and an icon-only “Use theme color” reset. Location, timezone, color and coordinate explanations are question-mark tooltips beside their headings.
@@ -67,8 +67,8 @@ This is application-level access control, **not encryption**. The OS user/admin 
 ### Interface updates included
 
 - Saved-location cards group Move, Home and Delete on the right. Delete is available without entering edit mode and requires confirmation.
-- App confirmations and About OAR use themed dialogs. The callsign opens an Edit Profile / About OAR / Logout menu.
-- The topbar uses a left-panel toggle, left-aligned workspace breadcrumb and compact search that expands on focus. About OAR credits Chris Visser and links to this repository.
+- App confirmations and About AROAC use themed dialogs. The callsign opens an Edit Profile / About AROAC / Logout menu.
+- The topbar uses a left-panel toggle, left-aligned workspace breadcrumb and compact search that expands on focus. About AROAC credits Chris Visser and links to this repository.
 - Routine location, map, clock and settings explanations use keyboard-accessible question-mark tooltips. Location source attribution is included in help; errors, stale-data indicators and security warnings remain visible. Local time appears beside the province/country row.
 - Windows and macOS use frameless windows with custom topbar controls (right on Windows, left on macOS); Linux retains its native frame. Windows/macOS native behavior still requires testing on those platforms.
 
@@ -100,16 +100,16 @@ curl -fsSL https://raw.githubusercontent.com/vcsoc/aroac/main/scripts/install-oa
 
 This executes repository code; download and review the script first if preferred. From a checkout, run `sh scripts/install-oar.sh`.
 
-Use `sh scripts/install-oar.sh --check` to check the latest release without installing. The script requires Python 3 and internet access, selects a matching published AppImage, verifies its SHA-256 against the release checksums (and GitHub's asset digest when available), and installs it per-user at `~/.local/opt/oar/OAR.AppImage`. It creates `~/.local/bin/oar`, a desktop application entry and an icon. No sudo, Node, npm, Java/JDK or .NET is needed. The launcher uses AppImage extraction mode, so FUSE is not required; Electron's sandbox is not disabled. Existing OAR settings/databases are untouched. Re-running the script updates the installation and retains the previous executable. Missing architecture-specific assets or failed verification stop installation. Release checksums establish download integrity, not independent code-signing identity.
+Use `sh scripts/install-oar.sh --check` to check the latest release without installing. The script requires Python 3 and internet access, selects a matching published AppImage, verifies its SHA-256 against the release checksums (and GitHub's asset digest when available), and installs it per-user at `~/.local/opt/oar/OAR.AppImage`. It creates `~/.local/bin/oar`, a desktop application entry and an icon. No sudo, Node, npm, Java/JDK or .NET is needed. The launcher uses AppImage extraction mode, so FUSE is not required; Electron's sandbox is not disabled. Existing AROAC settings/databases are untouched. Re-running the script updates the installation and retains the previous executable. Missing architecture-specific assets or failed verification stop installation. Release checksums establish download integrity, not independent code-signing identity.
 
 ### Manual download
 
 Download the AppImage, Linux archive and SHA-256 checksums from
-[GitHub Releases — v0.4.1](https://github.com/vcsoc/aroac/releases/tag/v0.4.1).
+[GitHub Releases — v0.4.2](https://github.com/vcsoc/aroac/releases/tag/v0.4.2).
 Release binaries are distributed as release assets, not stored in Git history.
 
 ```text
-releases/AROAC-0.4.1.AppImage
+releases/AROAC-0.4.2.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
@@ -143,7 +143,7 @@ and automatic updates were not tested.
 
 This build is not Developer ID signed or notarized; Gatekeeper may block opening
 it. macOS automatic-update metadata is deliberately not published for this
-manual-install build. Packaging includes the OAR application icon.
+manual-install build. Packaging includes the AROAC application icon.
 
 ## Workspace controls
 
@@ -160,11 +160,11 @@ manual-install build. Packaging includes the OAR application icon.
 - **Pin hover:** hovering or keyboard-focusing a saved marker shows a theme-colored tooltip with names/callsign, coordinates, grid, timezone and notes. Corresponding displayed left/right items and group headers highlight without opening a closed panel, replacing a selection or expanding groups. Covered globe markers cannot intercept pointer events. Right-clicking a pin cannot start a drag.
 - **Contact context:** expanded read-only cards show Open-Meteo current estimates with icons and cached/stale status, live local time with calculated sun-above/below-horizon icons, IANA timezone and the current DST-aware offset from the home clock (including fractional-hour offsets). These clocks remain live independently of the comparison slider. Weather loads for visible expanded cards and refreshes every 15 minutes; missing weather is explained. Address-book locations use one callsign-matched pin, otherwise a valid grid centre explicitly marked approximate; missing/ambiguous locations never get guessed coordinates or timezones. Link planning calculates approximate short-path distance and initial true bearing when home coordinates are set. The HF MHz/Hz values are **band references, not dial frequencies or propagation predictions**. No path-specific band/mode/power predictor is installed; verify both licences, local allocations, antennas, a clear agreed frequency and propagation before transmitting.
 - **Location/weather panel:** home always appears first, above the selected location. Its whole card, location details, current weather and forecast can be independently collapsed; these choices survive restarts. Click the map or select an address to show selected-location details below home details on the left. Both locations use the same details and weather layout; home requires configured coordinates, not just a device timezone. The left panel uses two columns of weather facts. Three forecast days share a row when space permits; seven use three cards then four, falling back to narrower arrangements as the panel shrinks. Condition-matched icons remain visible. Selected-location Save and station-location actions are icon buttons with tooltips; its close icon removes that selected card without removing home. It includes coordinates/grid/timezone, temperature/feels-like, humidity, wind/gusts, pressure/cloud/visibility/dew point, sunrise/set and 3- or 7-day forecasts. Use the °C/°F and 3-day/7-day two-position slider switches; wind shows km/h and mph. Open-Meteo supplies model estimates, not a guaranteed nearby station observation. Cached results are explicitly marked when stale/offline. The location icon at the far left of the top bar (before Workspace) reopens this panel. Both panels have pin buttons; unpin before closing. Drag each panel’s inner edge to resize it; widths are saved independently across restarts and temporarily limited to fit smaller windows without overwriting your preference. Keyboard-focus an edge and use Left/Right arrows (Shift for larger steps), Home/End for limits, or double-click to reset. Side-panel scrollbars are 4 px wide, theme-colored, and invisible until scrolling; they hide again after 800 ms of inactivity. On narrow map layouts the side panels overlay the map rather than pushing it offscreen.
-- **Themes:** Settings → Themes provides native color pickers, hex fields, a component preview and live preview across OAR. **Apply theme** saves to SQLite; leaving the tab or closing Settings without applying reverts the preview. Import/export uses versioned YAML files; imported colors are previewed before applying. External imagery/websites retain their own appearance.
-- **Locations/contacts transfer:** Locations, Contacts, Export and Import are icon buttons on a shared toolbar, followed by a question-mark transfer tooltip. Export/import versioned OAR JSON through native file dialogs in Settings → Data or Saved locations. Exports include General plus only the current profile’s pins/address-book contacts and, when signed in, that profile’s QSO logbook and legacy saved local operator contacts. Import previews counts, merges records atomically and skips exact duplicates; importing QSOs is explicitly optional and requires sign-in. It never creates accounts or imports passwords/sessions. Imports accept up to 10,000 records per category and an 8 MB file. Full SQLite backup requires sign-in and a single-profile database, because it contains every profile’s data.
+- **Themes:** Settings → Themes provides native color pickers, hex fields, a component preview and live preview across AROAC. **Apply theme** saves to SQLite; leaving the tab or closing Settings without applying reverts the preview. Import/export uses versioned YAML files; imported colors are previewed before applying. External imagery/websites retain their own appearance.
+- **Locations/contacts transfer:** Locations, Contacts, Export and Import are icon buttons on a shared toolbar, followed by a question-mark transfer tooltip. Export/import versioned AROAC JSON through native file dialogs in Settings → Data or Saved locations. Exports include General plus only the current profile’s pins/address-book contacts and, when signed in, that profile’s QSO logbook and legacy saved local operator contacts. Import previews counts, merges records atomically and skips exact duplicates; importing QSOs is explicitly optional and requires sign-in. It never creates accounts or imports passwords/sessions. Imports accept up to 10,000 records per category and an 8 MB file. Full SQLite backup requires sign-in and a single-profile database, because it contains every profile’s data.
 - **Specialist views:** Conditions opens MUF, lightning, shortwave, satellite, solar and radar provider websites inside a sandboxed, separate-session desktop browser view. No Node, preload bridge, local database access, downloads or device permissions are granted to these sites. Main-frame navigation is restricted to the selected provider. Internet and provider availability are required; these are interactive external tools, not locally ingested feeds. Browser-development previews use frames and may be blocked by providers. Attribution/reference links still open the system browser.
 
-Close an older running OAR before launching the new AppImage. Existing station databases are preserved.
+Close an older running AROAC before launching the new AppImage. Existing station databases are preserved.
 
 ## Profile, equipment and ownership documents
 
@@ -179,10 +179,10 @@ These routes are account-scoped in the UI/API, not an encryption boundary. Displ
 ## Local-first behaviour
 
 - Create callsign profiles, sign in, edit station details and manage your QSO logbook without internet. Maidenhead grid is optional; leave it blank if unknown. No station location is guessed.
-- OAR creates `station.sqlite` in its per-user application-data directory, normally `~/.config/oar/` on Linux. The exact location is shown in **Settings → Data**.
+- AROAC creates `station.sqlite` in its per-user application-data directory, normally `~/.config/oar/` on Linux. The exact location is shown in **Settings → Data**.
 - Records survive app restarts. Nothing is stored alongside the AppImage, so replacing the executable does not replace the database.
 - **Back up database** creates a consistent SQLite snapshot through a native save dialog, only when signed in on a single-profile database. Multi-profile users must use scoped JSON/ADIF exports; full device/invoice backup for multi-profile installations is not yet exposed in the UI. The database and backups are not encrypted; protect your device and backup files.
-- **Work offline** disables OAR’s external imagery/feed requests. Profiles and logbook remain usable. Saved observations are returned with stale/offline labels; uncached imagery is unavailable.
+- **Work offline** disables AROAC’s external imagery/feed requests. Profiles and logbook remain usable. Saved observations are returned with stale/offline labels; uncached imagery is unavailable.
 - There is no automatic cloud upload or cross-device synchronization.
 - Passwords are salted/scrypt-hashed and never saved by the login UI. The left-aligned **Remember my callsign** slider below the callsign field remembers only the callsign on this device. By default, desktop sign-in survives navigation/reloads but ends on sign-out or application quit. **Settings → Login → Keep me signed in across restarts** opts into restoring the local session without a timed expiry until manual sign-out; disabling it removes the stored token but keeps the current process signed in until quit. This is local session memory, not third-party identity-provider SSO.
 - Persistent tokens use the OS secret store when available. Otherwise the app requires explicit confirmation before saving an **unencrypted bearer token** in `local-session.json`, restricted to the OS user (0600, atomically replaced). Anyone able to read that token can access the local profile; enable only on a trusted/protected device. No plaintext password is stored. Sign-out revokes the database session and clears stored tokens; startup revokes abandoned process-only sessions. The SQLite database itself is not encrypted.
@@ -201,12 +201,12 @@ Profiles are local to the installation. Callsign ownership is self-declared, not
 - NOAA D-RAP, US radar, North American/Great Lakes satellite panels.
 - Lazy-loaded map rendering and responsive interface; bundled UI works without downloading a website.
 
-Maps/imagery and new observations normally require internet. The saved feed cache is in the local database. Meridians are not political timezone boundaries; polar Mercator coverage ends at ±85°. OAR is not a safety-critical weather service.
+Maps/imagery and new observations normally require internet. The saved feed cache is in the local database. Meridians are not political timezone boundaries; polar Mercator coverage ends at ±85°. AROAC is not a safety-critical weather service.
 
 ## Not complete yet
 
 - **Inter-operator messaging:** published 0.3.12 is local-only. Current source has an optional [encrypted device-relay preview](docs/relay.md); server settings alone never grant enrollment consent. No public discovery, callsign verification, groups, key recovery or forward secrecy. Legacy browser messaging remains a local-only development fixture.
-- **Mobile:** not a release. The old remote-server mobile approach is disabled rather than presented as a standalone implementation. iOS still needs a local SQLite adapter and testing on macOS/Xcode. A [JDK-free native APK packaging/signing probe](research/android-jdk-free/README.md) passed host-side checks, but it is not OAR and has not run on a device. Android remains blocked pending device validation and a compliant local-engine/UI implementation.
+- **Mobile:** not a release. The old remote-server mobile approach is disabled rather than presented as a standalone implementation. iOS still needs a local SQLite adapter and testing on macOS/Xcode. A [JDK-free native APK packaging/signing probe](research/android-jdk-free/README.md) passed host-side checks, but it is not AROAC and has not run on a device. Android remains blocked pending device validation and a compliant local-engine/UI implementation.
 - Specialist provider tools are embedded websites, not native/local feed integrations; website failures, login requirements and provider restrictions still apply.
 - No HF prediction engine, ISS pass/orbit predictions, rig control, push notifications or cloud sync.
 - Windows x64 NSIS packaging has been built on Windows 11, and the packaged application passed the desktop smoke test (offline accounts, SQLite persistence across restart, backup and map controls). The installer wizard itself has not been tested. macOS ARM64 packaging and basic packaged-app tests passed; see the macOS release section for known test failures and installation limitations. Signing and notarization are not configured. Linux AppImage updates are supported from 0.3.10 onward; other platform installers/update flows require target-platform validation.
@@ -217,9 +217,9 @@ Maps/imagery and new observations normally require internet. The saved feed cach
 
 Electron’s main process owns SQLite and the embedded data service. The service is bundled into `desktop/generated/local-service.cjs`; it is not another application or a spawned backend process. It uses an ephemeral loopback-only port as internal transport, protected by a per-launch random capability that never reaches the renderer. Core operation needs no fixed port, remote server, address prompt or manual startup. Optional relay messaging is separate network transport, not an account or local-data backend. The renderer uses a restricted preload/IPC bridge, with Node integration disabled and context isolation/sandboxing enabled.
 
-Closing OAR shuts down the internal service and database. macOS retains the usual app-until-Quit behaviour. One instance per application-data directory is permitted.
+Closing AROAC shuts down the internal service and database. macOS retains the usual app-until-Quit behaviour. One instance per application-data directory is permitted.
 
-Online data comes from public providers, not an OAR account server. External providers receive normal network requests; no telemetry/analytics are installed.
+Online data comes from public providers, not an AROAC account server. External providers receive normal network requests; no telemetry/analytics are installed.
 
 ## Development and release build
 

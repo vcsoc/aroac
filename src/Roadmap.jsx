@@ -29,24 +29,24 @@ export default function Roadmap({ offline }) {
     };
   }, [offline, revision]);
   if (state.loading)
-    return <p role="status">Loading the latest OAR roadmap from GitHub…</p>;
+    return <p role="status">Loading the latest AROAC roadmap from GitHub…</p>;
   if (state.unavailable)
     return (
       <section className="roadmap-fallback">
         <h3>The roadmap is currently unavailable</h3>
         <p>
           {offline
-            ? "OAR is working offline."
-            : "OAR could not retrieve the roadmap from GitHub."}
+            ? "AROAC is working offline."
+            : "AROAC could not retrieve the roadmap from GitHub."}
         </p>
         <p>
-          A wide range of new features and improvements is planned for OAR. You
-          are welcome to reach out to Chris Visser if you would like to
+          A wide range of new features and improvements is planned for AROAC.
+          You are welcome to reach out to Chris Visser if you would like to
           contribute or sponsor future development.
         </p>
         <p>
           <a
-            href="https://github.com/vcsoc/oar"
+            href="https://github.com/vcsoc/aroac"
             target="_blank"
             rel="noreferrer"
           >

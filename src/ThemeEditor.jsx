@@ -42,7 +42,7 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
       <h3>
         Theme editor{" "}
         <Help label="About theme preview">
-          Live preview across OAR. Apply to save; leaving this tab or closing
+          Live preview across AROAC. Apply to save; leaving this tab or closing
           Settings discards unapplied changes. Provider imagery/websites keep
           their own colors.
         </Help>

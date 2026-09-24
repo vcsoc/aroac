@@ -82,7 +82,7 @@ export async function ownershipPdf(user, account, devices) {
     if (part) line(part, size);
   };
   newPage();
-  text("OAR — Equipment ownership record", 19);
+  text("AROAC — Equipment ownership record", 19);
   text("Generated: " + new Date().toISOString());
   text("Operator: " + user.callsign + " · " + account.name, 13);
   for (const key of [

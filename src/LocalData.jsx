@@ -17,7 +17,7 @@ export default function LocalData() {
       <h3>
         Your station lives on this device.{" "}
         <Help label="About local storage">
-          Profiles, contacts and your logbook are stored in OAR’s own SQLite
+          Profiles, contacts and your logbook are stored in AROAC’s own SQLite
           database. They work without internet. Nothing needs to be installed or
           started separately.
         </Help>

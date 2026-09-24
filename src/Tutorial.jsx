@@ -3,8 +3,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 export const tutorialSteps = [
   {
     target: ".topbar",
-    title: "Welcome to OAR",
-    text: "OAR brings your station, maps, conditions and logbook into one local-first workspace. This tour only changes the view—it does not edit your saved data. Use Next and Previous to explore, or End whenever you like.",
+    title: "Welcome to AROAC",
+    text: "AROAC brings your station, maps, conditions and logbook into one local-first workspace. This tour only changes the view—it does not edit your saved data. Use Next and Previous to explore, or End whenever you like.",
   },
   {
     target: ".sidebar nav",
@@ -64,12 +64,12 @@ export const tutorialSteps = [
   {
     target: ".profile-button",
     title: "Your profile and help",
-    text: "Select your callsign for Edit Profile, About OAR, Logout, and Help → Tutorial. Your profile includes equipment and invoice records. About OAR credits the developer and its Roadmap tab retrieves potential future plans from GitHub.",
+    text: "Select your callsign for Edit Profile, About AROAC, Logout, and Help → Tutorial. Your profile includes equipment and invoice records. About AROAC credits the developer and its Roadmap tab retrieves potential future plans from GitHub.",
   },
   {
     target: ".app-statusbar",
     title: "Version and station status",
-    text: "The bottom status line always shows the installed OAR version on the left and your callsign/grid on the right. Include the version when reporting a problem. You can return to Help → Tutorial at any time. End restores your previous workspace view.",
+    text: "The bottom status line always shows the installed AROAC version on the left and your callsign/grid on the right. Include the version when reporting a problem. You can return to Help → Tutorial at any time. End restores your previous workspace view.",
   },
 ];
 
@@ -140,7 +140,7 @@ export default function Tutorial({ onPrepare, onEnd }) {
     <dialog
       ref={dialog}
       className="tutorial-dialog"
-      aria-label="OAR tutorial"
+      aria-label="AROAC tutorial"
       onCancel={(e) => {
         e.preventDefault();
         onEnd();
@@ -163,7 +163,7 @@ export default function Tutorial({ onPrepare, onEnd }) {
       <section ref={card} className="tutorial-card" style={{ top }}>
         <div aria-live="polite" aria-atomic="true">
           <small>
-            OAR tutorial · {index + 1} of {tutorialSteps.length}
+            AROAC tutorial · {index + 1} of {tutorialSteps.length}
           </small>
           <h2>{step.title}</h2>
           <p>{step.text}</p>

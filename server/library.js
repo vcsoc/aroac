@@ -66,7 +66,7 @@ function qso(v) {
 }
 export function validateLibrary(data) {
   if (data?.format !== "oar-location-book" || data.version !== 1)
-    throw Error("Not an OAR location book (version 1).");
+    throw Error("Not an AROAC location book (version 1).");
   const output = {};
   for (const [key, validate] of [
     ["pins", pin],

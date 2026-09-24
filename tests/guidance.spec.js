@@ -56,12 +56,14 @@ test("roadmap renders safe Markdown and explains unavailable content", async ({
     requests++;
     return route.fulfill({
       contentType: "text/plain",
-      body: "# Potential improvements\n\n- **Offline maps**\n- Better logging\n\n[Project](https://github.com/vcsoc/oar)\n\n<script>window.roadmapInjected=true</script>\n\n![remote](https://example.com/tracker.png)\n\n[Unsafe](javascript:alert(1))",
+      body: "# Potential improvements\n\n- **Offline maps**\n- Better logging\n\n[Project](https://github.com/vcsoc/aroac)\n\n<script>window.roadmapInjected=true</script>\n\n![remote](https://example.com/tracker.png)\n\n[Unsafe](javascript:alert(1))",
     });
   });
   await page.goto("/");
-  await expect(page.locator(".app-statusbar")).toContainText(`OAR v${version}`);
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
+  await expect(page.locator(".app-statusbar")).toContainText(
+    `AROAC v${version}`,
+  );
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
   expect(requests).toBe(0);
   await page.getByRole("tab", { name: "Roadmap" }).click();
   await expect(
@@ -89,7 +91,7 @@ test("roadmap renders safe Markdown and explains unavailable content", async ({
   );
   await page.keyboard.press("Escape");
   await page.context().setOffline(true);
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
   await page.getByRole("tab", { name: "Roadmap" }).click();
   await expect(page.locator(".roadmap-fallback")).toContainText(
     "working offline",
@@ -151,13 +153,13 @@ test("authenticated Help tutorial walks through sections and restores the view",
   await page.locator(".profile-button").click();
   await page.getByRole("menuitem", { name: "Help" }).click();
   await page.getByRole("menuitem", { name: "Tutorial", exact: true }).click();
-  const tour = page.getByRole("dialog", { name: "OAR tutorial" });
+  const tour = page.getByRole("dialog", { name: "AROAC tutorial" });
   await expect(tour).toBeVisible();
   await expect(tour.getByRole("button", { name: "Previous" })).toBeDisabled();
   await tour.getByRole("button", { name: "Next" }).click();
   await expect(tour).toContainText("Choose a workspace");
   await tour.getByRole("button", { name: "Previous" }).click();
-  await expect(tour).toContainText("Welcome to OAR");
+  await expect(tour).toContainText("Welcome to AROAC");
   for (let i = 0; i < 12; i++) {
     await tour.getByRole("button", { name: "Next" }).click();
     await expect(tour.locator(".tutorial-spotlight")).toBeVisible();

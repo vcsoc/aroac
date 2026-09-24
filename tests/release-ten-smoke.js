@@ -44,7 +44,7 @@ try {
   await page.reload();
   await page.locator(".profile-button").click();
   await page.getByRole("menuitem", { name: "Check for updates" }).click();
-  const notice = page.getByRole("region", { name: "OAR update" });
+  const notice = page.getByRole("region", { name: "AROAC update" });
   await expect(notice).toBeVisible();
   await expect(notice).toContainText(
     process.env.OAR_DESKTOP_EXECUTABLE ? "offline" : "AppImage",
@@ -81,7 +81,7 @@ try {
   await page
     .getByRole("button", { name: "Close settings", exact: true })
     .click();
-  await page.getByRole("button", { name: "About OAR", exact: true }).click();
+  await page.getByRole("button", { name: "About AROAC", exact: true }).click();
   await page.getByRole("tab", { name: "License", exact: true }).click();
   await expect(page.locator(".license-content")).toContainText(
     "electron-updater@",

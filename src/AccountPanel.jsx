@@ -286,7 +286,7 @@ export default function AccountPanel({
                     </label>
                     <small>
                       First/last names, mobile, email, address, avatar and
-                      devices are account-scoped in OAR, not published in the
+                      devices are account-scoped in AROAC, not published in the
                       local directory. Display name/grid/biography appear in
                       that directory. No cloud synchronization. Database and
                       backups are not encrypted: anyone with OS-user or

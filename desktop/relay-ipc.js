@@ -45,10 +45,10 @@ export function installRelay({
     if (action === "restart-storage") {
       const result = await dialog.showMessageBox(getWindow(), {
         type: "question",
-        buttons: ["Cancel", "Restart OAR"],
+        buttons: ["Cancel", "Restart AROAC"],
         defaultId: 0,
         cancelId: 0,
-        message: "Restart OAR to reconnect to your OS credential vault?",
+        message: "Restart AROAC to reconnect to your OS credential vault?",
         detail:
           "Save any unfinished edits first. Existing relay data and backend launch options will be preserved.",
       });
