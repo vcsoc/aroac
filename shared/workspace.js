@@ -6,6 +6,7 @@ export const themeColors = {
   text: "#e2e9e2",
   muted: "#96a58e",
   accent: "#c4ed9e",
+  activeIcon: "#9cff57",
   border: "#354139",
   buttonText: "#172415",
   selection: "#354c2b",
@@ -32,12 +33,15 @@ export function validateTheme(value) {
     throw Error("Not a supported OAR theme (version 1).");
   const colors = {};
   for (const key of Object.keys(themeColors)) {
-    if (
-      typeof value.colors[key] !== "string" ||
-      !/^#[0-9a-f]{6}$/i.test(value.colors[key])
-    )
+    // Added to theme v1: older saved/imported themes remain valid. An explicitly
+    // supplied malformed value still fails validation rather than being hidden.
+    const color =
+      key === "activeIcon" && !Object.hasOwn(value.colors, key)
+        ? themeColors.activeIcon
+        : value.colors[key];
+    if (typeof color !== "string" || !/^#[0-9a-f]{6}$/i.test(color))
       throw Error(`Invalid ${key} color; use #RRGGBB.`);
-    colors[key] = value.colors[key];
+    colors[key] = color;
   }
   if (Object.keys(value.colors).some((k) => !Object.hasOwn(themeColors, k)))
     throw Error("Unknown theme color.");

@@ -182,11 +182,13 @@ export function useSavedPins(mapRef, ready, pins, callbacks) {
         });
       });
       marker.on("dragstart", () => {
+        element.classList.add("is-dragging");
         leave();
         lastDrag = Date.now();
         callbacks.current.onContextClose?.();
       });
       marker.on("dragend", async () => {
+        element.classList.remove("is-dragging");
         lastDrag = Date.now();
         const point = marker.getLngLat().wrap();
         try {

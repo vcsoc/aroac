@@ -181,20 +181,16 @@ export function AboutOAR({ onClose, offline }) {
   const [tab, setTab] = useState("about");
   return (
     <Modal
-      title="About OAR"
+      title="About AROAC"
       heading={
-        <img
-          className="about-logo"
-          src="./oar-logo-full.png"
-          alt="OAR · Open Amateur Radio"
-        />
+        <strong>AROAC · Amateur Radio Operations and Communications</strong>
       }
       onClose={onClose}
     >
       <div
         className="about-tabs"
         role="tablist"
-        aria-label="About OAR sections"
+        aria-label="About AROAC sections"
       >
         {[
           ["about", "About"],
@@ -244,11 +240,14 @@ export function AboutOAR({ onClose, offline }) {
         ) : (
           <>
             <p>
-              <strong>OAR · Open Amateur Radio</strong> · v{APP_VERSION}
+              <strong>
+                AROAC · Amateur Radio Operations and Communications
+              </strong>{" "}
+              · v{APP_VERSION}
             </p>
             <p className="about-description">
-              OAR is a local-first amateur radio workspace combining world maps,
-              station clocks, propagation and weather observations, saved
+              AROAC is a local-first amateur radio workspace combining world
+              maps, station clocks, propagation and weather observations, saved
               locations, contacts, a logbook and equipment records. Your
               application logic and database live on this device; internet
               access supplies online maps and observations, not a separate
@@ -266,11 +265,11 @@ export function AboutOAR({ onClose, offline }) {
             </p>
             <p>
               <a
-                href="https://github.com/vcsoc/oar"
+                href="https://github.com/vcsoc/aroac"
                 target="_blank"
                 rel="noreferrer"
               >
-                <Github size={15} aria-hidden="true" /> github.com/vcsoc/oar
+                <Github size={15} aria-hidden="true" /> github.com/vcsoc/aroac
               </a>
             </p>
           </>
@@ -287,7 +286,7 @@ export function WindowControls() {
       {[
         ["minimize", "Minimize", Minus],
         ["maximize", "Maximize or restore", Square],
-        ["close", "Close OAR", X],
+        ["close", "Close AROAC", X],
       ].map(([action, label, Icon]) => (
         <button
           key={action}
@@ -372,7 +371,7 @@ export function AccountMenu({
       )}
       {[
         ...(signedIn ? [["Edit Profile", onEdit]] : []),
-        ["About OAR", onAbout],
+        ["About AROAC", onAbout],
         ["Check for updates", onUpdates],
         signedIn ? ["Logout", onLogout] : ["Sign in", onSignIn],
       ].map(([label, action]) => (

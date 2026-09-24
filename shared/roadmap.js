@@ -1,5 +1,5 @@
 export const ROADMAP_URL =
-  "https://raw.githubusercontent.com/vcsoc/oar/main/roadmap.md";
+  "https://raw.githubusercontent.com/vcsoc/aroac/main/roadmap.md";
 export const ROADMAP_LIMIT = 128 * 1024;
 export async function fetchRoadmap({
   offline = false,

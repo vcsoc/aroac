@@ -11,6 +11,7 @@ export function installRelay({
   request,
   canEncrypt,
   safeStorage,
+  storageStatus,
   isOffline,
   getWindow,
 }) {
@@ -19,9 +20,10 @@ export function installRelay({
     directory: path.join(app.getPath("userData"), "private-relay"),
     storage: safeStorage,
     secure: canEncrypt,
+    storageStatus,
     offline: isOffline,
-    allowLoopback:
-      !app.isPackaged && process.env.OAR_RELAY_ALLOW_LOOPBACK === "1",
+    // Explicit local-testing opt-in, including packaged previews. Never permits LAN HTTP.
+    allowLoopback: process.env.OAR_RELAY_ALLOW_LOOPBACK === "1",
   });
   client.autoImport([
     path.join(app.getPath("userData"), "settings.yaml"),
@@ -39,6 +41,28 @@ export function installRelay({
     authorized(event);
     const owner = await profile();
     if (action === "status") return client.status(owner);
+    if (action === "retry-storage") return client.retryStorage(owner);
+    if (action === "restart-storage") {
+      const result = await dialog.showMessageBox(getWindow(), {
+        type: "question",
+        buttons: ["Cancel", "Restart OAR"],
+        defaultId: 0,
+        cancelId: 0,
+        message: "Restart OAR to reconnect to your OS credential vault?",
+        detail:
+          "Save any unfinished edits first. Existing relay data and backend launch options will be preserved.",
+      });
+      if (result.response === 1) {
+        // Relaunch the durable AppImage, not its temporary mounted executable.
+        app.relaunch(
+          process.platform === "linux" && process.env.APPIMAGE
+            ? { execPath: process.env.APPIMAGE }
+            : {},
+        );
+        app.quit();
+      }
+      return client.status(owner);
+    }
     if (action === "import") {
       const result = await dialog.showOpenDialog(getWindow(), {
         title: "Import relay settings.yaml",

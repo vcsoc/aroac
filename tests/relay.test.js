@@ -71,6 +71,64 @@ test("relay YAML is strict, bounded and only permits HTTPS origins or explicit l
   );
 });
 
+test("HTTP testing accepts only loopback origins and keeps URL restrictions", () => {
+  for (const url of [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://[::1]:8080",
+  ]) {
+    const yaml = JSON.stringify({ version: 1, relay: { url } });
+    assert.throws(() => parseRelaySettings(yaml));
+    assert.equal(
+      parseRelaySettings(yaml, { allowLoopback: true }).relay.url,
+      url,
+    );
+  }
+  for (const url of [
+    "http://192.168.1.2:8080",
+    "http://relay.example",
+    "http://localhost.example",
+    "http://u:p@localhost:8080",
+    "http://localhost:8080/path",
+    "http://localhost:8080/?x=1",
+    "http://localhost:8080/#x",
+  ]) {
+    assert.throws(() =>
+      parseRelaySettings(JSON.stringify({ version: 1, relay: { url } }), {
+        allowLoopback: true,
+      }),
+    );
+  }
+});
+
+test("saved HTTP settings require opt-in again after restart and cannot start traffic without it", async () => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "oar-loopback-"));
+  let calls = 0;
+  try {
+    const options = {
+      directory,
+      storage: testVault(),
+      secure: () => true,
+      fetcher: async () => {
+        calls++;
+        throw Error("unexpected network");
+      },
+    };
+    const enabled = new RelayClient({ ...options, allowLoopback: true });
+    enabled.importSettings('version: 1\nrelay: {url: "http://localhost:8080"}');
+    assert.equal(enabled.status(null).loopbackTesting, true);
+    const disabled = new RelayClient(options);
+    assert.equal(disabled.status(null).url, null);
+    assert.match(disabled.status(null).error, /OAR_RELAY_ALLOW_LOOPBACK=1/);
+    await assert.rejects(disabled.enable(1, true), /Import relay settings/);
+    assert.equal(calls, 0);
+    const restored = new RelayClient({ ...options, allowLoopback: true });
+    assert.equal(restored.status(null).url, "http://localhost:8080");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("sodium envelopes authenticate peers/content/recipient, reject tampering and expiry; request signatures verify independently", async () => {
   await ready;
   const a = createIdentity(),

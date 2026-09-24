@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld(
     },
     windowControl: (action) => ipcRenderer.invoke("oar:window-control", action),
     connection: () => ipcRenderer.invoke("oar:connection"),
+    toggleDemo: () => ipcRenderer.invoke("oar:demo-toggle"),
     loginSettings: (value, allowUnencrypted) =>
       ipcRenderer.invoke("oar:login-settings", value, allowUnencrypted),
     backup: () => ipcRenderer.invoke("oar:backup"),

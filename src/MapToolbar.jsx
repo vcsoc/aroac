@@ -7,6 +7,7 @@ export default function MapToolbar({
   followGrey,
   muf,
   setMuf,
+  iconOnly = false,
 }) {
   return (
     <div className="map-toolbar-toggles">
@@ -36,6 +37,7 @@ export default function MapToolbar({
       ].map(({ name, value, set, tip }) => (
         <Switch
           fullRow
+          iconOnly={iconOnly}
           key={name}
           label={name}
           value={value}

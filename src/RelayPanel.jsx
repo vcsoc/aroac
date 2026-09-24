@@ -69,6 +69,13 @@ export default function RelayPanel({ user }) {
       <p>
         <b>Relay:</b> {state?.url || "Not configured"}
       </p>
+      {state?.loopbackTesting && (
+        <p role="status">
+          Local HTTP testing is enabled for loopback addresses only. HTTP does
+          not authenticate the server or protect enrollment credentials in
+          transit. Use disposable credentials; use HTTPS outside local testing.
+        </p>
+      )}
       <p>
         Adjacent settings.yaml is applied only when no relay is configured.
         Importing settings does not register this device or contact the relay.
@@ -91,11 +98,25 @@ export default function RelayPanel({ user }) {
         Import / override settings.yaml
       </button>
       {!user && <p>Sign in to use private messaging.</p>}
-      {state && !state.secureStorage && (
-        <p role="status">
-          OS-protected credential storage is unavailable. Enable your operating
-          system’s credential vault; plaintext key storage is not permitted.
-        </p>
+      {state && (
+        <div role="status">
+          <p>
+            {state.storage?.message ||
+              (!state.secureStorage
+                ? "OS-protected credential storage is unavailable. Unlock your OS credential vault, then retry or restart OAR. Plaintext key storage is not permitted."
+                : "OS-protected credential storage is available.")}
+          </p>
+          <button disabled={busy} onClick={() => run("retry-storage")}>
+            Retry credential storage
+          </button>{" "}
+          <button disabled={busy} onClick={() => run("restart-storage")}>
+            Restart OAR
+          </button>
+          <p>
+            Retry after unlocking your vault. If it is still unavailable, fully
+            restart OAR. Never delete saved relay data to fix a vault error.
+          </p>
+        </div>
       )}
       {user && state?.url && state.secureStorage && (
         <>

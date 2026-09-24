@@ -38,7 +38,7 @@ export function parseRelaySettings(text, { allowLoopback = false } = {}) {
     parsed.pathname !== "/"
   )
     throw Error(
-      "Relay must be an HTTPS origin without credentials, path, query or fragment.",
+      "Relay must be an HTTPS origin without credentials, path, query or fragment. For local HTTP testing only, restart with OAR_RELAY_ALLOW_LOOPBACK=1 (localhost, 127.0.0.1 or [::1]).",
     );
   if (
     enrollmentToken !== undefined &&

@@ -13,7 +13,7 @@ module.exports = function setupUpdates({
   autoUpdater.setFeedURL({
     provider: "github",
     owner: "vcsoc",
-    repo: "oar",
+    repo: "aroac",
     private: false,
     releaseType: "release",
   });

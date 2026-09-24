@@ -1,0 +1,72 @@
+.coverage-controls {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.coverage-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.coverage-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+.coverage-toolbar select {
+  max-width: 190px;
+  padding: 5px;
+}
+.coverage-summary {
+  margin: 7px 0 2px;
+  font-size: 12px;
+}
+.coverage-assumptions {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.coverage-assumptions h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.coverage-controls .coverage-assumptions p {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 8px 0;
+}
+.coverage-controls .coverage-info {
+  padding: 8px 10px;
+  border-left: 2px solid #66cfff;
+  border-radius: 4px;
+  background: color-mix(in srgb, #66cfff 8%, transparent);
+}
+.coverage-controls p {
+  max-width: 100ch;
+  line-height: 1.5;
+}
+.coverage-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.coverage-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.coverage-fields input {
+  width: 155px;
+  padding: 5px;
+}
+@media (max-width: 600px) {
+  .coverage-toolbar {
+    gap: 8px;
+  }
+  .coverage-toolbar select {
+    max-width: 155px;
+  }
+}

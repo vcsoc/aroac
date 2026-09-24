@@ -11,6 +11,8 @@ import { nightGeometry, emptyGeoJSON, globeOverviewZoom } from "./solar";
 import { useStreetLabels, useSavedPins, useRepeaterLayer } from "./mapLayers";
 import { useCityLabels } from "./cityLabels";
 import RadarLegend from "./RadarLegend";
+import { useCoverageLayer } from "./Coverage.jsx";
+import { useMapSelection } from "./mapSelection.js";
 import { useMuf, useMufLayer, MufLegend } from "./MufLayer";
 const meridians = {
   type: "FeatureCollection",
@@ -27,6 +29,8 @@ const meridians = {
   })),
 };
 export default function WorldMap({
+  coverage = emptyGeoJSON,
+  topographic = false,
   globe = false,
   theme,
   zones = false,
@@ -64,7 +68,9 @@ export default function WorldMap({
   const [ready, setReady] = useState(false),
     [error, setError] = useState(""),
     [zoom, setZoom] = useState(1.4),
-    [radarInfo, setRadarInfo] = useState(null);
+    [radarInfo, setRadarInfo] = useState(null),
+    [clickedLocation, setClickedLocation] = useState(null);
+  useMapSelection(map, ready, clickedLocation);
   const mufState = useMuf(muf);
   useMufLayer(map, ready, muf, mufState, movingPinId);
   const interactions = useRef();
@@ -78,6 +84,7 @@ export default function WorldMap({
     onContextClose,
     onCancelMove,
   };
+  useCoverageLayer(map, ready, coverage);
   useStreetLabels(map, ready, streets, host);
   useCityLabels(map, ready, cities, host);
   useSavedPins(map, ready, pins, interactions);
@@ -134,10 +141,40 @@ export default function WorldMap({
                 sources.mapRaster?.attribution ||
                 "Imagery © Esri, Maxar, Earthstar Geographics",
             },
+            topographic: {
+              type: "raster",
+              tiles: [
+                sources.mapTopographic?.url ||
+                  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+              ],
+              tileSize: 256,
+              maxzoom: 19,
+              attribution:
+                sources.mapTopographic?.attribution ||
+                "Topographic © Esri, HERE, Garmin, Intermap, USGS, NGA and the GIS User Community",
+            },
             zones: { type: "geojson", data: meridians },
             night: {
               type: "geojson",
               data: preferences.grey ? nightGeometry() : emptyGeoJSON,
+            },
+            "night-soft": {
+              type: "geojson",
+              data: preferences.grey
+                ? nightGeometry(new Date(), 1)
+                : emptyGeoJSON,
+            },
+            "night-edge": {
+              type: "geojson",
+              data: preferences.grey
+                ? nightGeometry(new Date(), 2)
+                : emptyGeoJSON,
+            },
+            "night-halo": {
+              type: "geojson",
+              data: preferences.grey
+                ? nightGeometry(new Date(), 3)
+                : emptyGeoJSON,
             },
           },
           layers: [
@@ -151,12 +188,48 @@ export default function WorldMap({
               },
             },
             {
+              id: "topographic",
+              type: "raster",
+              source: "topographic",
+              layout: { visibility: "none" },
+            },
+            {
+              id: "night-halo",
+              type: "fill",
+              source: "night-halo",
+              paint: {
+                "fill-color": "#020914",
+                "fill-opacity": 0.025,
+                "fill-antialias": false,
+              },
+            },
+            {
+              id: "night-edge",
+              type: "fill",
+              source: "night-edge",
+              paint: {
+                "fill-color": "#020914",
+                "fill-opacity": 0.04,
+                "fill-antialias": false,
+              },
+            },
+            {
+              id: "night-soft",
+              type: "fill",
+              source: "night-soft",
+              paint: {
+                "fill-color": "#020914",
+                "fill-opacity": 0.065,
+                "fill-antialias": false,
+              },
+            },
+            {
               id: "night",
               type: "fill",
               source: "night",
               paint: {
                 "fill-color": "#020914",
-                "fill-opacity": 0.64,
+                "fill-opacity": 0.54,
                 "fill-antialias": false,
               },
             },
@@ -214,6 +287,14 @@ export default function WorldMap({
         });
       });
       m.on("click", (e) => {
+        if (!Number.isFinite(e.lngLat.lat) || !Number.isFinite(e.lngLat.lng))
+          return;
+        const projected = m.project(e.lngLat);
+        if (
+          m.getProjection()?.type === "globe" &&
+          Math.hypot(projected.x - e.point.x, projected.y - e.point.y) > 2
+        )
+          return;
         const { lat, lng } = e.lngLat.wrap();
         if (interactions.current.movingPinId) {
           interactions.current
@@ -236,12 +317,13 @@ export default function WorldMap({
         try {
           zone = tzlookup(lat, lng);
         } catch {}
+        setClickedLocation({ lat, lng });
         callback.current?.({ lat, lng, zone, grid: maidenhead(lat, lng) });
       });
       m.on("error", (e) =>
         setError(
-          e.sourceId === "earth"
-            ? "Imagery unavailable — map controls and the calculated grey line still work."
+          ["earth", "topographic"].includes(e.sourceId)
+            ? "Base map unavailable — range estimates and map controls still work. Tiles require network access."
             : "A map source could not load.",
         ),
       );
@@ -272,8 +354,30 @@ export default function WorldMap({
         source.setTiles([sources.mapRaster.url]);
       }
     }
+    if (sources.mapTopographic) {
+      const source = m.getSource("topographic");
+      if (source) {
+        source.attribution = sources.mapTopographic.attribution;
+        source.setTiles([sources.mapTopographic.url]);
+      }
+    }
     if (sources.mapGlyphs) m.setGlyphs(sources.mapGlyphs.url);
-  }, [ready, sources.mapRaster, sources.mapGlyphs]);
+  }, [ready, sources.mapRaster, sources.mapTopographic, sources.mapGlyphs]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready) return;
+    m.setLayoutProperty(
+      "earth",
+      "visibility",
+      topographic ? "none" : "visible",
+    );
+    m.setLayoutProperty(
+      "topographic",
+      "visibility",
+      topographic ? "visible" : "none",
+    );
+    m.getContainer().dataset.basemap = topographic ? "topographic" : "imagery";
+  }, [ready, topographic]);
   useEffect(() => {
     if (map.current)
       map.current.getCanvas().style.cursor = movingPinId ? "crosshair" : "";
@@ -437,6 +541,15 @@ export default function WorldMap({
     const update = () => {
       const instant = new Date(Date.now() + greyOffset * 60000);
       const data = grey ? nightGeometry(instant) : emptyGeoJSON;
+      m.getSource("night-soft").setData(
+        grey ? nightGeometry(instant, 1) : emptyGeoJSON,
+      );
+      m.getSource("night-edge").setData(
+        grey ? nightGeometry(instant, 2) : emptyGeoJSON,
+      );
+      m.getSource("night-halo").setData(
+        grey ? nightGeometry(instant, 3) : emptyGeoJSON,
+      );
       host.current.dataset.nightTime = instant.toISOString();
       host.current.dataset.nightOffset = String(greyOffset);
       m.getSource("night").setData(data);

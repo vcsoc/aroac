@@ -19,6 +19,14 @@ import "./guidance.css";
 import "./release-ten.css";
 import "./release-twelve.css";
 import Scrollbars from "./Scrollbars";
+// Reset an abandoned demo origin before any component reads browser preferences.
+if (
+  window.location.protocol === "oar:" &&
+  window.location.hostname === "demo"
+) {
+  localStorage.clear();
+  sessionStorage.clear();
+}
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Scrollbars />

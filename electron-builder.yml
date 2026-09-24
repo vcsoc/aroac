@@ -1,5 +1,5 @@
 appId: org.openamateurradio.oar
-productName: OAR
+productName: AROAC
 asar: true
 npmRebuild: false
 directories:
@@ -21,7 +21,7 @@ files:
 publish:
   provider: github
   owner: vcsoc
-  repo: oar
+  repo: aroac
   releaseType: release
 linux:
   syncDesktopName: true

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { homeDifference } from "./contactContext";
+import "./location-tabs.css";
 import { Help } from "./InterfaceUI";
 import { useSourceRevision } from "./sourceEvents";
 import {
@@ -477,6 +478,9 @@ function LocationCard({
   );
 }
 export default function LocationDetails({
+  tab,
+  setTab,
+  rangeContent,
   onFocus,
   onHome,
   onDismiss,
@@ -494,6 +498,7 @@ export default function LocationDetails({
   pins = [],
   onCorrect,
 }) {
+  const tabs = ["General", "Range"];
   const [fahrenheit, setFahrenheit] = usePreference("oar-fahrenheit"),
     [week, setWeek] = usePreference("oar-week-forecast");
   useEffect(() => {
@@ -517,8 +522,39 @@ export default function LocationDetails({
       aria-hidden={!open}
       inert={!open}
     >
-      <div className="drawer-heading">
-        <h2>Location details</h2>
+      <div className="drawer-heading location-tab-heading">
+        <div className="location-tabs" role="tablist" aria-label="Left panel">
+          {tabs.map((name, index) => (
+            <button
+              key={name}
+              type="button"
+              role="tab"
+              id={`location-tab-${name.toLowerCase()}`}
+              aria-controls={`location-panel-${name.toLowerCase()}`}
+              aria-selected={tab === name}
+              tabIndex={tab === name ? 0 : -1}
+              onClick={() => setTab(name)}
+              onKeyDown={(event) => {
+                const next =
+                  event.key === "ArrowRight"
+                    ? (index + 1) % tabs.length
+                    : event.key === "ArrowLeft"
+                      ? (index + tabs.length - 1) % tabs.length
+                      : event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? tabs.length - 1
+                          : null;
+                if (next === null) return;
+                event.preventDefault();
+                setTab(tabs[next]);
+                event.currentTarget.parentElement.children[next].focus();
+              }}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
         <button
           className="icon-button"
           aria-label="Pin left panel"
@@ -537,62 +573,80 @@ export default function LocationDetails({
           <X size={17} />
         </button>
       </div>
-      <div className="weather-controls">
-        <WeatherSwitch
-          label="Temperature units"
-          checked={fahrenheit}
-          onChange={setFahrenheit}
-          labels={["°C", "°F"]}
-        />
-        <WeatherSwitch
-          label="Forecast days"
-          checked={week}
-          onChange={setWeek}
-          labels={["3 days", "7 days"]}
-        />
-      </div>
       <PanelScrollArea>
-        {open && (
-          <>
-            <LocationCard
-              home
-              homeZone={home?.zone}
-              onFocus={onFocus}
-              onHome={onHome}
-              place={home}
-              hovered={
-                hoveredPin &&
-                hoveredPin.lat === home?.lat &&
-                hoveredPin.lng === home?.lng
-              }
-              units={fahrenheit ? "F" : "C"}
-              days={week ? 7 : 3}
+        <div
+          role="tabpanel"
+          id="location-panel-general"
+          aria-labelledby="location-tab-general"
+          hidden={tab !== "General"}
+          tabIndex={0}
+        >
+          <h2 className="location-section-heading">Location details</h2>
+          <div className="weather-controls">
+            <WeatherSwitch
+              label="Temperature units"
+              checked={fahrenheit}
+              onChange={setFahrenheit}
+              labels={["°C", "°F"]}
             />
-            {selected.map((item) => (
+            <WeatherSwitch
+              label="Forecast days"
+              checked={week}
+              onChange={setWeek}
+              labels={["3 days", "7 days"]}
+            />
+          </div>
+          {open && (
+            <>
               <LocationCard
-                key={item.key}
-                place={item.place}
-                locked={item.locked}
-                onLock={() => onLock(item.key)}
+                home
                 homeZone={home?.zone}
                 onFocus={onFocus}
                 onHome={onHome}
-                onDismiss={() => onDismiss(item.key)}
+                place={home}
                 hovered={
                   hoveredPin &&
-                  Math.abs(hoveredPin.lat - item.place.lat) < 0.000001 &&
-                  Math.abs(hoveredPin.lng - item.place.lng) < 0.000001
+                  hoveredPin.lat === home?.lat &&
+                  hoveredPin.lng === home?.lng
                 }
                 units={fahrenheit ? "F" : "C"}
                 days={week ? 7 : 3}
-                onSave={onSave}
-                onStation={onStation}
-                pins={pins}
-                onCorrect={(place) => onCorrect(place, item.key)}
               />
-            ))}
-          </>
-        )}
+              {selected.map((item) => (
+                <LocationCard
+                  key={item.key}
+                  place={item.place}
+                  locked={item.locked}
+                  onLock={() => onLock(item.key)}
+                  homeZone={home?.zone}
+                  onFocus={onFocus}
+                  onHome={onHome}
+                  onDismiss={() => onDismiss(item.key)}
+                  hovered={
+                    hoveredPin &&
+                    Math.abs(hoveredPin.lat - item.place.lat) < 0.000001 &&
+                    Math.abs(hoveredPin.lng - item.place.lng) < 0.000001
+                  }
+                  units={fahrenheit ? "F" : "C"}
+                  days={week ? 7 : 3}
+                  onSave={onSave}
+                  onStation={onStation}
+                  pins={pins}
+                  onCorrect={(place) => onCorrect(place, item.key)}
+                />
+              ))}
+            </>
+          )}
+        </div>
+        <div
+          role="tabpanel"
+          id="location-panel-range"
+          aria-labelledby="location-tab-range"
+          hidden={tab !== "Range"}
+          tabIndex={0}
+        >
+          {rangeContent}
+        </div>
       </PanelScrollArea>
       {resize && <PanelResizer {...resize} />}
     </aside>

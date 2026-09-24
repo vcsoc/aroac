@@ -12,6 +12,14 @@ import {
   Home,
   Move,
   Undo2,
+  Eclipse,
+  CloudRain,
+  Activity,
+  Globe2,
+  Signpost,
+  Building2,
+  Clock,
+  Radar,
 } from "lucide-react";
 import { isCardNavigationClick } from "./contactLocation";
 import { withTimezone } from "./locations";
@@ -24,13 +32,42 @@ import SavedItemList, {
 import ContactContext from "./ContactContext.jsx";
 import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
+import { repeaterFootprint } from "../shared/coverage.js";
+const toggleIcons = {
+  "Grey line": Eclipse,
+  Radar: CloudRain,
+  MUF: Activity,
+  "Show time zones": Globe2,
+  "Show street names": Signpost,
+  "Show city names": Building2,
+  "Show repeaters": Radio,
+  "Grey line follows clock slider": Clock,
+  "Estimated range": Radar,
+};
 export function Switch({
   label,
   value,
   onChange,
   description,
   fullRow = false,
+  iconOnly = false,
 }) {
+  if (iconOnly) {
+    const Icon = toggleIcons[label] || Radio;
+    return (
+      <button
+        type="button"
+        className="map-icon-toggle"
+        aria-label={label}
+        aria-pressed={value}
+        aria-description={description}
+        title={`${label}: ${description}`}
+        onClick={() => onChange(!value)}
+      >
+        <Icon size={16} aria-hidden="true" />
+      </button>
+    );
+  }
   if (fullRow)
     return (
       <div className="switch-help-row">
@@ -159,11 +196,13 @@ export function MapSettings({
   showRepeaters,
   setRepeaters,
   directory,
+  iconOnly = false,
 }) {
   return (
     <>
       <Switch
         fullRow
+        iconOnly={iconOnly}
         label="Show time zones"
         value={zones}
         onChange={setZones}
@@ -171,6 +210,7 @@ export function MapSettings({
       />
       <Switch
         fullRow
+        iconOnly={iconOnly}
         label="Show street names"
         value={streets}
         onChange={setStreets}
@@ -178,6 +218,7 @@ export function MapSettings({
       />
       <Switch
         fullRow
+        iconOnly={iconOnly}
         label="Show city names"
         value={cities}
         onChange={setCities}
@@ -185,12 +226,13 @@ export function MapSettings({
       />
       <Switch
         fullRow
+        iconOnly={iconOnly}
         label="Show repeaters"
         value={showRepeaters}
         onChange={setRepeaters}
         description="All geolocated records available from hearham.com. Markers cluster when zoomed out."
       />
-      {showRepeaters && (
+      {showRepeaters && !iconOnly && (
         <div className="directory-status">
           <p role="status">
             {directory.loading
@@ -554,6 +596,7 @@ export function SavedPins({
 }
 export function RepeaterDetails({
   repeater,
+  rangeSettings,
   alternatives,
   onChoose,
   directory,
@@ -565,6 +608,7 @@ export function RepeaterDetails({
   if (!repeater)
     return <p className="drawer-help">Select a repeater on the map.</p>;
   const location = withTimezone(repeater);
+  const footprint = repeaterFootprint(repeater, rangeSettings);
   return (
     <>
       <div className="repeater-heading">
@@ -591,6 +635,35 @@ export function RepeaterDetails({
           </select>
         </label>
       )}
+      <section
+        className="directory-status"
+        aria-label="Repeater range estimate"
+      >
+        <strong>
+          {footprint
+            ? `Estimated radius: ${footprint.radiusKm.toFixed(1)} km`
+            : "Local range estimate unavailable for this frequency"}
+        </strong>
+        <p>
+          Gold ring on the map when Estimated range and the repeater layer are
+          enabled. Uses assumed site antenna height, power and receiver
+          sensitivity from Range assumptions in the left panel’s Range tab—not
+          measured coverage. Terrain, tones, mode, access and live status are
+          not verified. Selecting a distant repeater does not imply it is
+          reachable.
+        </p>
+        <a
+          href="https://www.repeaterbook.com/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Cross-check details on RepeaterBook ↗
+        </a>
+        <p>
+          RepeaterBook is not an active OAR data feed: approved application
+          access and per-user tokens are required.
+        </p>
+      </section>
       <dl className="repeater-summary">
         <dt>Output</dt>
         <dd>{repeater.frequencyMHz.toFixed(4)} MHz</dd>

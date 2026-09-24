@@ -12,6 +12,7 @@ export const adapters = Object.freeze({
   geocoding: "photon",
   reverseGeocoding: "photon",
   mapRaster: "xyz-raster",
+  mapTopographic: "xyz-raster",
   mapVector: "openmaptiles",
   mapGlyphs: "maplibre-glyphs",
 });
@@ -111,7 +112,7 @@ export function parseSources(text) {
       throw Error("enabled must be true or false.");
     safeSourceUrl(s.url);
     if (
-      s.kind === "mapRaster" &&
+      ["mapRaster", "mapTopographic"].includes(s.kind) &&
       ["{z}", "{x}", "{y}"].some((v) => !s.url.includes(v))
     )
       throw Error("Raster URL requires {z}, {x}, {y} placeholders.");
@@ -123,6 +124,10 @@ export function parseSources(text) {
   }
   for (const kind of Object.keys(adapters))
     if (
+      // Topographic was added later; existing user source files remain valid.
+      !(
+        kind === "mapTopographic" && !data.sources.some((s) => s.kind === kind)
+      ) &&
       !data.sources.some(
         (s) =>
           s.kind === kind && s.enabled !== false && s.countries.includes("*"),

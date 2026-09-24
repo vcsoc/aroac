@@ -4,7 +4,7 @@ import ActionToast from "./ActionToast";
 export async function checkForUpdates() {
   if (!window.oarDesktop?.update)
     return toast(
-      "Updates are installed by the desktop application. Download a packaged release from github.com/vcsoc/oar/releases.",
+      "Updates are installed by the desktop application. Download a packaged release from github.com/vcsoc/aroac/releases.",
     );
   window.dispatchEvent(new Event("oar-update-notice"));
   try {
@@ -50,9 +50,9 @@ export default function UpdateNotice() {
     }
   };
   return (
-    <ActionToast key={`${noticeId}-${state.phase}`} label="OAR update">
+    <ActionToast key={`${noticeId}-${state.phase}`} label="AROAC update">
       <strong>
-        {state.version ? "Update to OAR " + state.version : "OAR updates"}
+        {state.version ? "Update to AROAC " + state.version : "AROAC updates"}
       </strong>
       <p>{state.message}</p>
       {state.phase === "available" && (
@@ -95,7 +95,7 @@ export default function UpdateNotice() {
           </button>
           {state.phase === "unsupported" && (
             <a
-              href="https://github.com/vcsoc/oar/releases"
+              href="https://github.com/vcsoc/aroac/releases"
               target="_blank"
               rel="noreferrer"
             >

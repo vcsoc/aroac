@@ -1,5 +1,9 @@
 // Run directly with Electron, NEVER via Playwright's injected loader.
 const { app, safeStorage } = require("electron");
+const { configureCredentialStorage } = require(
+  process.env.OAR_VAULT_PROBE_POLICY || "../desktop/credential-storage.cjs",
+);
+configureCredentialStorage(app);
 const fs = require("node:fs"),
   path = require("node:path");
 const directory = process.env.OAR_VAULT_PROBE_DIRECTORY;

@@ -20,6 +20,11 @@ export class RelayClient {
     directory,
     storage,
     secure,
+    storageStatus = () => ({
+      available: secure(),
+      message:
+        "OS-protected credential storage is unavailable. Unlock your OS credential vault and restart OAR; plaintext relay storage is not permitted.",
+    }),
     offline = () => false,
     fetcher = fetch,
     allowLoopback = false,
@@ -28,6 +33,7 @@ export class RelayClient {
       directory,
       storage,
       secure,
+      storageStatus,
       offline,
       fetcher,
       allowLoopback,
@@ -37,13 +43,29 @@ export class RelayClient {
     this.busy = new Map();
     this.controllers = new Set();
     this.configuration = null;
+    this.lockedReads = new Set();
+    this.settingsLocked = false;
     this.importError = "";
     this.generation = 0;
     try {
       this.configuration = this.read("settings");
-    } catch {
-      this.importError =
-        "Relay settings could not be unlocked. OS-protected storage is required.";
+    } catch (error) {
+      this.settingsLocked = true;
+      this.importError = error.message;
+    }
+    if (this.configuration) {
+      try {
+        this.configuration = parseRelaySettings(
+          JSON.stringify(this.configuration),
+          {
+            allowLoopback: this.allowLoopback,
+          },
+        );
+      } catch {
+        this.configuration = null;
+        this.importError =
+          "Saved relay URL is not permitted. Local HTTP testing requires OAR_RELAY_ALLOW_LOOPBACK=1 on every launch; otherwise use HTTPS.";
+      }
     }
   }
   file(key) {
@@ -51,17 +73,28 @@ export class RelayClient {
   }
   read(key) {
     if (!fs.existsSync(this.file(key))) return null;
-    if (!this.secure())
-      throw Error("OS-protected credential storage is unavailable.");
+    if (!this.secure()) throw Error(this.storageStatus().message);
+    if (this.lockedReads.has(key))
+      throw Error(
+        "Saved relay data remains locked. Unlock your OS vault, then use Retry credential storage. Data has not been replaced.",
+      );
     if (fs.statSync(this.file(key)).size > 12_000_000)
       throw Error("Relay storage exceeds its safety limit.");
-    return JSON.parse(
-      this.storage.decryptString(fs.readFileSync(this.file(key))),
-    );
+    try {
+      return JSON.parse(
+        this.storage.decryptString(fs.readFileSync(this.file(key))),
+      );
+    } catch (error) {
+      this.lockedReads.add(key);
+      throw error;
+    }
   }
   write(key, value) {
-    if (!this.secure())
-      throw Error("OS-protected credential storage is unavailable.");
+    if (!this.secure()) throw Error(this.storageStatus().message);
+    if (this.lockedReads.has(key))
+      throw Error(
+        "Saved relay data is locked and cannot be replaced. Retry credential storage first.",
+      );
     const json = JSON.stringify(value);
     if (Buffer.byteLength(json) > 10_000_000)
       throw Error("Relay storage is full.");
@@ -80,7 +113,28 @@ export class RelayClient {
       if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
     }
   }
+  retryStorage(profile) {
+    this.lockedReads.clear();
+    if (!this.configuration && fs.existsSync(this.file("settings"))) {
+      try {
+        const saved = this.read("settings");
+        this.settingsLocked = false;
+        this.configuration = parseRelaySettings(JSON.stringify(saved), {
+          allowLoopback: this.allowLoopback,
+        });
+        this.importError = "";
+      } catch (error) {
+        this.importError = error.message;
+        throw error;
+      }
+    }
+    return this.status(profile);
+  }
   importSettings(text) {
+    if (this.settingsLocked)
+      throw Error(
+        "Saved relay settings could not be unlocked. Retry credential storage before importing; existing credentials will not be overwritten.",
+      );
     const next = parseRelaySettings(text, {
       allowLoopback: this.allowLoopback,
     });
@@ -116,8 +170,7 @@ export class RelayClient {
     )
       throw Error("Sign in to use private relay messaging.");
     if (!this.configuration) throw Error("Import relay settings first.");
-    if (!this.secure())
-      throw Error("OS-protected credential storage is unavailable.");
+    if (!this.secure()) throw Error(this.storageStatus().message);
     const origin = this.configuration.relay.url,
       key = hash(Buffer.from(origin + "\n" + profile));
     if (!this.sessions.has(key))
@@ -146,6 +199,8 @@ export class RelayClient {
     const base = {
       url: this.configuration?.relay.url || null,
       secureStorage: this.secure(),
+      storage: this.storageStatus(),
+      loopbackTesting: this.allowLoopback,
       error: this.importError,
       enabled: false,
       identity: null,
@@ -155,7 +210,12 @@ export class RelayClient {
       issues: [],
     };
     if (!profile || !base.url || !base.secureStorage) return base;
-    const { state } = this.context(profile);
+    let state;
+    try {
+      ({ state } = this.context(profile));
+    } catch (error) {
+      return { ...base, storage: this.storageStatus(), error: error.message };
+    }
     return {
       ...base,
       enabled: state.consent,

@@ -82,6 +82,12 @@ import SpecialistViews from "./SpecialistViews";
 import { useWorkspaceSetting } from "./workspaceState";
 import { defaultTheme, defaultTimeConfig } from "../shared/workspace";
 import { withTimezone } from "./locations";
+import { CoverageControls } from "./Coverage.jsx";
+import {
+  buildCoverage,
+  normalizeCoverage,
+  repeaterFootprint,
+} from "../shared/coverage.js";
 const WorldMap = lazy(() => import("./WorldMap.jsx"));
 const nav = [
   ["dashboard", "Overview", LayoutDashboard],
@@ -264,6 +270,8 @@ function SpaceStats({ kp, solar, iss }) {
   );
 }
 function Atlas({
+  coverage,
+  topographic,
   user,
   full,
   iss,
@@ -315,6 +323,8 @@ function Atlas({
       <div className="map-wrap">
         <Suspense fallback={<div className="empty">Loading atlas…</div>}>
           <WorldMap
+            coverage={coverage}
+            topographic={topographic}
             globe={globe}
             focusLocation={focusLocation}
             searchLocation={searchLocation}
@@ -376,6 +386,24 @@ function Atlas({
 }
 export default function App() {
   const [session, setSession] = useState(undefined);
+  const [demoMode, setDemoMode] = useState(false);
+  useEffect(() => {
+    if (!window.oarDesktop?.toggleDemo) return;
+    const key = (event) => {
+      if (
+        event.repeat ||
+        !event.ctrlKey ||
+        !event.altKey ||
+        !event.shiftKey ||
+        event.code !== "KeyD"
+      )
+        return;
+      event.preventDefault();
+      window.oarDesktop.toggleDemo().catch((error) => toast(error.message));
+    };
+    document.addEventListener("keydown", key);
+    return () => document.removeEventListener("keydown", key);
+  }, []);
   const [page, setPage] = useState("dashboard");
   const identity = useRef(undefined);
   const change = useCallback((value) => {
@@ -389,6 +417,12 @@ export default function App() {
   }, []);
   useEffect(() => {
     let live = true;
+    window.oarDesktop
+      ?.connection()
+      .then((value) => {
+        if (live) setDemoMode(!!value.demo);
+      })
+      .catch(() => {});
     api("/me")
       .then((value) => {
         if (live) change(value);
@@ -406,13 +440,14 @@ export default function App() {
     <Workspace
       key={session?.id ?? "general"}
       user={session}
+      demoMode={demoMode}
       setUser={change}
       page={page}
       setPage={setPage}
     />
   );
 }
-function Workspace({ user, setUser, page, setPage }) {
+function Workspace({ user, demoMode, setUser, page, setPage }) {
   const [auth, setAuth] = useState(false),
     [accountScreen, setAccountScreen] = useState(null),
     [accountMenu, setAccountMenu] = useState(false),
@@ -521,7 +556,25 @@ function Workspace({ user, setUser, page, setPage }) {
     for (const [key, value] of Object.entries(themeStyle(theme)))
       document.documentElement.style.setProperty(key, value);
   }, [theme]);
+  const [coverageOrigin, setCoverageOrigin] = useState(null);
+  const [topographic, setTopographic] = usePreference("oar-topographic");
+  const [locationTab, setLocationTab] = useState("General");
+  const [coverageSettings, setCoverageSettings] = useState(() => {
+    try {
+      return normalizeCoverage(
+        JSON.parse(localStorage.getItem("oar-coverage")) || {},
+      );
+    } catch {
+      return normalizeCoverage();
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("oar-coverage", JSON.stringify(coverageSettings));
+    } catch {}
+  }, [coverageSettings]);
   const showLocation = (location) => {
+    setCoverageOrigin(location);
     setSelectedLocations((items) => [
       ...items.filter((item) => item.locked),
       {
@@ -567,6 +620,30 @@ function Workspace({ user, setUser, page, setPage }) {
   }, [directory.value, repeaterIds]);
   const selectedRepeater =
     matches.find((r) => r.id === activeRepeaterId) || matches[0];
+  const coverage = useMemo(() => {
+    const result = buildCoverage(
+      coverageOrigin,
+      coverageSettings,
+      showRepeaters ? directory.value?.repeaters || NO_REPEATERS : NO_REPEATERS,
+    );
+    if (showRepeaters && coverageSettings.enabled && selectedRepeater) {
+      const footprint = repeaterFootprint(selectedRepeater, coverageSettings);
+      if (footprint) {
+        result.features.push(footprint.feature);
+        result.selectedRepeater = {
+          ...footprint,
+          callsign: selectedRepeater.callsign,
+        };
+      }
+    }
+    return result;
+  }, [
+    coverageOrigin,
+    coverageSettings,
+    showRepeaters,
+    directory.value,
+    selectedRepeater,
+  ]);
   useEffect(() => {
     if (mapLocation && !mapLocation.focusOnly) showLocation(mapLocation);
   }, [mapLocation]);
@@ -678,6 +755,7 @@ function Workspace({ user, setUser, page, setPage }) {
     }
   };
   const selectRepeaters = (ids) => {
+    setCoverageSettings((value) => ({ ...value, enabled: true }));
     setRepeaterIds(ids);
     setActiveRepeaterId(ids[0]);
     setDrawer("repeater");
@@ -734,9 +812,13 @@ function Workspace({ user, setUser, page, setPage }) {
             setPage("dashboard");
           }}
         >
-          <img className="brand-logo" src="./oar-logo-sq.png" alt="OAR" />
+          <img
+            className="brand-logo"
+            src="./brand/oar-app-icon-v1.png"
+            alt="AROAC"
+          />
           <strong>
-            OAR<span>OPEN AMATEUR RADIO</span>
+            AROAC<span>AMATEUR RADIO OPERATIONS AND COMMUNICATIONS</span>
           </strong>
         </a>
         <div className="nav-label">STATION WORKSPACE</div>
@@ -782,7 +864,7 @@ function Workspace({ user, setUser, page, setPage }) {
           </button>
           <div className="version">
             <span className="dot" />
-            OAR / v{APP_VERSION} <span>73, always.</span>
+            AROAC / v{APP_VERSION} <span>73, always.</span>
           </div>
         </div>
       </aside>
@@ -871,8 +953,8 @@ function Workspace({ user, setUser, page, setPage }) {
             </button>
             <button
               className="icon-button"
-              aria-label="About OAR"
-              title="About OAR"
+              aria-label="About AROAC"
+              title="About AROAC"
               onClick={() => setAboutOpen(true)}
             >
               <Info size={18} />
@@ -987,6 +1069,55 @@ function Workspace({ user, setUser, page, setPage }) {
                     Your station. Your signals. Everything connected.
                   </p>
                 </div>
+                <div
+                  className="header-map-toggles"
+                  role="group"
+                  aria-label="Map quick toggles"
+                >
+                  <MapToolbar
+                    iconOnly
+                    grey={grey}
+                    setGrey={setGrey}
+                    muf={muf}
+                    setMuf={setMuf}
+                    radar={radar}
+                    setRadar={setRadar}
+                    followGrey={followGrey}
+                  />
+                  <MapSettings
+                    iconOnly
+                    zones={showZones}
+                    setZones={setShowZones}
+                    streets={showStreets}
+                    setStreets={setShowStreets}
+                    cities={showCities}
+                    setCities={setShowCities}
+                    showRepeaters={showRepeaters}
+                    setRepeaters={setShowRepeaters}
+                    directory={directory}
+                  />
+                  <Switch
+                    iconOnly
+                    label="Grey line follows clock slider"
+                    value={followGrey}
+                    onChange={setFollowGrey}
+                    description="Preview day/night shading at the clock comparison time; observations remain at their published times."
+                  />
+                  <Switch
+                    iconOnly
+                    label="Estimated range"
+                    value={coverageSettings.enabled}
+                    onChange={(enabled) => {
+                      setCoverageSettings((current) => ({
+                        ...current,
+                        enabled,
+                      }));
+                      setLocationTab(enabled ? "Range" : "General");
+                      setLeftOpen(true);
+                    }}
+                    description="Enable estimated radio range rings and open the Range tab; disable to return to General. Planning estimates, not guaranteed coverage."
+                  />
+                </div>
                 <button
                   className="primary"
                   onClick={() => (user ? setPage("logbook") : setAuth(true))}
@@ -1006,6 +1137,8 @@ function Workspace({ user, setUser, page, setPage }) {
                 followGrey={followGrey}
               />
               <Atlas
+                coverage={coverage}
+                topographic={topographic}
                 user={user}
                 full={page === "atlas"}
                 iss={iss}
@@ -1123,13 +1256,26 @@ function Workspace({ user, setUser, page, setPage }) {
             ))}
           <footer className="footer">
             <span>
-              OAR <span> / </span> OPEN AMATEUR RADIO
+              AROAC <span> / </span> AMATEUR RADIO OPERATIONS AND COMMUNICATIONS
             </span>
             <span>Built for the bands. Open to the world.</span>
           </footer>
         </main>
       </div>
       <LocationDetails
+        tab={locationTab}
+        setTab={setLocationTab}
+        rangeContent={
+          <CoverageControls
+            value={coverageSettings}
+            onChange={setCoverageSettings}
+            origin={coverageOrigin}
+            coverage={coverage}
+            topographic={topographic}
+            setTopographic={setTopographic}
+            showRepeaters={showRepeaters}
+          />
+        }
         onFocus={(place) => {
           if (Number.isFinite(place?.lat) && Number.isFinite(place?.lng)) {
             setPage("atlas");
@@ -1422,6 +1568,7 @@ function Workspace({ user, setUser, page, setPage }) {
         ) : (
           <RepeaterDetails
             repeater={selectedRepeater}
+            rangeSettings={coverageSettings}
             alternatives={matches}
             onChoose={setActiveRepeaterId}
             directory={directory.value}
@@ -1484,7 +1631,10 @@ function Workspace({ user, setUser, page, setPage }) {
         className="app-statusbar map-footer"
         aria-label="Application version and station status"
       >
-        <span>OAR v{APP_VERSION}</span>
+        <span>
+          {demoMode ? "DEMO · Changes discarded on exit · " : ""}AROAC v
+          {APP_VERSION}
+        </span>
         <span>
           <i className="station-dot" />{" "}
           {user

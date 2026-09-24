@@ -9,6 +9,12 @@ const {
   dialog,
   clipboard,
 } = require("electron");
+const {
+  configureCredentialStorage,
+  createCredentialStorage,
+} = require("./credential-storage.cjs");
+configureCredentialStorage(app);
+const credentialStorage = createCredentialStorage(safeStorage);
 const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -32,6 +38,9 @@ let win,
   relayClient,
   db,
   localOrigin,
+  demo = null,
+  switchingDemo = false,
+  workspaceGeneration = 0,
   closing = false;
 const localKey = randomBytes(32).toString("hex");
 const devUrl = !app.isPackaged ? process.env.OAR_DEV_URL : null;
@@ -39,11 +48,7 @@ const dataPath = () => path.join(app.getPath("userData"), "station.sqlite");
 const settingsPath = () =>
   path.join(app.getPath("userData"), "local-session.json");
 function canEncrypt() {
-  return (
-    safeStorage.isEncryptionAvailable() &&
-    (!safeStorage.getSelectedStorageBackend ||
-      safeStorage.getSelectedStorageBackend() !== "basic_text")
-  );
+  return credentialStorage.available();
 }
 function save() {
   const temp = settingsPath() + ".tmp";
@@ -92,6 +97,7 @@ function authorized(event) {
     event.sender !== win?.webContents ||
     !(
       url.startsWith("oar://app/") ||
+      url.startsWith("oar://demo/") ||
       (devUrl && new URL(url).origin === new URL(devUrl).origin)
     )
   )
@@ -101,7 +107,8 @@ function connection() {
   return {
     mode: "local",
     platform: process.platform,
-    databasePath: dataPath(),
+    databasePath: demo ? "In-memory demo (discarded on exit)" : dataPath(),
+    demo: !!demo,
     persistentSession:
       !!config.persistLogin && (canEncrypt() || !!config.allowUnencrypted),
     secureSessionStorage: canEncrypt(),
@@ -141,31 +148,40 @@ async function request(route, options = {}) {
   const sequence = changesSession
     ? ++authenticationSequence
     : authenticationSequence;
-  const requestToken = sessionToken;
-  const response = await net.fetch(localOrigin + "/api" + route, {
-    method,
-    body,
-    credentials: "omit",
-    redirect: "error",
-    headers: {
-      "Content-Type": "application/json",
-      "X-OAR-Client": "native",
-      "X-OAR-Local-Key": localKey,
-      ...(requestToken ? { Authorization: "Bearer " + requestToken } : {}),
+  if (switchingDemo) throw Error("Workspace is switching. Try again.");
+  const generation = workspaceGeneration;
+  const activeDemo = demo;
+  const requestToken = activeDemo ? activeDemo.token : sessionToken;
+  const response = await net.fetch(
+    (activeDemo?.origin ?? localOrigin) + "/api" + route,
+    {
+      method,
+      body,
+      credentials: "omit",
+      redirect: "error",
+      headers: {
+        "Content-Type": "application/json",
+        "X-OAR-Client": "native",
+        "X-OAR-Local-Key": localKey,
+        ...(requestToken ? { Authorization: "Bearer " + requestToken } : {}),
+      },
+      signal: AbortSignal.timeout(
+        route.startsWith("/repeaters") ? 65000 : 20000,
+      ),
     },
-    signal: AbortSignal.timeout(route.startsWith("/repeaters") ? 65000 : 20000),
-  });
+  );
   const data = await response.json();
   if (
+    generation !== workspaceGeneration ||
     sequence !== authenticationSequence ||
-    (requestToken !== sessionToken &&
+    (requestToken !== (activeDemo ? activeDemo.token : sessionToken) &&
       route !== "/login" &&
       route !== "/register")
   ) {
     if ((route === "/login" || route === "/register") && data.token)
-      db.prepare("DELETE FROM sessions WHERE token=?").run(
-        createHash("sha256").update(data.token).digest("hex"),
-      );
+      (activeDemo?.db ?? db)
+        .prepare("DELETE FROM sessions WHERE token=?")
+        .run(createHash("sha256").update(data.token).digest("hex"));
     return {
       $oarError: {
         message: "Session changed. Retry in the current profile.",
@@ -181,31 +197,38 @@ async function request(route, options = {}) {
       },
     };
   if ((route === "/login" || route === "/register") && data.token) {
-    relayClient?.pause();
-    sessionToken = data.token;
-    storeSession();
+    if (activeDemo) activeDemo.token = data.token;
+    else {
+      relayClient?.pause();
+      sessionToken = data.token;
+      storeSession();
+    }
     return data.user;
   }
   if (route === "/logout" || (route === "/me" && !data)) {
-    relayClient?.pause();
-    sessionToken = null;
-    delete config.session;
-    delete config.sessionPlain;
-    save();
+    if (activeDemo) activeDemo.token = null;
+    else {
+      relayClient?.pause();
+      sessionToken = null;
+      delete config.session;
+      delete config.sessionPlain;
+      save();
+    }
   }
   return data;
 }
 async function start() {
   fs.mkdirSync(app.getPath("userData"), { recursive: true, mode: 0o700 });
   const { createApp } = require("./generated/local-service.cjs");
-  const service = createApp({
+  const serviceOptions = {
     dbPath: dataPath(),
     citiesPath: path.join(__dirname, "../data/cities.json"),
     sourcesPath: path.join(app.getPath("userData"), "sources.yaml"),
     defaultSourcesPath: path.join(__dirname, "../sources.yaml"),
     localKey,
     isOffline: () => !!config.offline,
-  });
+  };
+  const service = createApp(serviceOptions);
   db = service.db;
   localServer = service.app.listen(0, "127.0.0.1");
   await new Promise((resolve, reject) => {
@@ -232,10 +255,14 @@ async function start() {
       db,
       ipcMain,
       dialog,
-      authorized,
+      authorized: (event) => {
+        authorized(event);
+        if (demo) throw Error("Relay is unavailable in demo mode.");
+      },
       request,
       canEncrypt,
-      safeStorage,
+      safeStorage: credentialStorage,
+      storageStatus: credentialStorage.status,
       isOffline: () => !!config.offline,
       getWindow: () => win,
     });
@@ -258,7 +285,7 @@ async function start() {
       return new Response("Bad path", { status: 400 });
     }
     if (
-      url.host !== "app" ||
+      !["app", "demo"].includes(url.host) ||
       !(file === root || file.startsWith(root + path.sep))
     )
       return new Response("Not found", { status: 404 });
@@ -266,7 +293,10 @@ async function start() {
     return net.fetch(pathToFileURL(file).href);
   });
   require("./generated/updates.cjs")({
-    authorized,
+    authorized: (event) => {
+      authorized(event);
+      if (demo) throw Error("Updates are unavailable in demo mode.");
+    },
     getWindow: () => win,
     getConfig: () => config,
     save,
@@ -296,10 +326,65 @@ async function start() {
   });
   const features = require("./features.cjs")({
     onZoomInput: zoom.input,
-    authorized,
+    authorized: (event) => {
+      authorized(event);
+      if (demo)
+        throw Error(
+          "External files and specialist views are unavailable in demo mode.",
+        );
+    },
     getWindow: () => win,
     isOffline: () => !!config.offline,
     databasePath: dataPath,
+  });
+  async function toggleDemo() {
+    if (switchingDemo || !win || win.isDestroyed()) return;
+    switchingDemo = true;
+    workspaceGeneration++;
+    authenticationSequence++;
+    try {
+      features.close();
+      relayClient?.pause();
+      if (demo) {
+        const old = demo;
+        demo = null;
+        await new Promise((resolve) => {
+          old.server.close(resolve);
+          old.server.closeAllConnections();
+        });
+        old.db.close();
+        // Custom-scheme storage origin filters can clear the primary profile too.
+        // Clear only the currently loaded demo page's browser preferences.
+        if (win.webContents.getURL().startsWith("oar://demo/"))
+          await win.webContents
+            .executeJavaScript("localStorage.clear(); sessionStorage.clear();")
+            .catch(() => {});
+      } else {
+        const sample = require("./demo.cjs").createDemo(
+          createApp,
+          serviceOptions,
+        );
+        const server = sample.app.listen(0, "127.0.0.1");
+        await new Promise((resolve, reject) => {
+          server.once("listening", resolve);
+          server.once("error", reject);
+        });
+        demo = {
+          ...sample,
+          server,
+          origin: "http://127.0.0.1:" + server.address().port,
+        };
+      }
+      if (devUrl && !demo) await win.loadURL(devUrl);
+      else
+        await win.loadURL("oar://" + (demo ? "demo" : "app") + "/index.html");
+    } finally {
+      switchingDemo = false;
+    }
+  }
+  ipcMain.handle("oar:demo-toggle", async (event) => {
+    authorized(event);
+    await toggleDemo();
   });
   ipcMain.handle("oar:connection", (event) => {
     authorized(event);
@@ -309,6 +394,8 @@ async function start() {
     "oar:login-settings",
     (event, value, allowUnencrypted = false) => {
       authorized(event);
+      if (demo && value !== undefined)
+        throw Error("Login preferences cannot be changed in demo mode.");
       if (value !== undefined) {
         if (typeof value !== "boolean" || typeof allowUnencrypted !== "boolean")
           throw Error("Invalid login preference");
@@ -330,6 +417,7 @@ async function start() {
   ipcMain.handle("oar:offline", (event, value) => {
     authorized(event);
     if (typeof value !== "boolean") throw Error("Invalid offline mode");
+    if (demo) throw Error("Offline preference cannot be changed in demo mode.");
     config.offline = value;
     if (value) {
       features.close();
@@ -358,6 +446,7 @@ async function start() {
   });
   ipcMain.handle("oar:screenshot", async (event) => {
     authorized(event);
+    if (demo) throw Error("Screenshot files are unavailable in demo mode.");
     const directory = app.getPath("pictures");
     fs.mkdirSync(directory, { recursive: true });
     const d = new Date(),
@@ -386,6 +475,7 @@ async function start() {
   });
   ipcMain.handle("oar:backup", async (event) => {
     authorized(event);
+    if (demo) throw Error("Database backup is unavailable in demo mode.");
     const current = await request("/me");
     if (!current?.id)
       throw Error("Sign in before exporting a private database backup.");
@@ -421,6 +511,7 @@ async function start() {
   });
   ipcMain.handle("oar:export", async (event, name, text) => {
     authorized(event);
+    if (demo) throw Error("File export is unavailable in demo mode.");
     if (
       typeof text !== "string" ||
       text.length > 5_000_000 ||
@@ -463,7 +554,7 @@ async function start() {
   });
   const create = () => {
     win = new BrowserWindow({
-      title: "OAR · Open Amateur Radio",
+      title: "AROAC · Amateur Radio Operations and Communications",
       width: 1440,
       height: 1000,
       minWidth: 800,
@@ -480,6 +571,21 @@ async function start() {
       },
     });
     zoom.attach(win);
+    win.webContents.on("before-input-event", (event, input) => {
+      if (
+        input.type === "keyDown" &&
+        !input.isAutoRepeat &&
+        input.control &&
+        input.alt &&
+        input.shift &&
+        input.key.toLowerCase() === "d"
+      ) {
+        event.preventDefault();
+        toggleDemo().catch((error) =>
+          dialog.showErrorBox("Demo workspace", error.message),
+        );
+      }
+    });
     win.webContents.setWindowOpenHandler(({ url }) => {
       if (/^https?:\/\//.test(url)) shell.openExternal(url);
       return { action: "deny" };
@@ -564,9 +670,17 @@ app.on("before-quit", (event) => {
       createHash("sha256").update(sessionToken).digest("hex"),
     );
   }
-  localServer.close(() => {
-    db?.close();
-    app.quit();
-  });
+  const finish = () =>
+    localServer.close(() => {
+      db?.close();
+      app.quit();
+    });
+  if (demo) {
+    demo.server.close(() => {
+      demo.db.close();
+      finish();
+    });
+    demo.server.closeAllConnections();
+  } else finish();
   localServer.closeAllConnections();
 });

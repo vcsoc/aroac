@@ -1,0 +1,29 @@
+.world-map {
+  --map-location-cursor: url("/map-markers/crosshair-24.png") 12 12, crosshair;
+}
+.world-map[data-cursor-size="28"] {
+  --map-location-cursor: url("/map-markers/crosshair-28.png") 14 14, crosshair;
+}
+.world-map[data-cursor-size="32"] {
+  --map-location-cursor: url("/map-markers/crosshair-32.png") 16 16, crosshair;
+}
+/* Override MapLibre's grab/active cursor and layer hover inline cursors. */
+.world-map .maplibregl-canvas,
+.world-map .saved-map-pin {
+  cursor: var(--map-location-cursor) !important;
+}
+.world-map .saved-map-pin.is-dragging {
+  cursor: grabbing !important;
+}
+.world-map[data-map-dragging="true"] .maplibregl-canvas,
+.world-map:has(.saved-map-pin.is-dragging) .maplibregl-canvas {
+  cursor: grabbing !important;
+}
+.world-map .clicked-location-marker {
+  height: var(--clicked-marker-height, 28px);
+  width: auto;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 1px 1px white) drop-shadow(0 0 2px #101513);
+}

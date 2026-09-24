@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
+import { Radio } from "lucide-react";
 import { parseDocument, stringify } from "yaml";
 import { defaultTheme, validateTheme } from "../shared/workspace";
 import { documentFile } from "./workspaceState";
 import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
+const themeDraft = (theme) => ({
+  ...theme,
+  colors: { ...defaultTheme.colors, ...theme.colors },
+});
 export const themeStyle = (theme) =>
   Object.fromEntries(
-    Object.entries(theme.colors).map(([key, value]) => [
+    Object.entries(themeDraft(theme).colors).map(([key, value]) => [
       "--" + key.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()),
       value,
     ]),
   );
 export default function ThemeEditor({ value, onSave, onPreview }) {
-  const [draft, setDraft] = useState(value),
+  const [draft, setDraft] = useState(() => themeDraft(value)),
     [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -56,7 +61,7 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
         style={themeStyle(draft)}
       >
         <header>
-          OAR · Preview <b>● ON AIR</b>
+          AROAC · Preview <b>● ON AIR</b>
         </header>
         <div>
           <aside>
@@ -82,6 +87,12 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
             <p>
               <i className="preview-pin">● Saved pin</i>{" "}
               <i className="preview-repeater">● Repeater</i>
+            </p>
+            <p
+              style={{ color: "var(--active-icon)" }}
+              aria-label="Active map icon preview"
+            >
+              <Radio size={16} aria-hidden="true" /> Active map icon
             </p>
             <p className="form-error">Example alert</p>
           </article>
@@ -136,7 +147,7 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
         >
           Apply theme
         </button>
-        <button disabled={busy} onClick={() => setDraft(value)}>
+        <button disabled={busy} onClick={() => setDraft(themeDraft(value))}>
           Revert
         </button>
         <button disabled={busy} onClick={() => setDraft(defaultTheme)}>

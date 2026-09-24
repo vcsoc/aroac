@@ -17,6 +17,18 @@ const original = readFileSync("sources.yaml", "utf8");
 test("source YAML validates schema, adapters, global coverage and safe URLs/attribution", () => {
   const config = parseSources(original);
   assert.ok(config.sources.length >= 13);
+  assert.ok(
+    selectSources(config, "mapTopographic")[0].url.includes("World_Topo_Map"),
+  );
+  const legacy = {
+    ...config,
+    sources: config.sources.filter((s) => s.kind !== "mapTopographic"),
+  };
+  assert.doesNotThrow(() => parseSources(stringify(legacy)));
+  const badTopo = structuredClone(config);
+  badTopo.sources.find((s) => s.kind === "mapTopographic").url =
+    "https://tiles.example.com/no-template";
+  assert.throws(() => parseSources(stringify(badTopo)), /placeholders/);
   assert.equal(countryAt(43.65, -79.38), "CA");
   assert.equal(countryAt(-33.9, 18.4), "ZA");
   for (const text of [
@@ -28,7 +40,7 @@ test("source YAML validates schema, adapters, global coverage and safe URLs/attr
       "attribution: RainViewer",
       'attribution: "<img src=x onerror=alert(1)>"',
     ),
-    original.replace("countries: ['*']", "countries: ['CA']"),
+    original.replace(/countries: \[['"]\*['"]\]/, "countries: ['CA']"),
   ])
     assert.throws(() => parseSources(text));
   config.sources.unshift({

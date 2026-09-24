@@ -1,6 +1,45 @@
 .topbar {
   z-index: 60;
 }
+.section-title:has(.header-map-toggles) {
+  flex-wrap: wrap;
+}
+.header-map-toggles {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-left: auto;
+  padding: 2px 4px;
+}
+.header-map-toggles .map-toolbar-toggles {
+  display: contents;
+}
+.header-map-toggles .map-icon-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  color: var(--muted);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.header-map-toggles .map-icon-toggle[aria-pressed="true"] {
+  color: var(--active-icon, #9cff57);
+}
+.header-map-toggles .map-icon-toggle:hover {
+  background: transparent;
+}
+.header-map-toggles .map-icon-toggle:hover:not([aria-pressed="true"]) {
+  color: var(--text);
+}
+.header-map-toggles .map-icon-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .quick-switch-panel {
   position: fixed;
   inset: 38px 8px auto auto;

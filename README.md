@@ -1,4 +1,6 @@
-# OAR · Open Amateur Radio — standalone desktop
+# AROAC · Amateur Radio Operations and Communications — standalone desktop
+
+AROAC retains the existing OAR application-data identity (`org.openamateurradio.oar`) so existing local profiles and databases remain in place. The desktop demo shortcut **Ctrl+Alt+Shift+D** switches to a separately hosted, in-memory local workspace containing saved locations for the New Seven Wonders plus the Great Pyramid of Giza. Press it again to discard demo database changes and return to your original account. Demo browser preferences use an isolated origin and are cleared at switch/start; external file exports, relay, updates and specialist views are disabled in demo. Online map/feed requests may still contact providers. Demo is available in the Electron desktop application, not a verified mobile release.
 
 **One installed application, its own local SQLite database, no server setup.**
 
