@@ -1,6 +1,6 @@
 # AROAC · Amateur Radio Operations and Communications — standalone desktop
 
-AROAC retains the existing OAR application-data identity (`org.openamateurradio.oar`) so existing local profiles and databases remain in place. The desktop demo shortcut **Ctrl+Alt+Shift+D** switches to a separately hosted, in-memory local workspace containing saved locations for the New Seven Wonders plus the Great Pyramid of Giza. Press it again to discard demo database changes and return to your original account. Demo browser preferences use an isolated origin and are cleared at switch/start; external file exports, relay, updates and specialist views are disabled in demo. Online map/feed requests may still contact providers. Demo is available in the Electron desktop application, not a verified mobile release.
+AROAC retains its legacy application-data identity (`org.openamateurradio.oar`) so existing local profiles and databases remain in place. The desktop demo shortcut **Ctrl+Alt+Shift+D** switches to a separately hosted, in-memory local workspace containing saved locations for the New Seven Wonders plus the Great Pyramid of Giza. Press it again to discard demo database changes and return to your original account. Demo browser preferences use an isolated origin and are cleared at switch/start; external file exports, relay, updates and specialist views are disabled in demo. Online map/feed requests may still contact providers. Demo is available in the Electron desktop application, not a verified mobile release.
 
 **One installed application, its own local SQLite database, no server setup.**
 
@@ -15,11 +15,11 @@ see the license for details.
 
 ## Branding in current source
 
-The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 0.4.2 AppImage and archive include the updated round logo. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The previous OAR application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
+The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 0.4.3 AppImage and archive include the new green-and-white logo. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The legacy application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
 
-## Linux x64 release · 0.4.2
+## Linux x64 release · 0.4.3
 
-The [AROAC 0.4.2 release notes](docs/releases/0.4.2.md) describe the Linux AppImage/archive, SHA-256 verification, new round logo, display-name cleanup, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.2); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.1.md) remain available.
+The [AROAC 0.4.3 release notes](docs/releases/0.4.3.md) describe the Linux AppImage/archive, SHA-256 verification, new logo, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.3); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.2.md) remain available.
 
 ## Optional relay preview (0.4.1 desktop)
 
@@ -105,11 +105,11 @@ Use `sh scripts/install-oar.sh --check` to check the latest release without inst
 ### Manual download
 
 Download the AppImage, Linux archive and SHA-256 checksums from
-[GitHub Releases — v0.4.2](https://github.com/vcsoc/aroac/releases/tag/v0.4.2).
+[GitHub Releases — v0.4.3](https://github.com/vcsoc/aroac/releases/tag/v0.4.3).
 Release binaries are distributed as release assets, not stored in Git history.
 
 ```text
-releases/AROAC-0.4.2.AppImage
+releases/AROAC-0.4.3.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.

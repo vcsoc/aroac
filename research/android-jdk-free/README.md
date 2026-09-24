@@ -1,8 +1,8 @@
-# Android without a JDK: investigation, not an OAR port
+# Android without a JDK: investigation, not an AROAC port
 
 ## Finding
 
-A native ARM64 APK can be compiled, packaged and signed on this Linux machine **without invoking Java, javac, Gradle, keytool, jarsigner, the Java-based apksigner, or .NET**. A small host-side proof completed successfully. This is not a working Android version of OAR and has not been installed or run on a phone/emulator.
+A native ARM64 APK can be compiled, packaged and signed on this Linux machine **without invoking Java, javac, Gradle, keytool, jarsigner, the Java-based apksigner, or .NET**. A small host-side proof completed successfully. This is not a working Android version of AROAC and has not been installed or run on a phone/emulator.
 
 The proof uses:
 
@@ -30,13 +30,13 @@ Scratch artifact from the investigation:
 
 SHA-256: `e6b7e99b55959226ab46c1f95fdaa404bcdbbaf35ad453251b786d362af2995c`
 
-This disposable probe only attempts to paint three colored bands. It has no OAR interface, account, database, permission requests, or network access. It uses a different application ID and must not be published as an OAR release. Input handling is not implemented; this is a packaging probe, not an interactive application. Its private test key stays outside the repository and must never be used for an OAR release.
+This disposable probe only attempts to paint three colored bands. It has no AROAC interface, account, database, permission requests, or network access. It uses a different application ID and must not be published as an AROAC release. Input handling is not implemented; this is a packaging probe, not an interactive application. Its private test key stays outside the repository and must never be used for an AROAC release.
 
 ## Important distinction: build tooling versus Android itself
 
 Android's OS-provided `NativeActivity` is part of its Java/ART framework. A system WebView also involves Android framework/runtime code. This investigation eliminates **application Java code and host JDK tooling**, not Java/ART from the phone's operating system. If the requirement also forbids using those OS components, this approach does not meet that stricter interpretation.
 
-## Why the current OAR app still cannot simply be put into this APK
+## Why the current AROAC app still cannot simply be put into this APK
 
 The existing renderer relies on Electron's IPC bridge and an owned service using Express, `node:sqlite`, `node:crypto`, filesystem access, session security, backups and feed adapters. Neither NativeActivity nor Android WebView supplies that Node/Electron environment.
 
@@ -51,7 +51,7 @@ Still required: database migrations, password hashing/session security, offline 
 
 ## Next gate
 
-Before starting an OAR Android port:
+Before starting an AROAC Android port:
 
 1. Obtain the phone model, Android version and ABI; run a clearly labeled probe on a real device and verify package/signature acceptance and lifecycle behavior.
 2. Demonstrate a minimal **owned database + local UI + secure communication** vertical slice, offline and after process restart, using only permitted tooling.

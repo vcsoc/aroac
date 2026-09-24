@@ -1,4 +1,4 @@
-// Toolchain probe only. No OAR UI, accounts, database, permissions or network.
+// Toolchain probe only. No AROAC UI, accounts, database, permissions or network.
 #include <android/native_activity.h>
 #include <android/native_window.h>
 #include <stdint.h>
