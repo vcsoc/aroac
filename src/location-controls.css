@@ -125,8 +125,11 @@
   width: 100%;
   padding: 2px;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--surface);
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--surface), var(--sidebar));
+  box-shadow:
+    inset 0 1px 3px #0008,
+    0 2px 4px #0005;
   font-size: 11px;
   overflow: hidden;
 }
@@ -137,8 +140,16 @@
   top: 2px;
   bottom: 2px;
   width: calc(50% - 2px);
-  border-radius: 14px;
-  background: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 4px;
+  background: linear-gradient(
+    155deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 75%, #222)
+  );
+  box-shadow:
+    inset 0 1px 1px #fff5,
+    1px 2px 4px #0008;
   transition: transform 0.15s ease;
 }
 .weather-switch > button[aria-checked="true"] > i {

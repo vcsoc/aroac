@@ -1,0 +1,2 @@
+d9ca2d0fb2662c099b3f732ad6ae4ba18aeef914e1ca379fc36f91ec5c6c7cef  AROAC-0.3.13-preview.12.AppImage
+7a6472d5e6c7bcaa03a62ebca9f3def6dfecdf5e52ad9b554103a1d716954282  aroac-0.3.13-preview.12.tar.gz

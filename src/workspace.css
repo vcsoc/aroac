@@ -93,16 +93,6 @@ small,
 .map-context-menu > button {
   color: var(--text);
 }
-.toggle-switch {
-  background: var(--surface);
-}
-.toggle-switch[aria-checked="true"] {
-  background: var(--selection);
-  border-color: var(--accent);
-}
-.toggle-switch[aria-checked="true"] i {
-  background: var(--accent);
-}
 .world-time {
   margin: 0 0 3px;
 }

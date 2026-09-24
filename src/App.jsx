@@ -89,6 +89,7 @@ import {
   repeaterFootprint,
 } from "../shared/coverage.js";
 const WorldMap = lazy(() => import("./WorldMap.jsx"));
+const NO_VISIBLE_PINS = [];
 const nav = [
   ["dashboard", "Overview", LayoutDashboard],
   ["atlas", "World atlas", Globe2],
@@ -287,6 +288,7 @@ function Atlas({
   cities,
   streets,
   pins,
+  showSavedLocations,
   repeaters,
   selectedRepeaterId,
   movingPinId,
@@ -340,7 +342,7 @@ function Atlas({
             theme={theme}
             streets={streets}
             cities={cities}
-            pins={pins}
+            pins={showSavedLocations ? pins : NO_VISIBLE_PINS}
             repeaters={repeaters}
             selectedRepeaterId={selectedRepeaterId}
             movingPinId={movingPinId}
@@ -612,6 +614,10 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
   const [showStreets, setShowStreets] = usePreference("oar-streetnames");
   const [showCities, setShowCities] = usePreference("oar-citynames");
   const [showRepeaters, setShowRepeaters] = usePreference("oar-repeaters");
+  const [showSavedLocations, setShowSavedLocations] = usePreference(
+    "oar-saved-locations-visible",
+    true,
+  );
   const pinStore = usePins(),
     directory = useRepeaters(showRepeaters);
   const matches = useMemo(() => {
@@ -737,6 +743,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
     }
   };
   const beginMove = (pin) => {
+    setShowSavedLocations(true);
     setMovingPinId(pin.id);
     if (!rightPinned) setDrawer(null);
     if (!["dashboard", "atlas"].includes(page)) focusPin(pin);
@@ -1076,6 +1083,8 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
                 >
                   <MapToolbar
                     iconOnly
+                    savedLocations={showSavedLocations}
+                    setSavedLocations={setShowSavedLocations}
                     grey={grey}
                     setGrey={setGrey}
                     muf={muf}
@@ -1154,6 +1163,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
                 cities={showCities}
                 streets={showStreets}
                 pins={pinStore.pins}
+                showSavedLocations={showSavedLocations}
                 repeaters={
                   showRepeaters
                     ? directory.value?.repeaters || NO_REPEATERS
@@ -1372,6 +1382,8 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
       {quickOpen && (
         <QuickSwitch onClose={() => setQuickOpen(false)}>
           <MapToolbar
+            savedLocations={showSavedLocations}
+            setSavedLocations={setShowSavedLocations}
             grey={grey}
             setGrey={setGrey}
             muf={muf}

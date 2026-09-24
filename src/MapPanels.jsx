@@ -32,8 +32,10 @@ import SavedItemList, {
 import ContactContext from "./ContactContext.jsx";
 import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
+import OnOffTrack from "./OnOffTrack";
 import { repeaterFootprint } from "../shared/coverage.js";
 const toggleIcons = {
+  "Saved locations on map": MapPin,
   "Grey line": Eclipse,
   Radar: CloudRain,
   MUF: Activity,
@@ -82,9 +84,7 @@ export function Switch({
           onClick={() => onChange(!value)}
         >
           <strong>{label}</strong>
-          <span className="row-toggle-track" aria-hidden="true">
-            <i />
-          </span>
+          <OnOffTrack />
         </button>
         {description && <Help label={"About " + label}>{description}</Help>}
       </div>
@@ -105,7 +105,7 @@ export function Switch({
         aria-checked={value}
         onClick={() => onChange(!value)}
       >
-        <i />
+        <OnOffTrack />
       </button>
     </div>
   );

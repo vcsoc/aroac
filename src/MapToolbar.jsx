@@ -1,5 +1,7 @@
 import { Switch } from "./MapPanels";
 export default function MapToolbar({
+  savedLocations,
+  setSavedLocations,
   grey,
   setGrey,
   radar,
@@ -12,6 +14,12 @@ export default function MapToolbar({
   return (
     <div className="map-toolbar-toggles">
       {[
+        {
+          name: "Saved locations on map",
+          value: savedLocations,
+          set: setSavedLocations,
+          tip: "Show or hide your saved location markers on the flat map and globe. Saved locations remain available in the list and are not deleted.",
+        },
         {
           name: "Grey line",
           value: grey,

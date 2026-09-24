@@ -7,7 +7,13 @@ const directory = mkdtempSync(path.join(os.tmpdir(), "aroac-demo-"));
 let desktop;
 try {
   desktop = await _electron.launch({
-    args: [".", "--user-data-dir=" + directory],
+    ...(process.env.OAR_DESKTOP_EXECUTABLE
+      ? { executablePath: process.env.OAR_DESKTOP_EXECUTABLE }
+      : {}),
+    args: [
+      ...(process.env.OAR_DESKTOP_EXECUTABLE ? [] : ["."]),
+      "--user-data-dir=" + directory,
+    ],
     env: { ...process.env, OAR_DEV_URL: "", OAR_SERVER_URL: "" },
   });
   const page = await desktop.firstWindow();

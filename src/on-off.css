@@ -1,0 +1,96 @@
+/* Compact two-position rocker inspired by the supplied ON/OFF reference.
+   The host button owns the accessible switch name and aria-checked state. */
+.toggle-switch,
+.range-power-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  min-width: 72px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.toggle-switch:focus-visible,
+.range-power-toggle:focus-visible,
+.row-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.on-off-track {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  flex: 0 0 70px;
+  width: 70px;
+  height: 26px;
+  overflow: hidden;
+  border: 1px solid #546053;
+  border-radius: 6px;
+  background: linear-gradient(#292e2a, #151b16);
+  box-shadow:
+    inset 0 1px 3px #080d08,
+    0 2px 4px #0007;
+  color: #737d73;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+}
+.on-off-track::before {
+  position: absolute;
+  z-index: -1;
+  top: 1px;
+  left: 1px;
+  width: calc(50% - 2px);
+  height: calc(100% - 4px);
+  border: 1px solid #798478;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #424942, #252b25);
+  box-shadow:
+    inset 0 1px 1px #fff3,
+    1px 1px 3px #000b;
+  content: "";
+  transition: transform 150ms ease;
+}
+[aria-checked="false"] > .on-off-track::before {
+  transform: translateX(34px);
+}
+[aria-checked="true"] > .on-off-track > span:first-child {
+  color: #69f548;
+  text-shadow:
+    0 0 6px #43f319,
+    0 0 12px #43f3199c;
+}
+[aria-checked="false"] > .on-off-track > span:last-child {
+  color: #ff5555;
+  text-shadow:
+    0 0 6px #ff2828,
+    0 0 12px #ff28289c;
+}
+[aria-checked="true"] > .on-off-track {
+  box-shadow:
+    inset 0 1px 3px #080d08,
+    0 2px 5px #45e9367a;
+}
+[aria-checked="false"] > .on-off-track {
+  box-shadow:
+    inset 0 1px 3px #080d08,
+    0 2px 5px #e13b3b70;
+}
+.row-toggle > .on-off-track {
+  margin-left: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .on-off-track::before {
+    transition: none;
+  }
+}

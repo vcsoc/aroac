@@ -6,6 +6,7 @@ import {
   coverageBounds,
 } from "../shared/coverage";
 import "./coverage.css";
+import OnOffTrack from "./OnOffTrack.jsx";
 
 export function CoverageControls({
   value,
@@ -64,8 +65,7 @@ export function CoverageControls({
           }
           onClick={() => change("enabled", !value.enabled)}
         >
-          <span aria-hidden="true">{value.enabled ? "ON" : "OFF"}</span>
-          <i aria-hidden="true" />
+          <OnOffTrack />
         </button>
       </div>
       <div className="coverage-toolbar">

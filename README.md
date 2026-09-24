@@ -13,7 +13,11 @@ written consent from Chris Visser ([vcsoc](https://github.com/vcsoc)). Third-par
 components retain their own licenses. Future versions may use different terms;
 see the license for details.
 
-## Unreleased optional relay preview
+## Linux x64 prerelease · 0.3.13-preview.12
+
+The [AROAC 0.3.13-preview.12 release notes](docs/releases/0.3.13-preview.12.md) describe the Linux AppImage/archive, SHA-256 verification, demo, toggles, testing and platform limitations. Download binaries from the [GitHub prerelease](https://github.com/vcsoc/aroac/releases/tag/v0.3.13-preview.12); the large executable assets are not committed as Git blobs.
+
+## Optional relay preview (0.3.13 preview source)
 
 Current source adds consented, profile-private device messaging through an optional `oarsvr` relay: adjacent `settings.yaml` auto-import only when unset, manual override, OS-vault-protected identities, signed registration, independently verified peer keys, libsodium sealed messages, persistent outbox and explicit quarantine/discard. Core accounts/data remain entirely local. **This is not included in published 0.3.12 and has not had an independent security audit.** See [setup, privacy, test scope and limitations](docs/relay.md).
 

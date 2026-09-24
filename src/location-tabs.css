@@ -85,47 +85,9 @@
 .location-pane .coverage-reset:hover {
   color: var(--accent);
 }
-.location-pane .range-power-toggle {
-  position: relative;
-  flex-shrink: 0;
-  width: 64px;
-  height: 26px;
-  padding: 0 7px 0 25px;
-  border: 1px solid var(--muted);
-  border-radius: 20px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-.location-pane .range-power-toggle i {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: transform 120ms ease;
-}
-.location-pane .range-power-toggle[aria-checked="true"] {
-  padding: 0 25px 0 7px;
-  border-color: var(--active-icon, var(--accent));
-  color: var(--active-icon, var(--accent));
-}
-.location-pane .range-power-toggle[aria-checked="true"] i {
-  transform: translateX(38px);
-  background: var(--active-icon, var(--accent));
-}
 .location-pane .coverage-heading button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .location-pane .range-power-toggle i {
-    transition: none;
-  }
 }
 .location-pane .coverage-toolbar label {
   display: grid;

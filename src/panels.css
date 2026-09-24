@@ -75,35 +75,6 @@
   line-height: 1.45;
   font-size: 10px;
 }
-.toggle-switch {
-  position: relative;
-  flex-shrink: 0;
-  width: 32px;
-  height: 18px;
-  min-height: 18px;
-  padding: 0;
-  border: 1px solid #60715b;
-  border-radius: 20px;
-  background: #29322a;
-}
-.toggle-switch i {
-  position: absolute;
-  left: 2px;
-  top: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #a6b09f;
-  transition: transform 0.1s;
-}
-.toggle-switch[aria-checked="true"] {
-  background: #527939;
-  border-color: #c4ed9e;
-}
-.toggle-switch[aria-checked="true"] i {
-  transform: translateX(14px);
-  background: #d3f6b5;
-}
 .topbar button[aria-expanded="true"] {
   color: var(--accent);
   background: #2f412b;
@@ -372,7 +343,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .map-drawer,
-  .toggle-switch i {
+  .toggle-switch .on-off-track {
     transition: none;
   }
 }

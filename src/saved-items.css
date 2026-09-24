@@ -155,30 +155,3 @@
 .row-toggle:hover {
   background: var(--surface);
 }
-.row-toggle-track {
-  width: 32px;
-  height: 18px;
-  flex: 0 0 32px;
-  border: 1px solid var(--muted);
-  border-radius: 20px;
-  position: relative;
-  background: var(--surface);
-}
-.row-toggle-track i {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--muted);
-  left: 2px;
-  top: 2px;
-  transition: transform 0.15s;
-}
-.row-toggle[aria-checked="true"] .row-toggle-track {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
-}
-.row-toggle[aria-checked="true"] .row-toggle-track i {
-  background: var(--accent);
-  transform: translateX(14px);
-}
