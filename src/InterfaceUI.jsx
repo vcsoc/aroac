@@ -183,7 +183,11 @@ export function AboutOAR({ onClose, offline }) {
     <Modal
       title="About AROAC"
       heading={
-        <strong>AROAC · Amateur Radio Operations and Communications</strong>
+        <img
+          className="about-logo"
+          src="./aroac-logo.png"
+          alt="AROAC · Amateur Radio Operations and Communications"
+        />
       }
       onClose={onClose}
     >

@@ -1,6 +1,6 @@
-# Optional relay preview (unreleased client source)
+# Optional relay preview (AROAC 0.4.1 desktop)
 
-OAR still owns its local accounts, SQLite and application logic. A relay is optional transport, never the account service. Published OAR 0.3.12 does **not** contain this new client. Android/iOS transport and native mobile credential storage are not implemented.
+AROAC still owns its local accounts, SQLite and application logic. A relay is optional transport, never the account service. The 0.4.1 desktop release contains this unaudited preview; historical OAR 0.3.12 does not. Android/iOS transport and native mobile credential storage are not implemented.
 
 ## Provisioning
 

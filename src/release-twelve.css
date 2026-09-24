@@ -31,8 +31,9 @@
 }
 .about-logo {
   display: block;
-  width: min(280px, 55vw);
-  height: 105px;
+  width: min(165px, 42vw);
+  height: auto;
+  max-height: 165px;
   object-fit: contain;
 }
 .record-scope {

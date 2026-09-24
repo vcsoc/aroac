@@ -1,6 +1,6 @@
-# OAR Roadmap
+# AROAC Roadmap
 
-OAR is growing into a comprehensive, local-first amateur radio workspace. The ideas below are potential future improvements, not promises, release dates, or currently available features. Priorities depend on community feedback, technical feasibility, available time, and sponsorship.
+AROAC is growing into a comprehensive, local-first amateur radio workspace. The ideas below are potential future improvements, not promises, release dates, or currently available features. Priorities depend on community feedback, technical feasibility, available time, and sponsorship.
 
 ## Station operations
 
@@ -31,8 +31,8 @@ OAR is growing into a comprehensive, local-first amateur radio workspace. The id
 - A standalone, local-first iOS application, subject to macOS/Xcode development and signing requirements.
 - Android only if a genuinely JDK-free approach can be demonstrated. Android is currently blocked and is not a supported release.
 
-## Help shape OAR
+## Help shape AROAC
 
-Have an idea, feedback, or an interest in sponsoring development? Reach out to **Chris Visser** through the [OAR GitHub repository](https://github.com/vcsoc/oar).
+Have an idea, feedback, or an interest in sponsoring development? Reach out to **Chris Visser** through the [AROAC GitHub repository](https://github.com/vcsoc/aroac).
 
-Contributions are welcome by arrangement. Please contact the developer before modifying or reusing OAR code; the repository's license and written-permission requirements still apply.
+Contributions are welcome by arrangement. Please contact the developer before modifying or reusing AROAC code; the repository's license and written-permission requirements still apply.

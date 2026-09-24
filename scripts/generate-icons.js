@@ -1,8 +1,18 @@
 // Native ImageMagick + Node only. Never invoke legacy Android/Gradle tooling.
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-const input = "public/oar-logo-sq.png";
-execFileSync("magick", [input, "-resize", "512x512", "public/icon-512.png"]);
+const input = "public/aroac-logo.png";
+for (const size of [192, 512])
+  execFileSync("magick", [
+    input,
+    "-resize",
+    `${size}x${size}`,
+    `public/icon-${size}.png`,
+  ]);
+writeFileSync(
+  "public/icon.svg",
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><image width="192" height="192" href="data:image/png;base64,${readFileSync("public/icon-192.png").toString("base64")}"/></svg>\n`,
+);
 execFileSync("magick", [
   input,
   "-define",
@@ -39,7 +49,7 @@ execFileSync("magick", [
   "-resize",
   "1024x1024",
   "-background",
-  "#101513",
+  "#081c30",
   "-alpha",
   "remove",
   "-alpha",
@@ -47,5 +57,5 @@ execFileSync("magick", [
   "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
 ]);
 console.log(
-  "Generated Linux PNG, Windows ICO, macOS ICNS and iOS app-icon assets. Android uses the shared source logo when its native app is ready; legacy scaffold untouched.",
+  "Generated PNG/SVG, Windows ICO, macOS ICNS and iOS app-icon assets from public/aroac-logo.png. Android remains blocked; legacy scaffold untouched.",
 );

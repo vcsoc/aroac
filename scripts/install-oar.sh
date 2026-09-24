@@ -3,7 +3,7 @@
 set -eu
 case "${1:-}" in
   --help|-h)
-    printf '%s\n' 'Usage: sh install-oar.sh [--check]' 'Installs the latest stable vcsoc/oar Linux AppImage and an application-menu entry.' '--check: report the matching release without installing.' 'Requires Linux, Python 3, internet access, and a graphical session to run OAR.'
+    printf '%s\n' 'Usage: sh install-oar.sh [--check]' 'Installs the latest stable vcsoc/aroac Linux AppImage and an application-menu entry.' '--check: report the matching release without installing.' 'Requires Linux, Python 3, internet access, and a graphical session to run AROAC.'
     exit 0 ;;
   ''|--check) ;;
   *) printf 'Unknown option: %s\n' "$1" >&2; exit 2 ;;
@@ -13,7 +13,7 @@ command -v python3 >/dev/null || { printf 'Python 3 is required.\n' >&2; exit 1;
 python3 - "${1:-install}" <<'PY'
 import hashlib, json, os, pathlib, platform, re, shlex, shutil, sys, tempfile, urllib.parse, urllib.request
 
-REPO = 'vcsoc/oar'
+REPO = 'vcsoc/aroac'
 
 def fail(message):
     raise RuntimeError(message)
@@ -28,7 +28,7 @@ opener = urllib.request.build_opener(HTTPSOnly())
 def download(url, destination, limit):
     if not url.startswith('https://'):
         fail('Downloads must use HTTPS.')
-    req = urllib.request.Request(url, headers={'User-Agent': 'OAR-Linux-Installer', 'Accept': '*/*'})
+    req = urllib.request.Request(url, headers={'User-Agent': 'AROAC-Linux-Installer', 'Accept': '*/*'})
     size = 0
     with opener.open(req, timeout=60) as response, open(destination, 'wb') as output:
         while True:
@@ -90,14 +90,15 @@ try:
         if release.get('draft') or release.get('prerelease') or not re.fullmatch(r'v\d+\.\d+\.\d+', tag):
             fail('The latest release is not a supported stable version.')
         version = tag[1:]
-        names = [f'OAR-{version}.AppImage', f'OAR-{version}-x64.AppImage'] if arch == 'x64' else [f'OAR-{version}-arm64.AppImage']
+        prefix = 'AROAC' if tuple(map(int, version.split('.'))) >= (0, 4, 1) else 'OAR'
+        names = [f'{prefix}-{version}.AppImage', f'{prefix}-{version}-x64.AppImage'] if arch == 'x64' else [f'{prefix}-{version}-arm64.AppImage']
         assets = release.get('assets', [])
         matches = [a for a in assets if a.get('name') in names]
         if len(matches) != 1: fail(f'Release {tag} has no unambiguous Linux {arch} AppImage. Nothing was installed.')
         asset = matches[0]
         print(f'Latest release: {tag} — Linux {arch} — {asset["name"]}', flush=True)
         if sys.argv[1] == '--check': sys.exit(0)
-        checksum_name = f'OAR-{version}-SHA256SUMS.txt'
+        checksum_name = f'{prefix}-{version}-SHA256SUMS.txt'
         checksum_assets = [a for a in assets if a.get('name') == checksum_name]
         if len(checksum_assets) != 1: fail('Release checksum manifest is missing or ambiguous.')
         def asset_url(a):
@@ -142,11 +143,11 @@ try:
                 atomic_file(data/'icons/hicolor/512x512/apps/oar.png', icon.read_bytes(), 0o644)
                 icon_name = 'oar'
             entry = '\n'.join([
-                '[Desktop Entry]', 'Type=Application', 'Name=OAR',
-                'Comment=Open Amateur Radio — local-first station workspace',
+                '[Desktop Entry]', 'Type=Application', 'Name=AROAC',
+                'Comment=Amateur Radio Operations and Communications — local-first station workspace',
                 'Exec=' + desktop_quote(launcher), 'Icon=' + icon_name,
                 'Terminal=false', 'Categories=Network;HamRadio;',
-                'StartupWMClass=oar', 'StartupNotify=true', '',
+                'StartupWMClass=aroac', 'StartupNotify=true', '',
             ])
             atomic_file(data/'applications/oar.desktop', entry.encode(), 0o644)
             atomic_file(root/'installed-release.json', json.dumps({'version':version,'sha256':actual,'source':release.get('html_url')},indent=2).encode(), 0o644)
@@ -155,10 +156,10 @@ try:
         executable = shutil.which(command)
         if executable and directory.exists():
             subprocess.run([executable, str(directory)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-    print(f'Installed OAR {version}. Find “OAR” in your application launcher, or run:\n  {shlex.quote(str(launcher))}')
-    print('Close an older running OAR before launching. Your application database and settings were not modified.')
+    print(f'Installed AROAC {version}. Find “AROAC” in your application launcher, or run:\n  {shlex.quote(str(launcher))}')
+    print('Close an older running AROAC before launching. Your application database and settings were not modified.')
     print(f'Rerun this script for the latest release. Previous executable, when present: {root / "OAR.previous.AppImage"}')
 except Exception as e:
-    print('OAR installation failed: ' + str(e), file=sys.stderr)
+    print('AROAC installation failed: ' + str(e), file=sys.stderr)
     sys.exit(1)
 PY

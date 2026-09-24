@@ -819,11 +819,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             setPage("dashboard");
           }}
         >
-          <img
-            className="brand-logo"
-            src="./brand/oar-app-icon-v1.png"
-            alt="AROAC"
-          />
+          <img className="brand-logo" src="./aroac-logo.png" alt="AROAC" />
           <strong>
             AROAC<span>AMATEUR RADIO OPERATIONS AND COMMUNICATIONS</span>
           </strong>

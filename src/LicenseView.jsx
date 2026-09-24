@@ -26,7 +26,7 @@ export default function LicenseView() {
   }, []);
   return (
     <section className="license-content">
-      <h3>OAR license</h3>
+      <h3>AROAC license</h3>
       <pre>{license}</pre>
       <details className="third-party-licenses">
         <summary>Third-party materials</summary>
@@ -43,7 +43,7 @@ export default function LicenseView() {
           Third-party rights remain under their respective licenses. Runtime
           dependency notices are listed below; inclusion does not imply that
           every dependency is active on every platform. Maps, observations and
-          datasets retain the source attribution shown in OAR.
+          datasets retain the source attribution shown in AROAC.
         </p>
         <details>
           <summary>Noto Sans report font — SIL Open Font License</summary>
