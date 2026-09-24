@@ -194,10 +194,8 @@ try {
     null,
   );
   await page.reload();
-  await page
-    .getByRole("button", { name: "Sign in", exact: false })
-    .first()
-    .click();
+  await page.locator(".profile-button").click();
+  await page.getByRole("menuitem", { name: "Sign in", exact: true }).click();
   await page
     .getByRole("button", { name: "New here? Create your station" })
     .click();

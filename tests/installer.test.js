@@ -4,7 +4,8 @@ import { readFileSync, mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-const file = readFileSync("scripts/install-oar.sh", "utf8");
+const file = readFileSync("scripts/install-oar.sh", "utf8").replace(/\r\n/g, "\n");
+const linuxOnly = { skip: process.platform !== "linux" && "Linux installer requires Linux filesystem semantics" };
 const source = file.split("<<'PY'\n")[1].replace(/\nPY\n$/, "\n");
 function run(home, scenario) {
   const setup = `
@@ -36,7 +37,7 @@ shutil.which=lambda name:None
     env: { ...process.env, HOME: home, XDG_DATA_HOME: path.join(home, "data") },
   });
 }
-test("Linux installer installs atomically into user paths, preserves a previous executable and leaves app data alone", () => {
+test("Linux installer installs atomically into user paths, preserves a previous executable and leaves app data alone", linuxOnly, () => {
   const home = mkdtempSync(path.join(tmpdir(), "oar installer "));
   try {
     let result = run(home, "ok");
@@ -63,7 +64,7 @@ test("Linux installer installs atomically into user paths, preserves a previous 
   }
 });
 for (const scenario of ["checksum", "url", "arm"])
-  test("Linux installer rejects " + scenario + " before installation", () => {
+  test("Linux installer rejects " + scenario + " before installation", linuxOnly, () => {
     const home = mkdtempSync(path.join(tmpdir(), "oar-installer-reject-"));
     try {
       const result = run(home, scenario);
