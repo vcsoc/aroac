@@ -36,12 +36,20 @@ test("desktop registration, logbook, globe and mobile navigation", async ({
   await page
     .getByRole("button", { name: "Log a contact", exact: true })
     .click();
+  const logForm = page.locator(".logbook-layout .qso-form");
+  const logHistory = page.locator(".logbook-layout .table-wrap");
+  await expect(logForm).toBeVisible();
+  expect((await logForm.boundingBox()).x).toBeGreaterThan(
+    (await logHistory.boundingBox()).x,
+  );
   await page.getByRole("button", { name: "Log contact", exact: true }).click();
+  await expect(page.getByLabel("Callsign", { exact: true })).toBeFocused();
   await page.getByLabel("Callsign", { exact: true }).fill("W1XYZ");
   await page.getByRole("button", { name: "Save contact" }).click();
   await expect(
     page.getByRole("cell", { name: "W1XYZ", exact: true }),
   ).toBeVisible();
+  await expect(logForm).toBeVisible();
   const peerCall = "R" + Date.now().toString().slice(-7) + "B";
   const peerResponse = await request.post("/api/register", {
     data: {

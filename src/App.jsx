@@ -53,6 +53,7 @@ import {
 import { PanelLeft, Info } from "lucide-react";
 import AccountPanel from "./AccountPanel";
 import { Auth, Messages, Logbook, Profile } from "./Station.jsx";
+import { TEMPORARY_PIN_COLORS } from "./locationColors";
 import LocalData from "./LocalData.jsx";
 import RelayPanel from "./RelayPanel.jsx";
 import AddressSearch from "./AddressSearch.jsx";
@@ -89,7 +90,6 @@ import {
   repeaterFootprint,
 } from "../shared/coverage.js";
 const WorldMap = lazy(() => import("./WorldMap.jsx"));
-const NO_VISIBLE_PINS = [];
 const nav = [
   ["dashboard", "Overview", LayoutDashboard],
   ["atlas", "World atlas", Globe2],
@@ -289,6 +289,8 @@ function Atlas({
   streets,
   pins,
   showSavedLocations,
+  selectedLocations,
+  activePinId,
   repeaters,
   selectedRepeaterId,
   movingPinId,
@@ -303,6 +305,11 @@ function Atlas({
   homeReady,
 }) {
   const [globe, setGlobe] = useState(false);
+  const visiblePins = useMemo(
+    () =>
+      showSavedLocations ? pins : pins.filter((pin) => pin.id === activePinId),
+    [showSavedLocations, pins, activePinId],
+  );
   return (
     <article className={"panel atlas " + (full ? "atlas-full" : "")}>
       <div className="panel-heading">
@@ -342,7 +349,9 @@ function Atlas({
             theme={theme}
             streets={streets}
             cities={cities}
-            pins={showSavedLocations ? pins : NO_VISIBLE_PINS}
+            pins={visiblePins}
+            selectedLocations={selectedLocations}
+            activePinId={activePinId}
             repeaters={repeaters}
             selectedRepeaterId={selectedRepeaterId}
             movingPinId={movingPinId}
@@ -576,6 +585,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
     } catch {}
   }, [coverageSettings]);
   const showLocation = (location) => {
+    setActivePinId(location?.id ?? null);
     setCoverageOrigin(location);
     setSelectedLocations((items) => [
       ...items.filter((item) => item.locked),
@@ -887,7 +897,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             <PanelLeft size={17} />
           </button>
           <span className="breadcrumb">
-            Workspace <ChevronRight size={14} />
+            AROAC <ChevronRight size={14} />
             <b>{nav.find((n) => n[0] === page)?.[1] || "Station settings"}</b>
           </span>
           <div className="topbar-search-group">
@@ -1160,6 +1170,8 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
                 streets={showStreets}
                 pins={pinStore.pins}
                 showSavedLocations={showSavedLocations}
+                selectedLocations={selectedLocations}
+                activePinId={activePinId}
                 repeaters={
                   showRepeaters
                     ? directory.value?.repeaters || NO_REPEATERS
@@ -1324,6 +1336,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
         onClose={() => setLeftOpen(false)}
         home={timeSettings.value.home}
         selected={selectedLocations}
+        activePinId={activePinId}
         onLock={(key) =>
           setSelectedLocations((items) => {
             const item = items.find((i) => i.key === key);
@@ -1333,8 +1346,17 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               );
               return items;
             }
+            const availableColor = TEMPORARY_PIN_COLORS.find(
+              (color) => !items.some((i) => i.locked && i.color === color),
+            );
             return items.map((i) =>
-              i.key === key ? { ...i, locked: !i.locked } : i,
+              i.key === key
+                ? {
+                    ...i,
+                    locked: !i.locked,
+                    color: i.locked ? null : availableColor,
+                  }
+                : i,
             );
           })
         }

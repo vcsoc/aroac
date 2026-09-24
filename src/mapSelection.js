@@ -1,30 +1,65 @@
 import { useEffect } from "react";
 import { Marker } from "maplibre-gl";
+import { SELECTED_SAVED_COLOR } from "./locationColors";
 import "./map-selection.css";
 
-export function useMapSelection(map, ready, location) {
+export function useMapSelection(
+  map,
+  ready,
+  location,
+  selected = [],
+  activePinId,
+) {
   useEffect(() => {
     const m = map.current;
-    if (!ready || !m || !location) return;
-    const element = document.createElement("img");
-    element.className = "clicked-location-marker";
-    element.src = new URL(
-      "./map-markers/click-location.png",
-      document.baseURI,
-    ).href;
-    element.alt = `Clicked location ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`;
-    element.draggable = false;
-    const marker = new Marker({
-      element,
-      anchor: "bottom",
-      opacityWhenCovered: 0,
-      subpixelPositioning: true,
-    })
-      .setLngLat([location.lng, location.lat])
-      .addTo(m);
-    m.getContainer().dataset.clickedLocation = `${location.lat},${location.lng}`;
-    return () => marker.remove();
-  }, [map, ready, location]);
+    if (!ready || !m) return;
+    const points = selected.length
+      ? selected.filter(
+          (item) => !(item.place.id === activePinId && !item.locked),
+        )
+      : location
+        ? [{ place: location }]
+        : [];
+    const markers = points
+      .filter(
+        ({ place }) => Number.isFinite(place.lat) && Number.isFinite(place.lng),
+      )
+      .map(({ place, locked, color }) => {
+        const element = document.createElement(locked ? "div" : "img");
+        element.className =
+          "clicked-location-marker" + (locked ? " linked-location-marker" : "");
+        if (locked) {
+          element.style.setProperty(
+            "--location-link-color",
+            place.id === activePinId ? SELECTED_SAVED_COLOR : color,
+          );
+          element.setAttribute("role", "img");
+          element.setAttribute(
+            "aria-label",
+            `Pinned location ${place.lat.toFixed(6)}, ${place.lng.toFixed(6)}`,
+          );
+          element.title = place.name || place.title || "Pinned location";
+        } else {
+          element.src = new URL(
+            "./map-markers/click-location.png",
+            document.baseURI,
+          ).href;
+          element.alt = `Clicked location ${place.lat.toFixed(6)}, ${place.lng.toFixed(6)}`;
+          element.draggable = false;
+        }
+        return new Marker({
+          element,
+          anchor: "bottom",
+          opacityWhenCovered: 0,
+          subpixelPositioning: true,
+        })
+          .setLngLat([place.lng, place.lat])
+          .addTo(m);
+      });
+    if (location)
+      m.getContainer().dataset.clickedLocation = `${location.lat},${location.lng}`;
+    return () => markers.forEach((marker) => marker.remove());
+  }, [map, ready, location, selected, activePinId]);
 
   useEffect(() => {
     const m = map.current;

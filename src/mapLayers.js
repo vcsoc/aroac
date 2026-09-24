@@ -92,7 +92,7 @@ export function useStreetLabels(mapRef, ready, enabled, host) {
     };
   }, [ready, enabled, sources.mapVector]);
 }
-export function useSavedPins(mapRef, ready, pins, callbacks) {
+export function useSavedPins(mapRef, ready, pins, callbacks, activeId) {
   useEffect(() => {
     const m = mapRef.current;
     if (!m || !ready) return;
@@ -208,6 +208,18 @@ export function useSavedPins(mapRef, ready, pins, callbacks) {
       markers.forEach((marker) => marker.remove());
     };
   }, [ready, pins]);
+  useEffect(() => {
+    if (!ready) return;
+    mapRef.current
+      ?.getContainer()
+      .querySelectorAll(".saved-map-pin")
+      .forEach((element) => {
+        element.classList.toggle(
+          "selected-saved-map-pin",
+          element.dataset.pinId === String(activeId),
+        );
+      });
+  }, [ready, pins, activeId]);
 }
 export function useRepeaterLayer(
   mapRef,

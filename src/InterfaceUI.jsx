@@ -27,7 +27,7 @@ export function Help({ children, label = "More information" }) {
   const open = () => {
     const r = ref.current.getBoundingClientRect();
     setPosition({
-      left: Math.max(8, Math.min(r.left, window.innerWidth - 312)),
+      left: Math.max(8, Math.min(r.left, window.innerWidth - 268)),
       ...(r.bottom > window.innerHeight / 2
         ? { bottom: window.innerHeight - r.top + 6 }
         : { top: r.bottom + 6 }),

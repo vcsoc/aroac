@@ -98,15 +98,44 @@ test("profile country defaults from home and contacts reveal only on focus or ho
   const profile = page.locator(".profile-editor-form"),
     email = profile.getByLabel("Email address (optional)", { exact: true }),
     mobile = profile.getByLabel("Mobile number", { exact: true });
+  await profile.getByRole("button", { name: "About local directory" }).hover();
+  const directoryHelp = page.getByRole("tooltip");
+  await expect(directoryHelp).toContainText(
+    "local directory lists station profiles",
+  );
+  expect(
+    parseFloat(
+      await directoryHelp.evaluate((el) => getComputedStyle(el).fontSize),
+    ),
+  ).toBeLessThan(13);
+  expect((await directoryHelp.boundingBox()).width).toBeLessThanOrEqual(310);
+  const privacyHelp = profile.getByRole("button", {
+    name: "About profile privacy",
+  });
+  await privacyHelp.scrollIntoViewIfNeeded();
+  await privacyHelp.hover();
+  await expect(page.getByRole("tooltip")).toContainText(
+    "No cloud synchronization",
+  );
   await page.mouse.move(0, 0);
   await expect(email).toHaveValue("a###############m");
   await email.hover();
   await expect(email).toHaveValue("alice@example.com");
   await page.mouse.move(0, 0);
   await expect(email).toHaveValue("a###############m");
+  const countryPicker = profile.getByRole("combobox", {
+    name: "Mobile country code",
+  });
+  await expect(countryPicker).toContainText("🇨🇦 +1");
+  await countryPicker.click();
+  await profile
+    .getByRole("searchbox", { name: "Search country or dial code" })
+    .fill("Canada");
   await expect(
-    profile.getByRole("combobox", { name: "Mobile country code" }),
-  ).toHaveValue("CA");
+    profile.getByRole("option", { name: /Canada.*\+1/ }),
+  ).toBeVisible();
+  await profile.getByRole("option", { name: /Canada.*\+1/ }).click();
+  await expect(countryPicker).toContainText("🇨🇦 +1");
   await mobile.fill("1234567890");
   await expect(mobile).toHaveValue("123-456-7890");
   await email.focus();
@@ -124,6 +153,7 @@ test("profile country defaults from home and contacts reveal only on focus or ho
   await expect(page.locator(".oar-toast")).toContainText(
     "Updated the local operator profile",
   );
+  await expect(page.locator(".account-dialog")).not.toBeVisible();
   const saved = await (await page.request.get("/api/account")).json();
   expect(saved.mobile).toBe("123-456-7890");
   expect(saved.mobileCountry).toBe("CA");

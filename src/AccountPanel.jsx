@@ -228,16 +228,19 @@ export default function AccountPanel({
                         new FormData(e.currentTarget),
                       );
                       run(async () => {
-                        setAccount(
-                          await api("/account", {
-                            method: "PATCH",
-                            body: JSON.stringify(values),
-                          }),
-                        );
-                        onUser(await api("/me"));
+                        await api("/account", {
+                          method: "PATCH",
+                          body: JSON.stringify(values),
+                        });
+                        try {
+                          onUser(await api("/me"));
+                        } catch {
+                          // The profile is already saved; do not suggest retrying the write.
+                        }
                         setStatus(
                           `Updated the local operator profile for ${user.callsign}.`,
                         );
+                        onClose();
                       });
                     }}
                   >
@@ -250,8 +253,22 @@ export default function AccountPanel({
                         ["grid", "Maidenhead grid (optional)", 6],
                       ].map(([key, label, max]) => (
                         <label key={key} className={"profile-field-" + key}>
-                          {label}
+                          <span className="profile-field-heading">
+                            {label}
+                            {key === "name" && (
+                              <Help label="About local directory">
+                                The local directory lists station profiles on
+                                this installation only. Other local profiles can
+                                find your callsign, display name, grid and
+                                biography; it is not a public internet
+                                directory. First/last names, mobile, email,
+                                address, avatar and devices remain private to
+                                your profile.
+                              </Help>
+                            )}
+                          </span>
                           <input
+                            aria-label={label}
                             name={key}
                             defaultValue={account[key] || ""}
                             required={["name", "email"].includes(key)}
@@ -284,17 +301,19 @@ export default function AccountPanel({
                         maxLength={500}
                       />
                     </label>
-                    <small>
-                      First/last names, mobile, email, address, avatar and
-                      devices are account-scoped in AROAC, not published in the
-                      local directory. Display name/grid/biography appear in
-                      that directory. No cloud synchronization. Database and
-                      backups are not encrypted: anyone with OS-user or
-                      full-backup access can read them.
-                    </small>
-                    <button className="primary" disabled={busy}>
-                      Save profile
-                    </button>
+                    <div className="profile-save-actions">
+                      <button className="primary" disabled={busy}>
+                        Save profile
+                      </button>
+                      <Help label="About profile privacy">
+                        First/last names, mobile, email, address, avatar and
+                        devices are account-scoped in AROAC, not published in
+                        the local directory. Display name, grid and biography
+                        appear only in the local directory. No cloud
+                        synchronization. Database and backups are not encrypted:
+                        anyone with OS-user or full-backup access can read them.
+                      </Help>
+                    </div>
                   </form>
                   <details>
                     <summary>Change password</summary>

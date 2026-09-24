@@ -56,6 +56,7 @@ try {
       0o600,
     );
   await page.locator(".profile-button").click();
+  await page.getByRole("menuitem", { name: "Edit Profile" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.locator(".account-avatar-placeholder")).toBeVisible();
   assert.equal(
@@ -64,10 +65,7 @@ try {
       .evaluate((el) => getComputedStyle(el).borderRadius),
     "50%",
   );
-  await expect(dialog).toContainText("Logged in user");
-  await dialog
-    .getByRole("button", { name: "Edit profile", exact: true })
-    .click();
+  await expect(dialog).toContainText("Profile & equipment");
   await dialog
     .getByLabel("Upload avatar")
     .setInputFiles({ name: "avatar.png", mimeType: "image/png", buffer: png });
@@ -98,13 +96,21 @@ try {
   await dialog
     .getByLabel("Display name (local directory)", { exact: true })
     .fill("Jörg Owner");
+  await dialog.getByRole("combobox", { name: "Mobile country code" }).click();
   await dialog
-    .getByLabel("Mobile number", { exact: true })
-    .fill("+15551234567");
+    .getByRole("searchbox", { name: "Search country or dial code" })
+    .fill("United States");
+  await dialog.getByRole("option", { name: /United States.*\+1/ }).click();
+  await dialog.getByLabel("Mobile number", { exact: true }).fill("5551234567");
   await dialog
     .getByRole("button", { name: "Save profile", exact: true })
     .click();
-  await expect(dialog.getByRole("status")).toContainText("Profile saved.");
+  await expect(dialog).not.toBeVisible();
+  await expect(page.locator(".oar-toast").last()).toContainText(
+    "Updated the local operator profile",
+  );
+  await page.locator(".profile-button").click();
+  await page.getByRole("menuitem", { name: "Edit Profile" }).click();
   await dialog
     .locator("summary")
     .filter({ hasText: "Change password" })
@@ -121,7 +127,9 @@ try {
   await dialog
     .getByRole("button", { name: "Change password", exact: true })
     .click();
-  await expect(dialog.getByRole("status")).toContainText("Password changed");
+  await expect(dialog.getByRole("status").last()).toContainText(
+    "Password changed",
+  );
   await expect(
     dialog.getByLabel("Current password", { exact: true }),
   ).toHaveValue("");
@@ -241,14 +249,18 @@ try {
   );
   await page.reload();
   await page.locator(".profile-button").click();
+  await page.getByRole("menuitem", { name: "Edit Profile" }).click();
   await expect(page.getByRole("img", { name: "Your avatar" })).toBeVisible();
   const persisted = await page.evaluate(async () => ({
     account: await window.oarDesktop.request("/account"),
     devices: await window.oarDesktop.request("/devices"),
   }));
-  assert.equal(persisted.account.mobile, "+15551234567");
+  assert.equal(persisted.account.mobile, "555-123-4567");
+  assert.equal(persisted.account.mobileCountry, "US");
   assert.equal(persisted.devices[0].invoices.length, 3);
-  await page.getByRole("button", { name: "Logout", exact: true }).click();
+  await page.getByRole("button", { name: "Close account panel" }).click();
+  await page.locator(".profile-button").click();
+  await page.getByRole("menuitem", { name: "Logout" }).click();
   await expect
     .poll(() => page.evaluate(() => window.oarDesktop.request("/me")))
     .toBe(null);

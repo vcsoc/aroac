@@ -470,8 +470,8 @@ export function Messages({ user }) {
 export function Logbook() {
   const [rows, setRows] = useState([]),
     [error, setError] = useState(""),
-    [show, setShow] = useState(false),
     [busy, setBusy] = useState(false);
+  const formRef = useRef(null);
   const load = () =>
     api("/logbook")
       .then(setRows)
@@ -481,14 +481,16 @@ export function Logbook() {
   }, []);
   async function submit(e) {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.currentTarget));
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
     data.created = new Date(data.created + "Z").toISOString();
     setBusy(true);
     try {
       await post("/logbook", data);
       await load();
       toast(`Logged QSO with ${data.callsign} in your local logbook.`);
-      setShow(false);
+      form.reset();
+      form.elements.created.value = new Date().toISOString().slice(0, 16);
       setError("");
     } catch (e) {
       setError(e.message);
@@ -516,7 +518,10 @@ export function Logbook() {
             <Download size={16} />
             Export ADIF
           </button>
-          <button className="primary" onClick={() => setShow(!show)}>
+          <button
+            className="primary"
+            onClick={() => formRef.current?.elements.callsign.focus()}
+          >
             <Plus size={16} />
             Log contact
           </button>
@@ -527,8 +532,64 @@ export function Logbook() {
           {error}
         </p>
       )}
-      {show && (
-        <form className="panel qso-form" onSubmit={submit}>
+      <div className="logbook-layout">
+        <div className="panel table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>CALLSIGN</th>
+                <th>UTC</th>
+                <th>MHz</th>
+                <th>MODE</th>
+                <th>NOTES</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id}>
+                  <td className="accent">{r.callsign}</td>
+                  <td>{r.created.replace("T", " ").slice(0, 16)}</td>
+                  <td>{r.frequency}</td>
+                  <td>
+                    <span className="mode-tag">{r.mode}</span>
+                  </td>
+                  <td>{r.notes}</td>
+                  <td>
+                    <button
+                      className="icon-button"
+                      aria-label={"Delete contact " + r.callsign}
+                      onClick={async () => {
+                        if (
+                          await confirmAction(
+                            "Delete this contact permanently?",
+                          )
+                        )
+                          try {
+                            await api("/logbook/" + r.id, { method: "DELETE" });
+                            load();
+                          } catch (e) {
+                            setError(e.message);
+                          }
+                      }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!rows.length && (
+            <div className="empty">
+              <Radio size={36} />
+              <h3>Your next contact belongs here.</h3>
+              <p>Log your first QSO and export it in ADIF format.</p>
+            </div>
+          )}
+        </div>
+        <form ref={formRef} className="panel qso-form" onSubmit={submit}>
+          <h3>Log contact</h3>
           <label>
             Callsign
             <input
@@ -569,7 +630,7 @@ export function Logbook() {
               required
             />
           </label>
-          <label className="wide">
+          <label>
             Notes
             <input name="notes" maxLength={2000} />
           </label>
@@ -577,59 +638,6 @@ export function Logbook() {
             {busy ? "Saving…" : "Save contact"}
           </button>
         </form>
-      )}
-      <div className="panel table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>CALLSIGN</th>
-              <th>UTC</th>
-              <th>MHz</th>
-              <th>MODE</th>
-              <th>NOTES</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id}>
-                <td className="accent">{r.callsign}</td>
-                <td>{r.created.replace("T", " ").slice(0, 16)}</td>
-                <td>{r.frequency}</td>
-                <td>
-                  <span className="mode-tag">{r.mode}</span>
-                </td>
-                <td>{r.notes}</td>
-                <td>
-                  <button
-                    className="icon-button"
-                    aria-label={"Delete contact " + r.callsign}
-                    onClick={async () => {
-                      if (
-                        await confirmAction("Delete this contact permanently?")
-                      )
-                        try {
-                          await api("/logbook/" + r.id, { method: "DELETE" });
-                          load();
-                        } catch (e) {
-                          setError(e.message);
-                        }
-                    }}
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!rows.length && (
-          <div className="empty">
-            <Radio size={36} />
-            <h3>Your next contact belongs here.</h3>
-            <p>Log your first QSO and export it in ADIF format.</p>
-          </div>
-        )}
       </div>
     </>
   );

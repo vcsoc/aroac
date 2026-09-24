@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { SELECTED_SAVED_COLOR } from "./locationColors";
 import { homeDifference } from "./contactContext";
 import "./location-tabs.css";
 import { Help } from "./InterfaceUI";
@@ -128,6 +129,8 @@ export function useWeather(place, enabled = true) {
 }
 function LocationCard({
   locked,
+  color,
+  savedSelected,
   onLock,
   homeZone,
   onFocus,
@@ -188,7 +191,19 @@ function LocationCard({
       aria-label={home ? "Home location details" : "Selected location details"}
     >
       <header
-        className="location-title-row"
+        className={
+          "location-title-row " +
+          (color || savedSelected ? "linked-location-header" : "")
+        }
+        style={
+          color || savedSelected
+            ? {
+                "--location-link-color": savedSelected
+                  ? SELECTED_SAVED_COLOR
+                  : color,
+              }
+            : undefined
+        }
         onDoubleClick={(e) => {
           if (e.target.closest("button:not(.location-title)")) return;
           clearTimeout(clickTimer.current);
@@ -492,6 +507,7 @@ export default function LocationDetails({
   onClose,
   home,
   selected = [],
+  activePinId,
   onLock,
   onSave,
   onStation,
@@ -617,6 +633,11 @@ export default function LocationDetails({
                   key={item.key}
                   place={item.place}
                   locked={item.locked}
+                  color={item.locked ? item.color : null}
+                  savedSelected={
+                    item.place.id === activePinId &&
+                    pins.some((pin) => pin.id === activePinId)
+                  }
                   onLock={() => onLock(item.key)}
                   homeZone={home?.zone}
                   onFocus={onFocus}

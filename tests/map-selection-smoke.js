@@ -80,7 +80,7 @@ try {
     rect.y + rect.height * 0.5 + 25,
     { steps: 5 },
   );
-  assert.equal(await cursor(), "grabbing");
+  await expect.poll(cursor).toBe("grabbing");
   await page.mouse.up();
   await expect.poll(cursor).toMatch(/crosshair/);
   await expect(page.locator(".clicked-location-marker")).toHaveCount(0);

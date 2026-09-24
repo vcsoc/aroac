@@ -1,0 +1,156 @@
+.oar-tooltip {
+  width: min(260px, calc(100vw - 16px));
+  max-width: calc(100vw - 16px);
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.profile-field-heading,
+.profile-save-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.profile-save-actions {
+  justify-content: flex-start;
+}
+.country-picker-field {
+  position: relative;
+  min-width: 0;
+}
+.country-picker-field > span {
+  display: block;
+}
+.country-picker-trigger {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+}
+.country-picker-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max(100%, 240px);
+  max-width: min(350px, 85vw);
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 30px #0008;
+}
+.country-picker-menu input {
+  width: 100%;
+  font-size: 12px;
+}
+.country-picker-menu [role="listbox"] {
+  max-height: 190px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+.country-picker-menu [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+}
+.country-picker-menu [role="option"]:hover,
+.country-picker-menu [role="option"]:focus-visible,
+.country-picker-menu [aria-selected="true"] {
+  background: var(--border);
+}
+.country-picker-menu p {
+  margin: 8px;
+}
+.location-card .linked-location-header {
+  background: var(--location-link-color);
+  color: #172016;
+  border-radius: 5px;
+  padding: 3px 5px;
+}
+.location-card .linked-location-header button,
+.location-card .linked-location-header svg,
+.location-card .linked-location-header strong {
+  color: #172016;
+}
+.world-map .linked-location-marker {
+  width: calc(var(--clicked-marker-height, 28px) * 0.75);
+  height: var(--clicked-marker-height, 28px);
+  background: var(--location-link-color);
+  mask: url("/map-markers/click-location.png") center / contain no-repeat;
+  pointer-events: none;
+}
+.world-map .saved-map-pin.selected-saved-map-pin {
+  background: #ffd34f !important;
+  color: #172016;
+  border-color: #172016;
+}
+.pin-editor.selected .pin-editor-title {
+  background: #ffd34f;
+  color: #172016;
+  padding: 4px;
+  border-radius: 5px;
+}
+.pin-editor.selected .pin-editor-title button,
+.pin-editor.selected .pin-editor-title svg {
+  color: #172016;
+}
+.logbook-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 370px);
+  align-items: start;
+  gap: 16px;
+}
+.logbook-layout .table-wrap {
+  min-width: 0;
+  min-height: 320px;
+  max-height: calc(100dvh - 195px);
+  overflow: auto;
+}
+.logbook-layout .qso-form {
+  position: sticky;
+  top: 48px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px;
+  margin: 0;
+}
+.logbook-layout .qso-form h3 {
+  margin: 0;
+}
+.logbook-layout .qso-form label,
+.logbook-layout .qso-form .wide {
+  min-width: 0;
+  grid-column: 1;
+}
+.logbook-layout .qso-form input,
+.logbook-layout .qso-form select,
+.logbook-layout .qso-form button {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 850px) {
+  .logbook-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .logbook-layout .qso-form {
+    grid-row: 1;
+    position: static;
+  }
+  .logbook-layout .table-wrap {
+    max-height: none;
+  }
+}

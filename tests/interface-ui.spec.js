@@ -31,8 +31,8 @@ test("compact topbar, themed help/about and saved-location confirmation", async 
   );
   await expect(about).toHaveCSS("background-color", "rgb(37, 73, 99)");
   await expect(
-    about.getByRole("link", { name: "github.com/vcsoc/oar" }),
-  ).toHaveAttribute("href", "https://github.com/vcsoc/oar");
+    about.getByRole("link", { name: "github.com/vcsoc/aroac" }),
+  ).toHaveAttribute("href", "https://github.com/vcsoc/aroac");
   await page.keyboard.press("Escape");
   await expect(about).not.toBeVisible();
   await page

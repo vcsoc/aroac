@@ -19,6 +19,7 @@ import "./guidance.css";
 import "./release-ten.css";
 import "./release-twelve.css";
 import "./on-off.css";
+import "./annotation-layout.css";
 import Scrollbars from "./Scrollbars";
 // Reset an abandoned demo origin before any component reads browser preferences.
 if (

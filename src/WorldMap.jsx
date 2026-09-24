@@ -47,6 +47,8 @@ export default function WorldMap({
   streets = false,
   cities = false,
   pins = emptyGeoJSON.features,
+  selectedLocations = [],
+  activePinId,
   repeaters = emptyGeoJSON.features,
   selectedRepeaterId,
   movingPinId,
@@ -70,7 +72,7 @@ export default function WorldMap({
     [zoom, setZoom] = useState(1.4),
     [radarInfo, setRadarInfo] = useState(null),
     [clickedLocation, setClickedLocation] = useState(null);
-  useMapSelection(map, ready, clickedLocation);
+  useMapSelection(map, ready, clickedLocation, selectedLocations, activePinId);
   const mufState = useMuf(muf);
   useMufLayer(map, ready, muf, mufState, movingPinId);
   const interactions = useRef();
@@ -87,7 +89,7 @@ export default function WorldMap({
   useCoverageLayer(map, ready, coverage);
   useStreetLabels(map, ready, streets, host);
   useCityLabels(map, ready, cities, host);
-  useSavedPins(map, ready, pins, interactions);
+  useSavedPins(map, ready, pins, interactions, activePinId);
   useRepeaterLayer(
     map,
     ready,

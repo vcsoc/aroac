@@ -94,6 +94,12 @@ test("completed update checks automatically hide within six seconds and a manual
 }) => {
   await page.addInitScript(() => {
     window.oarDesktop = {
+      connection: async () => ({ demo: false }),
+      request: async (route, options = {}) => {
+        const response = await fetch("/api" + route, options);
+        if (!response.ok) throw Error("Local test request failed");
+        return response.json();
+      },
       onUpdate: (fn) => {
         window.testUpdate = fn;
         return () => {};
