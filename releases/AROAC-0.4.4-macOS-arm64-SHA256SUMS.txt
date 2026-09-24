@@ -1,0 +1,4 @@
+2f3cb6d05052a0dddb335565499f73e5411f0c41bbb1797e7ce74e34d455a17a  AROAC-0.4.4-arm64.dmg
+ac0f3de8411bb5d1be256345384341e8bf67fad659a12a5cd78300db25b190fc  AROAC-0.4.4-arm64.dmg.blockmap
+8a371833900cba8ca06f8747e712f1b329ddaa96df45297793c908eacc8616ed  AROAC-0.4.4-arm64-mac.zip
+3a60e0e9f3dd14aeb0ad5e36eb89737afd6e80902f35e7baa87a7bb32ee93bf2  AROAC-0.4.4-arm64-mac.zip.blockmap
