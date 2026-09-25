@@ -50,11 +50,13 @@ try {
   });
   await page.reload();
   const connection = await page.evaluate(() => window.oarDesktop.connection());
-  for (const suffix of ["", "-wal", "-shm"])
-    assert.equal(
-      statSync(connection.databasePath + suffix).mode & 0o777,
-      0o600,
-    );
+  // POSIX mode bits do not describe Windows ACL protection.
+  if (process.platform !== "win32")
+    for (const suffix of ["", "-wal", "-shm"])
+      assert.equal(
+        statSync(connection.databasePath + suffix).mode & 0o777,
+        0o600,
+      );
   await page.locator(".profile-button").click();
   await page.getByRole("menuitem", { name: "Edit Profile" }).click();
   const dialog = page.getByRole("dialog");
@@ -233,7 +235,8 @@ try {
   assert.equal(metadata.account.firstName, "Zoë");
   assert.equal(metadata.devices[0].serial, "SERIAL-123");
   assert.equal(metadata.account.password, undefined);
-  assert.equal(statSync(output).mode & 0o777, 0o600);
+  if (process.platform !== "win32")
+    assert.equal(statSync(output).mode & 0o777, 0o600);
   await page.screenshot({ path: "/tmp/oar-device-inventory.png" });
   await app.close();
   app = null;
@@ -266,7 +269,7 @@ try {
     .toBe(null);
   assert.deepEqual(errors, []);
   console.log(
-    "Account passed: user panel, avatar upload, private profile edits, password change, device/invoice SQLite persistence, native PDF with intact original invoice attachments and UTF-8 metadata, owner-only file permissions and logout.",
+    "Account passed: user panel, avatar upload, private profile edits, password change, device/invoice SQLite persistence, native PDF with intact original invoice attachments and UTF-8 metadata, POSIX-only file permission checks (Windows ACLs not tested) and logout.",
   );
 } catch (e) {
   if (page && !page.isClosed()) {
