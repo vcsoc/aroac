@@ -773,6 +773,8 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
   };
   const selectRepeaters = (ids) => {
     setCoverageSettings((value) => ({ ...value, enabled: true }));
+    setLocationTab("Range");
+    setLeftOpen(true);
     setRepeaterIds(ids);
     setActiveRepeaterId(ids[0]);
     setDrawer("repeater");
@@ -1294,11 +1296,12 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             showRepeaters={showRepeaters}
           />
         }
-        onFocus={(place) => {
+        onFocus={(place, locationType) => {
           if (Number.isFinite(place?.lat) && Number.isFinite(place?.lng)) {
             setPage("atlas");
             setMapLocation({
               ...withTimezone({ ...place, zoom: 12 }),
+              kind: locationType === "home" ? "home" : undefined,
               focusOnly: true,
             });
           } else {

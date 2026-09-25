@@ -96,7 +96,7 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   const iconToggles = page.getByRole("group", { name: "Map quick toggles" });
-  await expect(iconToggles.getByRole("button")).toHaveCount(9);
+  await expect(iconToggles.getByRole("button")).toHaveCount(10);
   for (const button of await iconToggles.getByRole("button").all()) {
     assert.ok((await button.getAttribute("title")).length > 40);
     await expect(button.locator("svg")).toHaveCount(1);
@@ -178,7 +178,6 @@ try {
     exact: true,
   });
   await expect(rangeSwitch).toHaveAttribute("aria-checked", "false");
-  await expect(rangeSwitch).toHaveText("OFF");
   await expect(rangeSwitch).toHaveAttribute("title", "Turn estimated range ON");
   const resetRange = left.getByRole("button", {
     name: "Reset range defaults",
@@ -214,7 +213,6 @@ try {
   await page.keyboard.press("Space");
   await expect(rangeSwitch).toHaveAttribute("aria-checked", "true");
   await expect(rangeIcon).toHaveAttribute("aria-pressed", "true");
-  await expect(rangeSwitch).toHaveText("ON");
   await expect(rangeSwitch).toHaveAttribute(
     "title",
     "Turn estimated range OFF",
@@ -333,6 +331,11 @@ try {
     .getByRole("button", { name: "Search location", exact: true })
     .click();
   await page.waitForTimeout(1200);
+  await left.getByRole("tab", { name: "General", exact: true }).click();
+  await expect(left.getByRole("tab", { name: "General" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
   // Clicking a cluster expands it; individual repeaters then open the details drawer.
   for (let i = 0; i < 3; i++) {
     if (
@@ -348,6 +351,12 @@ try {
   await expect(
     page.getByRole("heading", { name: "Repeater details", exact: true }),
   ).toBeVisible();
+  await expect(left.getByRole("tab", { name: "Range" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(left.getByRole("tabpanel", { name: "Range" })).toBeVisible();
+  await expect(rangeSwitch).toHaveAttribute("aria-checked", "true");
   await expect(
     page.getByLabel("Choose repeater at this location"),
   ).toBeVisible();
@@ -357,6 +366,17 @@ try {
   await expect(
     page.getByText("Test-only repeater details", { exact: true }),
   ).toBeVisible();
+  await expect(page.locator(".repeater-raw")).toContainText(
+    "145,270,000 Hz (145.27 MHz)",
+  );
+  const crossCheck = page.getByRole("link", {
+    name: "Cross-check details on RepeaterBook ↗",
+  });
+  await crossCheck.scrollIntoViewIfNeeded();
+  await crossCheck.hover();
+  await expect(page.getByRole("tooltip")).toContainText(
+    "not an active AROAC data feed",
+  );
   await expect(
     page.getByRole("region", { name: "Repeater range estimate" }),
   ).toContainText("Estimated radius:");

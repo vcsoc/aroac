@@ -96,6 +96,11 @@ export function useMapSelection(
       const zoom = m.getZoom();
       const height = Math.max(26, Math.min(42, 26 + zoom * 1.1));
       container.style.setProperty("--clicked-marker-height", `${height}px`);
+      // Chromium does not resolve length * number inside calc() for this marker.
+      container.style.setProperty(
+        "--clicked-marker-width",
+        `${height * 0.75}px`,
+      );
       container.dataset.cursorSize = zoom < 5 ? "24" : zoom < 11 ? "28" : "32";
     };
     size();

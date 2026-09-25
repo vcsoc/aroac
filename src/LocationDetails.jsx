@@ -178,6 +178,7 @@ function LocationCard({
   let hour = data?.hourly?.time?.findLastIndex((t) => t <= current?.time);
   const dew = hour >= 0 ? data.hourly.dew_point_2m?.[hour] : null,
     visibility = hour >= 0 ? data.hourly.visibility?.[hour] : null;
+  const focus = () => onFocus?.(place, home ? "home" : "selected");
   return (
     <section
       className={"location-card " + (hovered ? "pin-hovered" : "")}
@@ -185,8 +186,7 @@ function LocationCard({
         if (e.target.closest("button,input,select,textarea,a,summary,label"))
           return;
         clearTimeout(clickTimer.current);
-        if (e.detail === 1)
-          clickTimer.current = setTimeout(() => onFocus?.(place), 280);
+        if (e.detail === 1) clickTimer.current = setTimeout(focus, 280);
       }}
       aria-label={home ? "Home location details" : "Selected location details"}
     >
@@ -223,11 +223,10 @@ function LocationCard({
               onClick={(e) => {
                 clearTimeout(clickTimer.current);
                 if (e.detail === 0) {
-                  onFocus?.(place);
+                  focus();
                   return;
                 }
-                if (e.detail === 1)
-                  clickTimer.current = setTimeout(() => onFocus?.(place), 280);
+                if (e.detail === 1) clickTimer.current = setTimeout(focus, 280);
               }}
             >
               <h3>

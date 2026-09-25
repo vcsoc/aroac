@@ -84,8 +84,9 @@
 .location-card .linked-location-header strong {
   color: #172016;
 }
-.world-map .linked-location-marker {
-  width: calc(var(--clicked-marker-height, 28px) * 0.75);
+/* The map's lazy-loaded marker stylesheet must not reset the pin width to auto. */
+.world-map .clicked-location-marker.linked-location-marker {
+  width: var(--clicked-marker-width, 21px);
   height: var(--clicked-marker-height, 28px);
   background: var(--location-link-color);
   mask: url("/map-markers/click-location.png") center / contain no-repeat;

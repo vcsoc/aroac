@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { defaultTimeConfig } from "../shared/workspace.js";
 
 test("temporary pins retain matching colored headers and markers; saved selection is yellow", async ({
   page,
@@ -24,6 +25,8 @@ test("temporary pins retain matching colored headers and markers; saved selectio
     .getByRole("button", { name: "Pin selected location" })
     .click();
   await expect(marker).toHaveCount(1);
+  await expect(marker.first()).toBeVisible();
+  expect((await marker.first().boundingBox()).width).toBeGreaterThan(15);
   const color = await cards
     .first()
     .locator("header")
@@ -43,6 +46,7 @@ test("temporary pins retain matching colored headers and markers; saved selectio
     .getByRole("button", { name: "Pin selected location" })
     .click();
   await expect(marker).toHaveCount(2);
+  expect((await marker.nth(1).boundingBox()).width).toBeGreaterThan(15);
   const secondColor = await cards
     .last()
     .locator("header")
@@ -53,6 +57,15 @@ test("temporary pins retain matching colored headers and markers; saved selectio
       marker.nth(1).evaluate((el) => getComputedStyle(el).backgroundColor),
     )
     .toBe(secondColor);
+  const projection = page.getByRole("switch", { name: "Map projection" });
+  await projection.click();
+  await expect(page.locator(".world-map")).toHaveAttribute(
+    "data-projection",
+    "globe",
+  );
+  await expect(marker).toHaveCount(2);
+  expect((await marker.first().boundingBox()).width).toBeGreaterThan(15);
+  await projection.click();
   await cards
     .last()
     .getByRole("button", { name: "Save selected location" })
@@ -70,4 +83,40 @@ test("temporary pins retain matching colored headers and markers; saved selectio
   box = await canvas.boundingBox();
   await canvas.click({ position: { x: box.width * 0.4, y: box.height * 0.6 } });
   await expect(page.locator(".saved-map-pin")).toHaveCount(0);
+});
+
+test("focusing home from the left panel shows a home marker on the map", async ({
+  page,
+}) => {
+  const registration = await page.request.post("/api/register", {
+    data: {
+      callsign: "H" + Date.now().toString().slice(-7),
+      name: "Home Marker Tester",
+      email: "home-marker@example.com",
+      password: "home-marker-tests-password-123",
+    },
+  });
+  expect(registration.ok()).toBeTruthy();
+  const update = await page.request.put("/api/preferences/world-time", {
+    data: {
+      ...defaultTimeConfig(),
+      home: {
+        name: "Toronto",
+        zone: "America/Toronto",
+        lat: 43.65,
+        lng: -79.38,
+      },
+    },
+  });
+  expect(update.ok()).toBeTruthy();
+  await page.goto("/");
+  await page.getByRole("button", { name: "Location details" }).click();
+  const home = page.getByRole("region", { name: "Home location details" });
+  await expect(home).toBeVisible();
+  await home.locator("button.location-title").click();
+  await expect(page.locator(".home-location-marker")).toBeVisible();
+  await expect(page.locator(".world-map")).toHaveAttribute(
+    "data-selected-location",
+    "43.65,-79.38",
+  );
 });

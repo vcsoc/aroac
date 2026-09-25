@@ -145,9 +145,27 @@ try {
   await expect
     .poll(() => marker.evaluate((el) => Number(getComputedStyle(el).opacity)))
     .toBe(0);
+  await mapAction(page, { zoom: 2, center: [selected[1], selected[0]] });
+  const selectedCard = page.getByRole("region", {
+    name: "Selected location details",
+  });
+  await selectedCard
+    .getByRole("button", { name: "Pin selected location" })
+    .click();
+  const linked = page.locator(".linked-location-marker");
+  await expect(linked).toHaveCount(1);
+  await expect
+    .poll(async () => (await linked.boundingBox())?.width ?? 0)
+    .toBeGreaterThan(15);
+  assert.equal(
+    await linked.evaluate((el) => getComputedStyle(el).backgroundColor),
+    await selectedCard
+      .locator("header")
+      .evaluate((el) => getComputedStyle(el).backgroundColor),
+  );
   assert.deepEqual(errors, []);
   console.log(
-    "CUSTOM MAP SELECTION PASSED: cursor assets/hotspots, drag-only hand, single click marker, tip alignment after zoom/projection and globe occlusion.",
+    "CUSTOM MAP SELECTION PASSED: cursor assets/hotspots, drag-only hand, click marker, pinned marker color/size, tip alignment after zoom/projection and globe occlusion.",
   );
 } finally {
   await app?.close();

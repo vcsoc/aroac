@@ -34,6 +34,7 @@ import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
 import OnOffTrack from "./OnOffTrack";
 import { repeaterFootprint } from "../shared/coverage.js";
+import { formatRawFrequencyHz } from "../shared/repeaterFrequency.js";
 const toggleIcons = {
   "Saved locations on map": MapPin,
   "Grey line": Eclipse,
@@ -652,17 +653,20 @@ export function RepeaterDetails({
           not verified. Selecting a distant repeater does not imply it is
           reachable.
         </p>
-        <a
-          href="https://www.repeaterbook.com/"
-          target="_blank"
-          rel="noreferrer"
+        <Help
+          trigger={
+            <a
+              href="https://www.repeaterbook.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Cross-check details on RepeaterBook ↗
+            </a>
+          }
         >
-          Cross-check details on RepeaterBook ↗
-        </a>
-        <p>
           RepeaterBook is not an active AROAC data feed: approved application
           access and per-user tokens are required.
-        </p>
+        </Help>
       </section>
       <dl className="repeater-summary">
         <dt>Output</dt>
@@ -720,7 +724,9 @@ export function RepeaterDetails({
                 ? "Not supplied"
                 : typeof value === "object"
                   ? JSON.stringify(value)
-                  : String(value)}
+                  : key.toLowerCase() === "frequency"
+                    ? formatRawFrequencyHz(value)
+                    : String(value)}
             </dd>
           </div>
         ))}

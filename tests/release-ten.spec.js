@@ -75,7 +75,7 @@ test("profile country defaults from home and contacts reveal only on focus or ho
   ).json();
   await page.request.put("/api/preferences/world-time", {
     data: {
-      ...(prefs.value || defaultTimeConfig),
+      ...(prefs.value || defaultTimeConfig()),
       home: {
         name: "Toronto",
         zone: "America/Toronto",
@@ -161,7 +161,7 @@ test("profile country defaults from home and contacts reveal only on focus or ho
   expect(saved.email).toBe("alice@example.com");
   await page.screenshot({ path: "/tmp/oar-0.3.10-profile.png" });
   await page.request.put("/api/preferences/world-time", {
-    data: prefs.value || defaultTimeConfig,
+    data: prefs.value || defaultTimeConfig(),
   });
 });
 

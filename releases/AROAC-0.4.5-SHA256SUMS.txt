@@ -1,0 +1,2 @@
+afb1e5df264af65fbb7478e69042a4ec047148f6168a418e47a9c624edc4b68b  AROAC-0.4.5.AppImage
+d24edfcd5ca81be3febacb51db7e93503943d562094b1a06c3974108de017bbb  aroac-0.4.5.tar.gz

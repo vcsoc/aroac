@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { cloneElement, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CircleHelp, Github, Minus, Square, X } from "lucide-react";
 import Roadmap from "./Roadmap";
@@ -20,7 +20,7 @@ function Tooltip({ children, ...props }) {
     </span>
   );
 }
-export function Help({ children, label = "More information" }) {
+export function Help({ children, label = "More information", trigger }) {
   const id = useId(),
     ref = useRef();
   const [position, setPosition] = useState(null);
@@ -48,25 +48,42 @@ export function Help({ children, label = "More information" }) {
       onMouseEnter={open}
       onMouseLeave={() => setPosition(null)}
     >
-      <button
-        ref={ref}
-        type="button"
-        className="icon-button"
-        aria-label={label}
-        aria-describedby={position ? id : undefined}
-        onFocus={open}
-        onBlur={() => setPosition(null)}
-        onClick={open}
-        onKeyDown={(e) => {
-          if (e.key === "Escape" && position) {
-            e.preventDefault();
-            e.stopPropagation();
-            setPosition(null);
-          }
-        }}
-      >
-        <CircleHelp size={14} />
-      </button>
+      {trigger ? (
+        cloneElement(trigger, {
+          ref,
+          "aria-describedby": position ? id : undefined,
+          onFocus: open,
+          onBlur: () => setPosition(null),
+          onClick: open,
+          onKeyDown: (e) => {
+            if (e.key === "Escape" && position) {
+              e.preventDefault();
+              e.stopPropagation();
+              setPosition(null);
+            }
+          },
+        })
+      ) : (
+        <button
+          ref={ref}
+          type="button"
+          className="icon-button"
+          aria-label={label}
+          aria-describedby={position ? id : undefined}
+          onFocus={open}
+          onBlur={() => setPosition(null)}
+          onClick={open}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && position) {
+              e.preventDefault();
+              e.stopPropagation();
+              setPosition(null);
+            }
+          }}
+        >
+          <CircleHelp size={14} />
+        </button>
+      )}
       {position &&
         createPortal(
           <Tooltip
