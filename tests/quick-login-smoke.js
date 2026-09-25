@@ -43,18 +43,44 @@ async function restart() {
   app = null;
   await launch();
 }
-async function login(remember) {
+async function login(remember, keepSigned, expectRememberDefault = false) {
   await page.getByRole("button", { name: "Sign in", exact: false }).click();
+  await page.getByRole("menuitem", { name: "Sign in" }).click();
   const auth = page.locator(".auth-dialog");
   await auth.getByLabel("Callsign", { exact: true }).fill(account.callsign);
-  await auth.getByLabel("Password", { exact: true }).fill(account.password);
+  const password = auth.getByLabel("Password", { exact: true });
+  await password.fill(account.password);
+  await expect(password).toHaveAttribute("type", "password");
+  await auth.getByRole("button", { name: "Show password" }).click();
+  await expect(password).toHaveAttribute("type", "text");
+  await expect(password).toHaveValue(account.password);
+  await auth.getByRole("button", { name: "Hide password" }).click();
+  await expect(password).toHaveAttribute("type", "password");
   const rememberSwitch = auth.getByRole("switch", {
     name: "Remember my callsign",
     exact: true,
   });
+  if (expectRememberDefault)
+    await expect(rememberSwitch).toHaveAttribute("aria-checked", "true");
   if ((await rememberSwitch.getAttribute("aria-checked")) !== String(remember))
     await rememberSwitch.click();
+  const keepSwitch = auth.getByRole("switch", { name: "Keep me signed in" });
+  await expect(keepSwitch).toBeEnabled();
+  if (
+    keepSigned !== undefined &&
+    (await keepSwitch.getAttribute("aria-checked")) !== String(keepSigned)
+  )
+    await keepSwitch.click();
   await auth.getByRole("button", { name: "Sign in", exact: true }).click();
+  if (
+    keepSigned &&
+    !(await page.evaluate(() => window.oarDesktop.loginSettings()))
+      .secureStorage
+  ) {
+    const confirm = page.getByRole("dialog", { name: "Please confirm" });
+    await expect(confirm).toContainText("UNENCRYPTED");
+    await confirm.getByRole("button", { name: "Confirm" }).click();
+  }
   await expect(auth).toHaveCount(0);
 }
 try {
@@ -86,27 +112,28 @@ try {
   await page.getByRole("button", { name: "Quick Switch", exact: true }).click();
   const quick = page.locator("#quick-switch-panel");
   await expect(quick).toBeVisible();
-  await expect(quick.getByRole("switch")).toHaveCount(8);
+  await expect(quick.getByRole("switch")).toHaveCount(9);
   await page.screenshot({ path: "/tmp/oar-quick-switch.png" });
   await page.keyboard.press("Escape");
   await expect(quick).toHaveCount(0);
   await page.getByRole("button", { name: "Map settings", exact: true }).click();
-  await expect(page.getByRole("tabpanel")).not.toContainText(
-    "Show street names",
-  );
+  await expect(
+    page.getByRole("tabpanel", { name: "Sources" }),
+  ).not.toContainText("Show street names");
   await page
     .getByRole("button", { name: "Close settings", exact: true })
     .click();
   await request("/register", account);
   await request("/logout", {});
   await page.reload();
-  await login(true);
+  await login(true, undefined, true);
   assert.equal((await request("/me")).callsign, account.callsign);
   await page.reload();
   assert.equal((await request("/me")).callsign, account.callsign);
   await restart();
   assert.equal(await request("/me"), null);
   await page.getByRole("button", { name: "Sign in", exact: false }).click();
+  await page.getByRole("menuitem", { name: "Sign in" }).click();
   await expect(page.getByLabel("Callsign", { exact: true })).toHaveValue(
     account.callsign,
   );
@@ -118,7 +145,6 @@ try {
       () => page.evaluate(() => window.oarDesktop.loginSettings(true)),
       /Confirm unencrypted/,
     );
-    page.once("dialog", (d) => d.accept());
   }
   await page.getByRole("button", { name: "Map settings", exact: true }).click();
   await page.getByRole("tab", { name: "Login", exact: true }).click();
@@ -128,6 +154,11 @@ try {
       exact: true,
     })
     .click();
+  if (!prefs.secureStorage) {
+    const confirm = page.getByRole("dialog", { name: "Please confirm" });
+    await expect(confirm).toContainText("UNENCRYPTED");
+    await confirm.getByRole("button", { name: "Confirm" }).click();
+  }
   await expect(
     page.getByRole("switch", {
       name: "Keep me signed in across restarts",
@@ -158,14 +189,18 @@ try {
     await page.evaluate(() => localStorage.getItem("oar-saved-callsign")),
     null,
   );
-  await page.evaluate(() => window.oarDesktop.loginSettings(true, true));
+  await request("/logout", {});
+  await page.reload();
+  await login(false, true);
+  const persisted = JSON.parse(readFileSync(file, "utf8"));
+  assert.ok(prefs.secureStorage ? persisted.session : persisted.sessionPlain);
   await restart();
   assert.equal((await request("/me")).callsign, account.callsign);
   await request("/logout", {});
   await restart();
   assert.equal(await request("/me"), null);
   console.log(
-    "Quick/login passed: 8 switches, Escape dismissal, selection without drawer opening, remembered callsign, process-only default, explicit storage consent, restart persistence, disabling persistence and manual sign-out revocation.",
+    "Quick/login passed: 9 quick switches, password visibility, callsign memory, sign-in persistence consent and restart, settings revocation and manual sign-out revocation.",
   );
 } catch (e) {
   if (page && !page.isClosed()) {

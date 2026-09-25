@@ -22,68 +22,80 @@ module.exports = function install({
       current = null;
     }
   };
-  ipcMain.handle("oar:document", async (event, action, kind, content) => {
-    authorized(event);
-    if (
-      !["theme", "locations"].includes(kind) ||
-      !["open", "save"].includes(action)
-    )
-      throw Error("Invalid document operation");
-    const theme = kind === "theme",
-      max = theme ? 256000 : 8000000,
-      filters = [
-        {
-          name: theme ? "AROAC theme YAML" : "AROAC locations & contacts",
-          extensions: theme ? ["yaml", "yml"] : ["json"],
-        },
-      ];
-    if (action === "open") {
-      const result = await dialog.showOpenDialog(getWindow(), {
-        title: "Import " + kind,
-        properties: ["openFile"],
+  ipcMain.handle(
+    "oar:document",
+    async (event, action, kind, content, suggestedName) => {
+      authorized(event);
+      if (
+        !["theme", "locations"].includes(kind) ||
+        !["open", "save"].includes(action)
+      )
+        throw Error("Invalid document operation");
+      const theme = kind === "theme",
+        max = theme ? 256000 : 8000000,
+        safeName =
+          action === "save" &&
+          theme &&
+          typeof suggestedName === "string" &&
+          /^aroac-[a-z0-9][a-z0-9-]{0,63}\.yaml$/.test(suggestedName)
+            ? suggestedName
+            : theme
+              ? "aroac-theme.yaml"
+              : "aroac-locations.json",
+        filters = [
+          {
+            name: theme ? "AROAC theme YAML" : "AROAC locations & contacts",
+            extensions: theme ? ["yaml", "yml"] : ["json"],
+          },
+        ];
+      if (action === "open") {
+        const result = await dialog.showOpenDialog(getWindow(), {
+          title: "Import " + kind,
+          properties: ["openFile"],
+          filters,
+        });
+        if (result.canceled) return { canceled: true };
+        const file = result.filePaths[0];
+        if ((await fs.stat(file)).size > max) throw Error("File is too large.");
+        return {
+          text: await fs.readFile(file, "utf8"),
+          name: path.basename(file),
+        };
+      }
+      if (typeof content !== "string" || Buffer.byteLength(content) > max)
+        throw Error("Invalid export content");
+      const result = await dialog.showSaveDialog(getWindow(), {
+        title: "Export " + kind,
+        defaultPath: safeName,
         filters,
       });
       if (result.canceled) return { canceled: true };
-      const file = result.filePaths[0];
-      if ((await fs.stat(file)).size > max) throw Error("File is too large.");
-      return {
-        text: await fs.readFile(file, "utf8"),
-        name: path.basename(file),
-      };
-    }
-    if (typeof content !== "string" || Buffer.byteLength(content) > max)
-      throw Error("Invalid export content");
-    const result = await dialog.showSaveDialog(getWindow(), {
-      title: "Export " + kind,
-      defaultPath: theme ? "aroac-theme.yaml" : "aroac-locations.json",
-      filters,
-    });
-    if (result.canceled) return { canceled: true };
-    if (!(theme ? /\.ya?ml$/i : /\.json$/i).test(result.filePath))
-      throw Error("Use the requested YAML or JSON file extension.");
-    let target = path.resolve(result.filePath);
-    try {
-      target = await fs.realpath(target);
-    } catch {}
-    if (target === (await fs.realpath(databasePath())))
-      throw Error("The active database cannot be overwritten.");
-    const temporary =
-      result.filePath +
-      "." +
-      require("node:crypto").randomBytes(8).toString("hex") +
-      ".tmp";
-    try {
-      await fs.writeFile(temporary, content, {
-        encoding: "utf8",
-        mode: 0o600,
-        flag: "wx",
-      });
-      await fs.rename(temporary, result.filePath);
-    } finally {
-      await fs.rm(temporary, { force: true });
-    }
-    return { path: result.filePath };
-  });
+      if (!(theme ? /\.ya?ml$/i : /\.json$/i).test(result.filePath))
+        throw Error("Use the requested YAML or JSON file extension.");
+      let target = path.resolve(result.filePath);
+      try {
+        target = await fs.realpath(target);
+      } catch {}
+      if (target === (await fs.realpath(databasePath())))
+        throw Error("The active database cannot be overwritten.");
+      const temporary =
+        result.filePath +
+        "." +
+        require("node:crypto").randomBytes(8).toString("hex") +
+        ".tmp";
+      try {
+        await fs.writeFile(temporary, content, {
+          encoding: "utf8",
+          mode: 0o600,
+          flag: "wx",
+        });
+        await fs.rename(temporary, result.filePath);
+      } finally {
+        await fs.rm(temporary, { force: true });
+      }
+      return { path: result.filePath };
+    },
+  );
   ipcMain.handle("oar:save-pdf", async (event, data) => {
     authorized(event);
     if (

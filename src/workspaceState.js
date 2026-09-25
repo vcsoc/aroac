@@ -31,9 +31,9 @@ export function useWorkspaceSetting(key, initial) {
   };
   return { value, save, ready, error };
 }
-export async function documentFile(action, kind, content) {
+export async function documentFile(action, kind, content, suggestedName) {
   if (window.oarDesktop)
-    return window.oarDesktop.documentFile(action, kind, content);
+    return window.oarDesktop.documentFile(action, kind, content, suggestedName);
   if (action === "save") {
     const url = URL.createObjectURL(
         new Blob([content], {
@@ -42,7 +42,10 @@ export async function documentFile(action, kind, content) {
       ),
       a = document.createElement("a");
     a.href = url;
-    a.download = kind === "theme" ? "aroac-theme.yaml" : "aroac-locations.json";
+    a.download =
+      kind === "theme"
+        ? suggestedName || "aroac-theme.yaml"
+        : "aroac-locations.json";
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     return { path: a.download };

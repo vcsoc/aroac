@@ -27,8 +27,8 @@ contextBridge.exposeInMainWorld(
       return () => ipcRenderer.removeListener("oar:zoom-changed", listener);
     },
     savePdf: (data) => ipcRenderer.invoke("oar:save-pdf", data),
-    documentFile: (action, kind, content) =>
-      ipcRenderer.invoke("oar:document", action, kind, content),
+    documentFile: (action, kind, content, suggestedName) =>
+      ipcRenderer.invoke("oar:document", action, kind, content, suggestedName),
     specialist: (command, id, bounds) =>
       ipcRenderer.invoke("oar:specialist", command, id, bounds),
     allowGeolocation: () => ipcRenderer.invoke("oar:geolocation"),

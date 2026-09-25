@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Radio } from "lucide-react";
 import { parseDocument, stringify } from "yaml";
 import { defaultTheme, validateTheme } from "../shared/workspace";
+import { themeExportFilename } from "../shared/themeFilename";
 import { documentFile } from "./workspaceState";
 import { Help } from "./InterfaceUI";
 import { useToastStatus } from "./Toasts";
@@ -131,65 +132,69 @@ export default function ThemeEditor({ value, onSave, onPreview }) {
           </label>
         ))}
       </div>
-      <div className="button-row">
-        <button
-          className="primary"
-          disabled={busy}
-          onClick={() =>
-            run(async () => {
-              const valid = validateTheme(draft);
-              await onSave(valid);
-              setStatus(
-                `Applied and saved theme “${draft.name}” for this installation.`,
-              );
-            })
-          }
-        >
-          Apply theme
-        </button>
-        <button disabled={busy} onClick={() => setDraft(themeDraft(value))}>
-          Revert
-        </button>
-        <button disabled={busy} onClick={() => setDraft(defaultTheme)}>
-          Default
-        </button>
-      </div>
-      <div className="button-row">
-        <button
-          disabled={busy}
-          onClick={() =>
-            run(async () => {
-              const file = await documentFile("open", "theme");
-              if (file.canceled) return;
-              const doc = parseDocument(file.text, { uniqueKeys: true });
-              if (doc.errors.length || doc.warnings.length)
-                throw Error(
-                  "Invalid YAML: " + (doc.errors[0] || doc.warnings[0]).message,
+      <div className="theme-editor-actions">
+        <div className="button-row">
+          <button
+            className="primary"
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const valid = validateTheme(draft);
+                await onSave(valid);
+                setStatus(
+                  `Applied and saved theme “${draft.name}” for this installation.`,
                 );
-              setDraft(validateTheme(doc.toJS({ maxAliasCount: 0 })));
-              setStatus("Imported into preview. Apply to save.");
-            })
-          }
-        >
-          Import YAML
-        </button>
-        <button
-          disabled={busy}
-          onClick={() =>
-            run(async () => {
-              const result = await documentFile(
-                "save",
-                "theme",
-                stringify(validateTheme(draft)),
-              );
-              setStatus(
-                result.canceled ? "Export canceled." : "Theme exported.",
-              );
-            })
-          }
-        >
-          Export YAML
-        </button>
+              })
+            }
+          >
+            Apply theme
+          </button>
+          <button disabled={busy} onClick={() => setDraft(themeDraft(value))}>
+            Revert
+          </button>
+          <button disabled={busy} onClick={() => setDraft(defaultTheme)}>
+            Default
+          </button>
+        </div>
+        <div className="button-row theme-file-actions">
+          <button
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const file = await documentFile("open", "theme");
+                if (file.canceled) return;
+                const doc = parseDocument(file.text, { uniqueKeys: true });
+                if (doc.errors.length || doc.warnings.length)
+                  throw Error(
+                    "Invalid YAML: " +
+                      (doc.errors[0] || doc.warnings[0]).message,
+                  );
+                setDraft(validateTheme(doc.toJS({ maxAliasCount: 0 })));
+                setStatus("Imported into preview. Apply to save.");
+              })
+            }
+          >
+            Import YAML
+          </button>
+          <button
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const result = await documentFile(
+                  "save",
+                  "theme",
+                  stringify(validateTheme(draft)),
+                  themeExportFilename(draft.name),
+                );
+                setStatus(
+                  result.canceled ? "Export canceled." : "Theme exported.",
+                );
+              })
+            }
+          >
+            Export YAML
+          </button>
+        </div>
       </div>
       {status && <p role="status">{status}</p>}
     </section>

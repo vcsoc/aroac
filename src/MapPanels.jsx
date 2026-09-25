@@ -54,6 +54,7 @@ export function Switch({
   description,
   fullRow = false,
   iconOnly = false,
+  disabled = false,
 }) {
   if (iconOnly) {
     const Icon = toggleIcons[label] || Radio;
@@ -61,6 +62,7 @@ export function Switch({
       <button
         type="button"
         className="map-icon-toggle"
+        disabled={disabled}
         aria-label={label}
         aria-pressed={value}
         aria-description={description}
@@ -77,6 +79,7 @@ export function Switch({
         <button
           type="button"
           className="drawer-setting row-toggle"
+          disabled={disabled}
           role="switch"
           aria-label={label}
           aria-description={description}
@@ -98,6 +101,7 @@ export function Switch({
       </div>
       <button
         className="toggle-switch"
+        disabled={disabled}
         type="button"
         role="switch"
         aria-label={label}

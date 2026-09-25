@@ -76,5 +76,18 @@ test("theme settings use three bordered columns at normal window width", async (
   expect(second.y).toBe(third.y);
   expect(fourth.y).toBeGreaterThan(first.y);
   await expect(labels.first()).toHaveCSS("border-top-width", "1px");
+  const apply = await page
+    .getByRole("button", { name: "Apply theme" })
+    .boundingBox();
+  const exportYAML = page.getByRole("button", { name: "Export YAML" });
+  const exportBox = await exportYAML.boundingBox();
+  expect(Math.abs(apply.y - exportBox.y)).toBeLessThan(3);
+  expect(exportBox.x).toBeGreaterThan(apply.x + 200);
+  await page.getByLabel("Theme name").fill("Night Sky / 70 cm");
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    exportYAML.click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("aroac-night-sky-70-cm.yaml");
   await page.screenshot({ path: "/tmp/oar-theme-grid.png" });
 });

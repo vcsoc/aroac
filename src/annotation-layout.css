@@ -6,6 +6,39 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+.auth-password-input {
+  position: relative;
+}
+.auth-password-input input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 40px;
+}
+.auth-password-input .icon-button {
+  position: absolute;
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+}
+.theme-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.theme-editor-actions .button-row {
+  align-items: center;
+  gap: 4px;
+}
+.theme-editor-actions .theme-file-actions {
+  margin-left: auto;
+}
 .profile-field-heading,
 .profile-save-actions {
   display: flex;

@@ -8,6 +8,8 @@ import {
   Download,
   Trash2,
   LogOut,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { api, post, adif, download } from "./lib";
 import { isNative } from "./platform";
@@ -17,9 +19,12 @@ import { Switch } from "./MapPanels";
 import { validateRegistration } from "../shared/registration.js";
 export function Auth({ onClose, onUser }) {
   const [rememberCall, setRememberCall] = useState(
-    () => localStorage.getItem("oar-remember-callsign") === "true",
+    () => localStorage.getItem("oar-remember-callsign") !== "false",
   );
   const [register, setRegister] = useState(false),
+    [showPassword, setShowPassword] = useState(false),
+    [keepSignedIn, setKeepSignedIn] = useState(false),
+    [keepSignedInReady, setKeepSignedInReady] = useState(!isNative),
     [error, setError] = useState(""),
     [fields, setFields] = useState({}),
     [busy, setBusy] = useState(false);
@@ -32,6 +37,22 @@ export function Auth({ onClose, onUser }) {
   const ref = useRef();
   useEffect(() => {
     ref.current?.showModal();
+    if (!isNative) return;
+    let live = true;
+    window.oarDesktop
+      .loginSettings()
+      .then((prefs) => {
+        if (live) setKeepSignedIn(prefs.persistLogin);
+      })
+      .catch((e) => {
+        if (live) setError(`Could not load sign-in preference: ${e.message}`);
+      })
+      .finally(() => {
+        if (live) setKeepSignedInReady(true);
+      });
+    return () => {
+      live = false;
+    };
   }, []);
   async function submit(e) {
     e.preventDefault();
@@ -58,6 +79,31 @@ export function Auth({ onClose, onUser }) {
     }
     setBusy(true);
     try {
+      if (!register && isNative) {
+        if (!keepSignedInReady)
+          throw Error("Sign-in preference is still loading.");
+        const prefs = await window.oarDesktop.loginSettings();
+        const needsConsent =
+          keepSignedIn &&
+          !prefs.secureStorage &&
+          !(prefs.persistLogin && prefs.allowUnencrypted);
+        if (
+          needsConsent &&
+          !(await confirmAction(
+            "No OS secret store is available. Save your sign-in token in an owner-only but UNENCRYPTED file on this trusted device? Anyone who can read it can use your local profile. Your password is not saved.",
+          ))
+        ) {
+          setKeepSignedIn(false);
+          throw Error(
+            "Persistent sign-in was not enabled. Sign in without it or try again.",
+          );
+        }
+        if (prefs.persistLogin !== keepSignedIn || needsConsent)
+          await window.oarDesktop.loginSettings(
+            keepSignedIn,
+            keepSignedIn && !prefs.secureStorage,
+          );
+      }
       const user = await post(register ? "/register" : "/login", body);
       if (rememberCall)
         localStorage.setItem("oar-saved-callsign", user.callsign);
@@ -134,17 +180,29 @@ export function Auth({ onClose, onUser }) {
           {fieldError("callsign")}
         </label>
         {!register && (
-          <div className="remember-callsign">
-            <Switch
-              label="Remember my callsign"
-              value={rememberCall}
-              onChange={(value) => {
-                setRememberCall(value);
-                localStorage.setItem("oar-remember-callsign", String(value));
-                if (!value) localStorage.removeItem("oar-saved-callsign");
-              }}
-            />
-          </div>
+          <>
+            <div className="remember-callsign">
+              <Switch
+                label="Remember my callsign"
+                value={rememberCall}
+                onChange={(value) => {
+                  setRememberCall(value);
+                  localStorage.setItem("oar-remember-callsign", String(value));
+                  if (!value) localStorage.removeItem("oar-saved-callsign");
+                }}
+              />
+            </div>
+            {isNative && (
+              <div className="remember-callsign">
+                <Switch
+                  label="Keep me signed in"
+                  value={keepSignedIn}
+                  disabled={!keepSignedInReady}
+                  onChange={setKeepSignedIn}
+                />
+              </div>
+            )}
+          </>
         )}
         {register && (
           <>
@@ -195,24 +253,36 @@ export function Auth({ onClose, onUser }) {
             </label>
           </>
         )}
-        <label>
-          Password
-          <input
-            name="password"
-            aria-label="Password"
-            aria-invalid={!!fields.password}
-            aria-describedby={
-              fields.password ? "auth-password-error" : undefined
-            }
-            type="password"
-            autoComplete={register ? "new-password" : "current-password"}
-            minLength={register ? 12 : 1}
-            maxLength={128}
-            required
-            placeholder={register ? "At least 12 characters" : ""}
-          />
+        <div className="auth-password-field">
+          <label htmlFor="auth-password">Password</label>
+          <div className="auth-password-input">
+            <input
+              id="auth-password"
+              name="password"
+              aria-label="Password"
+              aria-invalid={!!fields.password}
+              aria-describedby={
+                fields.password ? "auth-password-error" : undefined
+              }
+              type={showPassword ? "text" : "password"}
+              autoComplete={register ? "new-password" : "current-password"}
+              minLength={register ? 12 : 1}
+              maxLength={128}
+              required
+              placeholder={register ? "At least 12 characters" : ""}
+            />
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((visible) => !visible)}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
           {fieldError("password")}
-        </label>
+        </div>
         {register && (
           <label className="check-label">
             <input
@@ -243,6 +313,7 @@ export function Auth({ onClose, onUser }) {
         className="text-button"
         onClick={() => {
           setRegister(!register);
+          setShowPassword(false);
           setError("");
           setFields({});
         }}

@@ -180,6 +180,7 @@ try {
     .click();
   await page.getByRole("button", { name: "Map settings", exact: true }).click();
   await page.getByRole("tab", { name: "Themes", exact: true }).click();
+  await page.getByLabel("Theme name").fill("Night Sky / 70 cm");
   await page.getByLabel("accent hex color").fill("#ffcc66");
   await expect
     .poll(() =>
@@ -189,10 +190,16 @@ try {
     )
     .toBe("#ffcc66");
   await page.getByRole("button", { name: "Apply theme", exact: true }).click();
-  await expect(page.getByText("Theme saved.", { exact: true })).toBeVisible();
+  await expect(page.locator(".oar-toast").last()).toContainText(
+    "Applied and saved theme",
+  );
   const themeFile = path.join(directory, "theme.yaml");
   await app.evaluate(({ dialog }, file) => {
-    dialog.showSaveDialog = async () => ({ canceled: false, filePath: file });
+    dialog.showSaveDialog = async (_window, options) => {
+      if (options.defaultPath !== "aroac-night-sky-70-cm.yaml")
+        throw Error("Incorrect theme export filename: " + options.defaultPath);
+      return { canceled: false, filePath: file };
+    };
   }, themeFile);
   await page.getByRole("button", { name: "Export YAML" }).click();
   await expect(
