@@ -1,0 +1,4 @@
+4d37f37c5438d53f8fbbca899f14c33d62f93aa5f711437c58726ebe8fbdb263  AROAC-0.4.7-arm64.dmg
+16e714ce00501da8a6af93b89a90b7f23298458027e8a772125bbd186a7decbf  AROAC-0.4.7-arm64.dmg.blockmap
+6ffc0a2a9699ad7ba801ae84122499fda29eb0a7fece08624d0aa821fa1dcd5c  AROAC-0.4.7-arm64-mac.zip
+38e233cc04f8b7679b31f1f7a923f8ebd1c53d10788f2a4ac13bb62b33c19971  AROAC-0.4.7-arm64-mac.zip.blockmap
