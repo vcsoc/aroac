@@ -87,7 +87,7 @@ try {
     .getByRole("button", { name: "Apply text size", exact: true })
     .click();
   await expect(
-    page.getByText("Text size saved.", { exact: true }),
+    page.getByText("Interface text size saved at 113%.", { exact: true }),
   ).toBeVisible();
   assert.equal(
     (

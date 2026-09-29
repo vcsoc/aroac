@@ -153,10 +153,23 @@
   max-height: 12dvh;
   overflow: auto;
 }
-.atlas .panel-heading > .weather-switch {
-  flex: 0 0 132px;
-  max-width: 132px;
-  margin: 2px 4px;
+.atlas .panel-heading {
+  flex-wrap: wrap;
+}
+.atlas .map-view-switches {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 1 300px;
+  min-width: 0;
+  margin: 2px 4px 2px auto;
+}
+.atlas .map-view-switches > .weather-switch {
+  flex: 1 1 132px;
+  min-width: 0;
+}
+.atlas .map-view-switches > .weather-switch:first-child {
+  flex-basis: 158px;
 }
 .weather-controls {
   align-items: stretch;

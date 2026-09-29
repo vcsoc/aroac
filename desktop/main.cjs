@@ -75,6 +75,10 @@ function load() {
       parsed && typeof parsed === "object" && !Array.isArray(parsed)
         ? parsed
         : {};
+    // New profiles default to persistent sign-in only when a secure OS vault is available.
+    // An explicit opt-out (false) is never overwritten, and plaintext needs consent.
+    if (!Object.hasOwn(config, "persistLogin") && canEncrypt())
+      config.persistLogin = true;
     if (config.persistLogin === true && config.session && canEncrypt())
       sessionToken = safeStorage.decryptString(
         Buffer.from(config.session, "base64"),
@@ -89,6 +93,8 @@ function load() {
   } catch {
     delete config.session;
     sessionToken = null;
+    if (!Object.hasOwn(config, "persistLogin") && canEncrypt())
+      config.persistLogin = true;
   }
 }
 function authorized(event) {

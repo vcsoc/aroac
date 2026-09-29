@@ -161,7 +161,8 @@ test("weather provider caches seven-day data and never fetches in offline mode",
       assert.equal(url.searchParams.get("forecast_days"), "7");
       return new Response(
         JSON.stringify({
-          current: { time: 1770000000, temperature_2m: 10 },
+          elevation: 125,
+          current: { time: 1770000000, temperature_2m: 10, surface_pressure: 999 },
           daily: { time: [1770000000] },
         }),
       );

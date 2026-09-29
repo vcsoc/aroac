@@ -45,6 +45,7 @@ test("Sources validates before applying and offers reset/ignore without damaging
   const editor = dialog.getByRole("textbox", { name: "Sources YAML" });
   await expect(editor).toHaveValue(/version: 1/);
   const original = await editor.inputValue();
+  const originalOnDisk = (await (await page.request.get("/api/sources")).json()).text;
   await editor.fill("version: [");
   await dialog
     .getByRole("button", { name: "Validate and apply sources" })
@@ -56,7 +57,7 @@ test("Sources validates before applying and offers reset/ignore without damaging
   await fault.getByRole("button", { name: "Ignore", exact: true }).click();
   await expect(editor).toHaveValue("version: [");
   expect((await (await page.request.get("/api/sources")).json()).text).toBe(
-    original,
+    originalOnDisk,
   );
   await editor.fill(original);
   await dialog

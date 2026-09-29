@@ -166,13 +166,20 @@ try {
     left.getByRole("tab", { name: "General", exact: true }),
   ).toBeFocused();
   await left.getByRole("tab", { name: "Range", exact: true }).click();
-  await page
-    .getByRole("combobox", { name: "Map view", exact: true })
-    .selectOption("topographic");
+  const baseLayer = page.getByRole("switch", { name: "Map base layer", exact: true });
+  await expect(left.getByRole("combobox", { name: "Map view", exact: true })).toHaveCount(0);
+  await expect(baseLayer).toContainText("SatelliteTopographic");
+  await expect(baseLayer).toHaveAttribute("aria-checked", "false");
+  await baseLayer.click();
+  await expect(baseLayer).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".world-map")).toHaveAttribute(
     "data-basemap",
     "topographic",
   );
+  const projection = page.getByRole("switch", { name: "Map projection", exact: true });
+  await projection.click();
+  await expect(page.locator(".world-map")).toHaveAttribute("data-basemap", "topographic");
+  await projection.click();
   const rangeSwitch = page.getByRole("switch", {
     name: "Estimated range",
     exact: true,
@@ -220,7 +227,7 @@ try {
   await expect(resetRange).toBeVisible();
   await expect(resetRange).toHaveAttribute(
     "title",
-    /Reset band, range assumptions and map view/,
+    /Reset band and range assumptions to defaults/,
   );
   await expect(
     page.getByText(
@@ -453,9 +460,9 @@ try {
   await expect(left.getByLabel("Station antenna height AGL (m)")).toHaveValue(
     "10",
   );
-  await expect(
-    page.getByRole("combobox", { name: "Map view", exact: true }),
-  ).toHaveValue("imagery");
+  await expect(baseLayer).toHaveAttribute("aria-checked", "true");
+  await baseLayer.click();
+  await expect(page.locator(".world-map")).toHaveAttribute("data-basemap", "imagery");
   await expect(rangeSwitch).toHaveAttribute("aria-checked", "true");
   await expect
     .poll(() =>

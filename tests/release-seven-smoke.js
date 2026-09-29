@@ -47,8 +47,9 @@ try {
     await post("/pins", {
       label: "Toronto pin",
       callsign: "VE3TEST",
-      lat: 43.479294,
-      lng: -79.708326,
+      // Public landmark fixture: CN Tower, Toronto (not a personal location).
+      lat: 43.642566,
+      lng: -79.387057,
       notes: "A saved point with a safe tooltip",
     });
     await post("/pins", {
@@ -185,21 +186,21 @@ try {
     .getByRole("menuitem", { name: "Set as source location", exact: true })
     .click();
   await expect(page.locator("#map-drawer")).toContainText(
-    "43.479294, -79.708326",
+    "43.642566, -79.387057",
   );
   await button("Saved pin London pin").click({ button: "right" });
   await page
     .getByRole("menuitem", { name: "Analyse link from source", exact: true })
     .click();
   await expect(page.locator("#map-drawer")).toContainText(
-    "Terrain-verified line of sight: unknown",
+    "Terrain path:",
   );
   await page.getByLabel("Source antenna height", { exact: true }).fill("10");
   await page
     .getByLabel("Destination antenna height", { exact: true })
     .fill("10");
   await expect(page.locator("#map-drawer")).toContainText(
-    "beyond that nominal radio horizon",
+    "beyond the nominal radio horizon",
   );
   await page.screenshot({ path: "/tmp/oar-link-planning.png" });
   await page
@@ -224,7 +225,7 @@ try {
     storedPins.map((p) => [p.label, p.lat, p.lng]).sort(),
     [
       ["London pin", 51.5034, -0.1276],
-      ["Toronto pin", 43.479294, -79.708326],
+      ["Toronto pin", 43.642566, -79.387057],
     ].sort(),
   );
   await button("Saved locations").click();
@@ -237,7 +238,7 @@ try {
     }),
   ).toContainText("Toronto pin");
   await button("Saved pin Toronto pin").hover();
-  await expect(page.locator(".pin-hover-popup")).toContainText("43.479294");
+  await expect(page.locator(".pin-hover-popup")).toContainText("43.642566");
   await expect(page.locator(".location-card.pin-hovered")).toHaveCount(1);
   await expect(right.locator(".pin-editor.pin-hovered")).toHaveCount(1);
   await page.screenshot({ path: "/tmp/oar-pin-hover.png" });
@@ -279,10 +280,10 @@ try {
   await selected.locator(".location-title").click();
   await expect(page.locator(".world-map")).toHaveAttribute(
     "data-selected-location",
-    "43.479294,-79.708326",
+    "43.642566,-79.387057",
   );
   for (const label of [
-    "Save location as pin",
+    "Save selected location",
     "Use approximate location for my station",
   ]) {
     const control = selected.getByRole("button", { name: label, exact: true });
@@ -318,7 +319,7 @@ try {
   }
   await expect(
     right.getByRole("button", { name: labels[4], exact: true }),
-  ).toHaveAttribute("title", /JSON file: device-wide/);
+  ).toHaveAttribute("title", /JSON export includes General and your own signed-in records only/);
   await right
     .getByRole("button", { name: "Show group headers", exact: true })
     .click();

@@ -294,12 +294,12 @@ try {
   await page.getByRole("button", { name: "Map settings", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Settings", exact: true });
   await expect(dialog).toBeVisible();
-  await expect(page.getByRole("tab")).toHaveCount(6);
+  await expect(dialog.getByRole("tab")).toHaveCount(7);
   await expect(page.locator(".world-map")).toHaveAttribute(
     "data-night-offset",
     "0",
   );
-  await page.getByRole("tab", { name: "Map", exact: true }).press("ArrowRight");
+  await dialog.getByRole("tab", { name: "Sources", exact: true }).press("ArrowRight");
   await expect(
     page.getByRole("tab", { name: "Login", exact: true }),
   ).toBeFocused();

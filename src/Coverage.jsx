@@ -13,8 +13,6 @@ export function CoverageControls({
   onChange,
   origin,
   coverage,
-  topographic,
-  setTopographic,
   showRepeaters,
 }) {
   const change = (key, next) => onChange({ ...value, [key]: next });
@@ -43,11 +41,8 @@ export function CoverageControls({
             type="button"
             className="coverage-reset"
             aria-label="Reset range defaults"
-            title="Reset band, range assumptions and map view to defaults; keep range enabled"
-            onClick={() => {
-              onChange({ ...DEFAULT_COVERAGE, enabled: true });
-              setTopographic(false);
-            }}
+            title="Reset band and range assumptions to defaults; keep range enabled"
+            onClick={() => onChange({ ...DEFAULT_COVERAGE, enabled: true })}
           >
             <RotateCcw size={14} aria-hidden="true" />
           </button>
@@ -69,17 +64,6 @@ export function CoverageControls({
         </button>
       </div>
       <div className="coverage-toolbar">
-        <label>
-          Map view
-          <select
-            aria-label="Map view"
-            value={topographic ? "topographic" : "imagery"}
-            onChange={(e) => setTopographic(e.target.value === "topographic")}
-          >
-            <option value="imagery">Satellite imagery</option>
-            <option value="topographic">Topographic</option>
-          </select>
-        </label>
         <label>
           Band
           <select

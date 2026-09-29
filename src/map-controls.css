@@ -57,9 +57,17 @@
   padding: 3px 0 8px;
   margin-bottom: 4px;
 }
-.appearance-settings > label {
+.appearance-field-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   margin-top: 7px;
+}
+.appearance-field-heading label {
+  display: inline;
+  margin: 0;
+  font-size: inherit;
 }
 .appearance-settings input[type="range"] {
   padding: 0;

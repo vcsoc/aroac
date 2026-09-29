@@ -273,6 +273,7 @@ function SpaceStats({ kp, solar, iss }) {
 function Atlas({
   coverage,
   topographic,
+  setTopographic,
   user,
   full,
   iss,
@@ -321,13 +322,22 @@ function Atlas({
               : "DAY / NIGHT · STATION · ORBIT"}
           </small>
         </div>
-        <WeatherSwitch
-          label="Map projection"
-          hideLabel
-          checked={globe}
-          onChange={setGlobe}
-          labels={["Flat map", "Globe"]}
-        />
+        <div className="map-view-switches" role="group" aria-label="Map view">
+          <WeatherSwitch
+            label="Map base layer"
+            hideLabel
+            checked={topographic}
+            onChange={setTopographic}
+            labels={["Satellite", "Topographic"]}
+          />
+          <WeatherSwitch
+            label="Map projection"
+            hideLabel
+            checked={globe}
+            onChange={setGlobe}
+            labels={["Flat map", "Globe"]}
+          />
+        </div>
       </div>
       <div className="map-wrap">
         <Suspense fallback={<div className="empty">Loading atlas…</div>}>
@@ -629,7 +639,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
     true,
   );
   const pinStore = usePins(),
-    directory = useRepeaters(showRepeaters);
+    directory = useRepeaters(showRepeaters || drawer === "link");
   const matches = useMemo(() => {
     const ids = new Set(repeaterIds);
     return (directory.value?.repeaters || []).filter((r) => ids.has(r.id));
@@ -1100,6 +1110,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
                     radar={radar}
                     setRadar={setRadar}
                     followGrey={followGrey}
+                    setFollowGrey={setFollowGrey}
                   />
                   <MapSettings
                     iconOnly
@@ -1112,13 +1123,6 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
                     showRepeaters={showRepeaters}
                     setRepeaters={setShowRepeaters}
                     directory={directory}
-                  />
-                  <Switch
-                    iconOnly
-                    label="Grey line follows clock slider"
-                    value={followGrey}
-                    onChange={setFollowGrey}
-                    description="Preview day/night shading at the clock comparison time; observations remain at their published times."
                   />
                   <Switch
                     iconOnly
@@ -1156,6 +1160,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               <Atlas
                 coverage={coverage}
                 topographic={topographic}
+                setTopographic={setTopographic}
                 user={user}
                 full={page === "atlas"}
                 iss={iss}
@@ -1291,8 +1296,6 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             onChange={setCoverageSettings}
             origin={coverageOrigin}
             coverage={coverage}
-            topographic={topographic}
-            setTopographic={setTopographic}
             showRepeaters={showRepeaters}
           />
         }
@@ -1410,6 +1413,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             muf={muf}
             setMuf={setMuf}
             followGrey={followGrey}
+            setFollowGrey={setFollowGrey}
             radar={radar}
             setRadar={setRadar}
           />
@@ -1423,13 +1427,6 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             showRepeaters={showRepeaters}
             setRepeaters={setShowRepeaters}
             directory={directory}
-          />
-          <Switch
-            fullRow
-            label="Grey line follows clock slider"
-            value={followGrey}
-            onChange={setFollowGrey}
-            description="Preview day/night shading at the clock comparison time; observations remain at their published times."
           />
         </QuickSwitch>
       )}
@@ -1593,6 +1590,9 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
           <LinkPlanner
             source={linkSource}
             destination={linkDestination}
+            directory={directory.value}
+            directoryLoading={directory.loading}
+            directoryError={directory.error}
             onClear={() => {
               setLinkSource(null);
               setLinkDestination(null);

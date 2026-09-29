@@ -7,6 +7,7 @@ export default function MapToolbar({
   radar,
   setRadar,
   followGrey,
+  setFollowGrey,
   muf,
   setMuf,
   iconOnly = false,
@@ -29,6 +30,12 @@ export default function MapToolbar({
             (followGrey
               ? "Follows the clock-comparison slider; change this in Quick Switch."
               : "Uses live time, independent of the clock-comparison slider."),
+        },
+        {
+          name: "Grey line follows clock slider",
+          value: followGrey,
+          set: setFollowGrey,
+          tip: "Preview day/night shading at the clock comparison time; observations remain at their published times.",
         },
         {
           name: "Radar",

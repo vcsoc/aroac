@@ -15,11 +15,11 @@ see the license for details.
 
 ## Branding in current source
 
-The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 0.4.3 AppImage and archive include the new green-and-white logo. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The legacy application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
+The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 AppImage and archive include the green-and-white logo. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The legacy application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
 
-## Linux x64 release · 0.4.3
+## Linux x64 release · 0.4.7
 
-The [AROAC 0.4.3 release notes](docs/releases/0.4.3.md) describe the Linux AppImage/archive, SHA-256 verification, new logo, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.3); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.2.md) remain available.
+The [AROAC 0.4.7 release notes](docs/releases/0.4.7.md) describe the Linux AppImage/archive, checksum verification, UI improvements, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.7); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.6.md) remain available.
 
 ## Optional relay preview (0.4.1 desktop)
 
@@ -105,11 +105,11 @@ Use `sh scripts/install-oar.sh --check` to check the latest release without inst
 ### Manual download
 
 Download the AppImage, Linux archive and SHA-256 checksums from
-[GitHub Releases — v0.4.3](https://github.com/vcsoc/aroac/releases/tag/v0.4.3).
+[GitHub Releases — v0.4.7](https://github.com/vcsoc/aroac/releases/tag/v0.4.7).
 Release binaries are distributed as release assets, not stored in Git history.
 
 ```text
-releases/AROAC-0.4.3.AppImage
+releases/AROAC-0.4.7.AppImage
 ```
 
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.

@@ -331,6 +331,11 @@ function LocationCard({
                   {place.lat.toFixed(5)}°, {place.lng.toFixed(5)}° ·{" "}
                   {maidenhead(place.lat, place.lng)}
                 </div>
+                {Number.isFinite(data?.elevation) && (
+                  <div className="location-coordinates" title="Open-Meteo forecast grid terrain estimate; not a surveyed point elevation">
+                    Estimated ground elevation: {Math.round(data.elevation)} m above sea level (model grid)
+                  </div>
+                )}
                 <div
                   className="location-live-time"
                   aria-label="Location timezone"
@@ -394,7 +399,9 @@ function LocationCard({
                           `${shown(current.wind_gusts_10m, " km/h")} / ${shown(Number.isFinite(current.wind_gusts_10m) ? current.wind_gusts_10m / 1.609344 : null, " mph")}`,
                         ],
                         ["Dew point", temp(dew)],
-                        ["Pressure", shown(current.pressure_msl, " hPa", 1)],
+                        ["Barometer (sea-level/QNH)", shown(current.pressure_msl, " hPa", 1)],
+                        ["Local pressure (QFE est.)", shown(current.surface_pressure, " hPa", 1)],
+                        ["Pressure altitude (standard)", shown(Number.isFinite(current.surface_pressure) && current.surface_pressure > 0 ? 44330 * (1 - (current.surface_pressure / 1013.25) ** 0.1903) : null, " m")],
                         ["Cloud", shown(current.cloud_cover, "%")],
                         [
                           "Visibility",

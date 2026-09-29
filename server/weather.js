@@ -33,8 +33,11 @@ export function installWeather(
             error:
               "No saved weather for this location. Connect once to download it.",
           });
-    if (cached && Date.now() - cached.fetched < 15 * 60_000)
-      return res.json(JSON.parse(cached.payload));
+    if (cached && Date.now() - cached.fetched < 15 * 60_000) {
+      const saved = JSON.parse(cached.payload);
+      if (Number.isFinite(saved.elevation) && Number.isFinite(saved.current?.surface_pressure))
+        return res.json(saved);
+    }
     try {
       if (!pending.has(key))
         pending.set(
@@ -45,7 +48,7 @@ export function installWeather(
               latitude: lat.toFixed(3),
               longitude: lng.toFixed(3),
               current:
-                "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+                "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
               hourly: "visibility,dew_point_2m",
               daily:
                 "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max",

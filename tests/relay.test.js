@@ -149,10 +149,12 @@ test("sodium envelopes authenticate peers/content/recipient, reject tampering an
   assert.throws(() =>
     openMessage(b, peer, { ...envelope, recipientId: c.deviceId }),
   );
+  const alteredCiphertext = Buffer.from(envelope.ciphertext, "base64");
+  alteredCiphertext[0] ^= 1;
   assert.throws(() =>
     openMessage(b, peer, {
       ...envelope,
-      ciphertext: envelope.ciphertext.slice(0, -2) + "AA",
+      ciphertext: alteredCiphertext.toString("base64"),
     }),
   );
   assert.throws(() =>

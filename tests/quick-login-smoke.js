@@ -85,6 +85,8 @@ async function login(remember, keepSigned, expectRememberDefault = false) {
 }
 try {
   await launch();
+  const initialLoginSettings = await page.evaluate(() => window.oarDesktop.loginSettings());
+  assert.equal(initialLoginSettings.persistLogin, initialLoginSettings.secureStorage);
   await page.evaluate(() => window.oarDesktop.setOffline(true));
   await request("/pins", { label: "No drawer jump", lat: 10, lng: 0 });
   await page.reload();
@@ -126,7 +128,7 @@ try {
   await request("/register", account);
   await request("/logout", {});
   await page.reload();
-  await login(true, undefined, true);
+  await login(true, false, true);
   assert.equal((await request("/me")).callsign, account.callsign);
   await page.reload();
   assert.equal((await request("/me")).callsign, account.callsign);

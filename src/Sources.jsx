@@ -113,7 +113,7 @@ export default function SourcesEditor() {
     reloadSources()
       .then((v) => {
         if (live) {
-          setText(v.text);
+          setText(v.text.replace(/^# OAR source configuration/m, "# AROAC source configuration"));
           setPath(v.path);
           setReady(true);
         }
@@ -125,7 +125,7 @@ export default function SourcesEditor() {
   }, []);
   useEffect(() => {
     const reset = (e) => {
-      setText(e.detail.text);
+      setText(e.detail.text.replace(/^# OAR source configuration/m, "# AROAC source configuration"));
       setError("");
     };
     window.addEventListener("oar-sources-reset", reset);

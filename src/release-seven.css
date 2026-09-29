@@ -209,6 +209,40 @@
   font-size: 12px;
   line-height: 1.6;
 }
+.link-site-elevation {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text);
+}
+.link-clearance {
+  border-left: 2px solid var(--accent);
+  padding-left: 8px;
+}
+.link-planning-details {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+}
+.link-planning-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.link-planning-details h4 {
+  margin-bottom: 3px;
+}
+.link-repeater {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.link-repeater small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.link-repeater p {
+  margin: 6px 0;
+}
 .account-dialog {
   max-width: min(760px, 95vw);
   width: 760px;

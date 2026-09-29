@@ -7,6 +7,7 @@ import { installAccount } from "./account.js";
 import { installPins } from "./pins.js";
 import { installWorkspace } from "./workspace.js";
 import { installWeather } from "./weather.js";
+import { installElevation } from "./elevation.js";
 import { installLibrary } from "./library.js";
 import { installRepeaters } from "./repeaters.js";
 import { installMuf } from "./muf.js";
@@ -554,6 +555,7 @@ export function createApp({
   });
   installWorkspace(app, db);
   installWeather(app, db, { isOffline, fetcher: sourceConfig.fetch });
+  installElevation(app, db, { isOffline });
   installLibrary(app, db);
   installRepeaters(app, db, { isOffline, fetcher: sourceConfig.fetch });
   installGeocoding(app, db, { isOffline, fetcher: sourceConfig.fetch });
