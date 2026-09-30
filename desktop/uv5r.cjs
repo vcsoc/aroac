@@ -211,6 +211,7 @@ function inspectImage(image) {
       "Radio firmware differs from the verified backup; writing is disabled.",
     );
   let populated = 0;
+  const memories = [];
   for (let i = 0; i < 128; i++) {
     const block = image.subarray(8 + i * 16, 24 + i * 16);
     if (block[0] === 0xff) continue;
@@ -230,6 +231,57 @@ function inspectImage(image) {
       (hz >= 400_000_000 && hz <= 520_000_000)
     ))
       throw Error("Unrecognized programmed channel frequency.");
+    const txRaw = block.subarray(4, 8);
+    const receiveOnly = txRaw.every((byte) => byte === 0xff);
+    const txDigits = Array.from(txRaw).flatMap((byte) => [
+      byte & 15,
+      byte >> 4,
+    ]);
+    const txHz =
+      receiveOnly || txDigits.some((digit) => digit > 9)
+        ? null
+        : txDigits.reduce(
+            (total, digit, place) => total + digit * 10 ** place,
+            0,
+          ) * 10;
+    const txTone = block.readUInt16LE(10),
+      rxTone = block.readUInt16LE(8);
+    const tone = [0, 0xffff].includes(txTone)
+      ? "none"
+      : (txTone / 10).toFixed(1);
+    const rawName = image.subarray(
+      8 + 0x1000 + i * 16,
+      8 + 0x1000 + i * 16 + 7,
+    );
+    const name = Array.from(rawName)
+      .filter((byte) => byte !== 0xff && byte !== 0)
+      .map((byte) => String.fromCharCode(byte))
+      .join("");
+    const inEntryBand = (frequency) =>
+      (frequency >= 136_000_000 && frequency <= 174_000_000) ||
+      (frequency >= 400_000_000 && frequency <= 520_000_000);
+    const supported =
+      inEntryBand(hz) &&
+      (receiveOnly ||
+        (txHz !== null &&
+          inEntryBand(txHz) &&
+          Math.abs(txHz - hz) <= 10_000_000)) &&
+      [0, 0xffff].includes(rxTone) &&
+      (tone === "none" || VALID_TONES.has(tone)) &&
+      (!receiveOnly || tone === "none");
+    memories.push({
+      slot: i,
+      name: name || `CH${i}`,
+      rxMHz: hz / 1_000_000,
+      txMHz: txHz === null ? null : txHz / 1_000_000,
+      receiveOnly,
+      tone,
+      mode: block[15] & 0x40 ? "FM" : "NFM",
+      supportedForCapture: supported,
+      warning: supported
+        ? "Capture is unverified; confirm all settings before programming."
+        : "Unsupported RX tone/DCS or frequency encoding; displayed only, not silently converted.",
+    });
   }
   const emptySlots = [];
   for (let slot = 0; slot < 128; slot++) {
@@ -247,9 +299,22 @@ function inspectImage(image) {
   return {
     version,
     populated,
+    memories,
     empty127: emptySlots.includes(SLOT),
     emptySlots,
     sha256: digest(image),
+    fingerprint: digest(
+      Buffer.concat([
+        Buffer.from("aroac-uv5r-calibration-v1\0"),
+        image.subarray(0, 8),
+        image.subarray(0x1838, 0x1846),
+        image.subarray(0x1848, 0x18a8),
+        image.subarray(0x18b8, 0x18c8),
+        image.subarray(0x18d8, 0x1908),
+      ]),
+    ),
+    fingerprintVersion: 1,
+    fingerprintIsUniqueSerial: false,
   };
 }
 
@@ -263,7 +328,7 @@ function saveBackup(image, directory) {
     .replace(/\..+/, "Z");
   const filename = path.join(
     directory,
-    `uv5r-readonly-${stamp}-${info.sha256.slice(0, 12)}.img`,
+    `uv5r-readonly-${stamp}-${info.sha256.slice(0, 12)}-${randomBytes(4).toString("hex")}.img`,
   );
   const temporary = path.join(
     directory,
@@ -293,10 +358,31 @@ function saveBackup(image, directory) {
     }
     throw error;
   }
+  const metadata = filename.replace(/\.img$/, ".json");
+  fs.writeFileSync(
+    metadata,
+    JSON.stringify(
+      {
+        ...info,
+        imageBytes: image.length,
+        readTwiceIdentical: true,
+        created: new Date().toISOString(),
+      },
+      null,
+      2,
+    ),
+    { mode: 0o600, flag: "wx" },
+  );
   return { ...info, filename };
 }
 
-async function withVerifiedBackup(device, directory, action, portFactory) {
+async function withVerifiedBackup(
+  device,
+  directory,
+  action,
+  portFactory,
+  expectedFingerprint,
+) {
   const port = portFactory ? portFactory(device) : new RadioPort(device);
   try {
     const ident = await identify(port);
@@ -304,6 +390,13 @@ async function withVerifiedBackup(device, directory, action, portFactory) {
     const second = await readImage(port, ident);
     if (!first.equals(second))
       throw Error("Two full radio reads disagree; no writing is permitted.");
+    if (
+      expectedFingerprint &&
+      inspectImage(first).fingerprint !== expectedFingerprint
+    )
+      throw Error(
+        "Connected radio fingerprint differs from the selected radio profile. No write was sent and no backup was assigned to that radio.",
+      );
     const backup = saveBackup(first, directory);
     return await action({ port, image: first, backup });
   } finally {
@@ -416,17 +509,20 @@ function buildChannelBlocks(row) {
       (rxHz >= 136_000_000 && rxHz <= 174_000_000) ||
       (rxHz >= 400_000_000 && rxHz <= 520_000_000)
     ) ||
-    !(
-      (txHz >= 144_000_000 && txHz <= 148_000_000) ||
-      (txHz >= 430_000_000 && txHz <= 450_000_000)
-    )
+    (!c.receiveOnly &&
+      !(
+        (txHz >= 144_000_000 && txHz <= 148_000_000) ||
+        (txHz >= 430_000_000 && txHz <= 450_000_000)
+      )) ||
+    (c.receiveOnly && (row.offsetMHz !== 0 || row.toneMode !== "none"))
   )
     throw Error(
       "Receive or transmit frequency is outside the conservative amateur-band limits or the radio's 10 Hz step. Confirm your licence and local band plan.",
     );
   const block = Buffer.alloc(16);
   encodeBcdHz(rxHz).copy(block, 0);
-  encodeBcdHz(txHz).copy(block, 4);
+  if (c.receiveOnly) block.fill(0xff, 4, 8);
+  else encodeBcdHz(txHz).copy(block, 4);
   if (row.toneMode === "tone")
     block.writeUInt16LE(Math.round(Number(row.txTone) * 10), 10);
   block[14] = 1; // Low power; other signalling and extras remain off.
@@ -434,7 +530,7 @@ function buildChannelBlocks(row) {
   const name = Buffer.alloc(16, 0xff);
   const label = String(c.callsign || "")
     .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
+    .replace(/[^A-Z0-9_-]/g, "")
     .slice(0, 7);
   if (!label)
     throw Error("Channel needs a callsign-derived radio memory name.");
@@ -443,7 +539,7 @@ function buildChannelBlocks(row) {
     block,
     name,
     rxHz,
-    txHz,
+    txHz: c.receiveOnly ? null : txHz,
     label,
     tone: row.toneMode === "tone" ? row.txTone : null,
     mode: c.mode,

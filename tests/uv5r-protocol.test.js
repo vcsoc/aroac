@@ -10,6 +10,7 @@ const {
   receiveOnlySlot,
   inspectImage,
   buildChannelBlocks,
+  withVerifiedBackup,
 } = require("../desktop/uv5r.cjs");
 const {
   programOne,
@@ -164,6 +165,31 @@ for (const refuseFirstWrite of [false, true]) {
     }
   });
 }
+
+test("a selected radio fingerprint mismatch prevents assignment, callback and all writes", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "aroac-radio-mismatch-"));
+  try {
+    const radio = simulatedRadio();
+    let callback = false;
+    await assert.rejects(
+      () =>
+        withVerifiedBackup(
+          "/dev/ttyUSB0",
+          root,
+          async () => {
+            callback = true;
+          },
+          radio.portFactory,
+          "0".repeat(64),
+        ),
+      /fingerprint differs/,
+    );
+    assert.equal(callback, false);
+    assert.equal(radio.writes.length, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 const verifiedChannel = {
   id: 7,

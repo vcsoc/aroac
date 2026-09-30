@@ -11,6 +11,8 @@ import {
   chirpCsv,
 } from "../shared/radioProgramming.js";
 
+import { manualChannel, parseChannelCsv } from "../shared/channelEntry.js";
+
 const raw = {
   id: 72,
   callsign: "VE3RAD",
@@ -60,6 +62,27 @@ test("directory tones distinguish supported CTCSS from DCS/digital and CSV never
     false,
   );
   assert.throws(() => chirpCsv([{ ...channel, verified: false }]));
+});
+
+test("manual form and CSV capture validate exact frequencies, quoted notes and receive-only settings", () => {
+  const rows = parseChannelCsv(
+    'Name,RX MHz,TX MHz,Tone,Mode,Notes\nVE3RAD,146.94,146.34,100.0,FM,"Owner, listing"\nRXTEST,162.55,off,none,NFM,Listen only',
+  );
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].notes, "Owner, listing");
+  assert.equal(manualChannel(rows[0]).offsetMHz, -0.6);
+  assert.equal(manualChannel(rows[1]).snapshot.receiveOnly, true);
+  assert.throws(() => parseChannelCsv("BAD,999,999,none,FM"), /Row 1/);
+  assert.throws(
+    () => parseChannelCsv('NAME,146.52,146.52,none,FM,"unclosed'),
+    /unclosed/,
+  );
+  assert.throws(() =>
+    manualChannel({ name: "TOOLONGNAME", rxMHz: 146.52, txMHz: 146.52 }),
+  );
+  assert.throws(() =>
+    manualChannel({ name: "TEST", rxMHz: 146.520001, txMHz: 146.52 }),
+  );
 });
 
 test("radio programming list is owner-private, requires a cached repeater and verification before CSV export", async () => {
@@ -157,6 +180,55 @@ test("radio programming list is owner-private, requires a cached repeater and ve
     );
     assert.equal((await request(`/${added.data.id}`, "DELETE")).status, 200);
     assert.equal((await request()).data.length, 0);
+    const manual = {
+      name: "RXTEST",
+      rxMHz: 162.55,
+      receiveOnly: true,
+      tone: "none",
+      mode: "NFM",
+      notes: "Operator input",
+    };
+    assert.equal(
+      (await request("/manual", "POST", { channels: [manual] }, null)).status,
+      401,
+    );
+    const captured = await request("/manual", "POST", { channels: [manual] });
+    assert.equal(captured.status, 201);
+    assert.equal(captured.data[0].verified, false);
+    assert.equal(captured.data[0].snapshot.receiveOnly, true);
+    assert.deepEqual((await request("", "GET", null, 2)).data, []);
+    const manualId = captured.data[0].id;
+    assert.equal(
+      (await request(`/${manualId}`, "PATCH", { verified: true })).status,
+      200,
+    );
+    const edited = await request(`/${manualId}`, "PATCH", {
+      entry: { ...manual, name: "NEWNAME" },
+    });
+    assert.equal(edited.data.verified, false);
+    assert.equal(edited.data.snapshot.callsign, "NEWNAME");
+    assert.equal(
+      (await request(`/${manualId}`, "PATCH", { entry: manual }, 2)).status,
+      404,
+    );
+    assert.equal(
+      (
+        await request("/manual", "POST", {
+          channels: [manual, { ...manual, rxMHz: 999 }],
+        })
+      ).status,
+      400,
+    );
+    assert.equal(
+      (await request()).data.length,
+      1,
+      "invalid bulk request must save no rows",
+    );
+    assert.equal(
+      (await request(`/${manualId}`, "PATCH", { offsetMHz: 1, verified: true }))
+        .status,
+      400,
+    );
   } finally {
     await new Promise((resolve) => server.close(resolve));
     db.close();

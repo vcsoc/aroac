@@ -82,6 +82,8 @@ export function canExportChannel(channel) {
     ((f >= 136 && f <= 174) || (f >= 400 && f <= 520)) &&
     Number.isFinite(channel.offsetMHz) &&
     Math.abs(channel.offsetMHz) <= 10 &&
+    (!c.receiveOnly ||
+      (channel.offsetMHz === 0 && channel.toneMode === "none")) &&
     (channel.toneMode === "none" ||
       (channel.toneMode === "tone" && validCtcss(channel.txTone)))
   );
@@ -127,10 +129,16 @@ export function chirpCsv(channels) {
         return [
           i,
           (c.callsign || "CH" + (i + 1))
-            .replace(/[^A-Za-z0-9]/g, "")
+            .replace(/[^A-Za-z0-9_-]/g, "")
             .slice(0, 7),
           c.outputMHz.toFixed(5),
-          row.offsetMHz > 0 ? "+" : row.offsetMHz < 0 ? "-" : "",
+          c.receiveOnly
+            ? "off"
+            : row.offsetMHz > 0
+              ? "+"
+              : row.offsetMHz < 0
+                ? "-"
+                : "",
           Math.abs(row.offsetMHz).toFixed(5),
           row.toneMode === "tone" ? "Tone" : "",
           row.toneMode === "tone" ? row.txTone : "",

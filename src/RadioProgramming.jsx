@@ -6,6 +6,8 @@ import {
 } from "../shared/radioProgramming.js";
 import { api, download } from "./lib";
 import { confirmAction } from "./InterfaceUI";
+import RadioChannelEntry, { ChannelForm } from "./RadioChannelEntry";
+import RadioProfiles from "./RadioProfiles";
 
 function Channel({
   row,
@@ -19,6 +21,7 @@ function Channel({
     row.offsetMHz == null ? "" : String(row.offsetMHz),
   );
   const [error, setError] = useState("");
+  const [editing, setEditing] = useState(false);
   const save = async (patch) => {
     try {
       await onUpdate(row.id, patch);
@@ -36,6 +39,31 @@ function Channel({
       <h4>
         {s.callsign || "Unnamed repeater"} · {s.outputMHz.toFixed(4)} MHz
       </h4>
+      {s.receiveOnly && <b>Receive-only memory — transmitter disabled</b>}
+      {s.source === "manual" && (
+        <button onClick={() => setEditing(!editing)}>
+          {editing ? "Hide edit form" : "Edit channel frequencies/name"}
+        </button>
+      )}
+      {editing && (
+        <ChannelForm
+          initial={{
+            name: s.callsign,
+            rxMHz: s.outputMHz,
+            txMHz: s.outputMHz + row.offsetMHz,
+            receiveOnly: !!s.receiveOnly,
+            tone: row.toneMode === "tone" ? row.txTone : "none",
+            mode: s.mode,
+            notes: s.city,
+          }}
+          submitLabel="Save edited channel (clears verification)"
+          onCancel={() => setEditing(false)}
+          onSave={async (entry) => {
+            await onUpdate(row.id, { entry });
+            setEditing(false);
+          }}
+        />
+      )}
       <small>
         {s.city || "Location not supplied"} · {s.mode || "Mode unknown"} ·{" "}
         {s.directoryStatus}
@@ -57,6 +85,7 @@ function Channel({
           max="10"
           step="any"
           value={offset}
+          disabled={!!s.receiveOnly}
           aria-label={`Signed repeater offset for ${s.callsign || row.repeaterId}`}
           onChange={(e) => setOffset(e.target.value)}
           onBlur={() => {
@@ -69,6 +98,7 @@ function Channel({
         Transmit/access tone to program
         <select
           aria-label={`Transmit tone for ${s.callsign || row.repeaterId}`}
+          disabled={!!s.receiveOnly}
           value={row.toneMode === "tone" ? `tone:${row.txTone}` : row.toneMode}
           onChange={(e) => {
             const value = e.target.value;
@@ -99,7 +129,9 @@ function Channel({
           onClick={async () => {
             if (
               await confirmAction(
-                "Confirm you checked this repeater’s output frequency, signed offset, analog FM mode, access tone and current operating/access status with an up-to-date source or operator. AROAC cannot verify these for you.",
+                s.receiveOnly
+                  ? "Confirm you independently checked this receive-only channel’s frequency and analog mode. The radio memory will have its transmitter disabled. AROAC cannot verify the source or local receiving restrictions."
+                  : "Confirm you checked this channel’s receive/transmit frequencies, signed offset, analog FM mode, transmit tone, licence and current operating/access status with an up-to-date source or operator. AROAC cannot verify these for you.",
               )
             )
               save({ verified: true });
@@ -143,8 +175,10 @@ export default function RadioProgramming({
     [pending, setPending] = useState(null),
     [targetSlot, setTargetSlot] = useState(127),
     [activePort, setActivePort] = useState(""),
-    [ports, setPorts] = useState([]);
+    [ports, setPorts] = useState([]),
+    [selectedRadio, setSelectedRadio] = useState(null);
   useEffect(() => {
+    setRows([]);
     if (!user) {
       setRows([]);
       return;
@@ -178,9 +212,13 @@ export default function RadioProgramming({
       .catch(() => {});
   }, []);
   useEffect(() => {
+    setSelectedRadio(null);
+    setInspection(null);
+    setBackupStatus("");
     if (!user || !window.oarDesktop?.radioPending) {
       setPending(null);
       setInspection(null);
+      setSelectedRadio(null);
       return;
     }
     let active = true;
@@ -232,7 +270,7 @@ export default function RadioProgramming({
     const rx = row.snapshot.outputMHz;
     const tx = rx + row.offsetMHz;
     const approved = await confirmAction(
-      `Program ${row.snapshot.callsign} into EMPTY radio memory ${targetSlot}? Receiver: ${rx.toFixed(5)} MHz; transmitter: ${tx.toFixed(5)} MHz; ${row.toneMode === "tone" ? `${row.txTone} Hz transmit CTCSS` : "no transmit tone"}; ${row.snapshot.mode}. Verify this radio is the photographed UV-5R, your licence permits the TX frequency, and the repeater owner confirms its access settings. AROAC saves a complete backup before writing. Afterward you MUST power-cycle and verify the entire image in AROAC before transmitting. Cancel keeps radio unchanged.`,
+      `Program ${row.snapshot.callsign} into EMPTY radio memory ${targetSlot} on ${selectedRadio?.label || "selected radio"} (physical serial/label ${selectedRadio?.serial || "unselected"})? Receiver: ${rx.toFixed(5)} MHz; transmitter: ${row.snapshot.receiveOnly ? "DISABLED" : tx.toFixed(5) + " MHz"}; ${row.toneMode === "tone" ? `${row.txTone} Hz transmit CTCSS` : "no transmit tone"}; ${row.snapshot.mode}. Verify this radio is the photographed UV-5R, your licence permits the TX frequency, and the repeater owner confirms its access settings. AROAC saves a complete backup before writing. Afterward you MUST power-cycle and verify the entire image in AROAC before transmitting. Cancel keeps radio unchanged.`,
     );
     if (!approved) return;
     setRadioBusy(true);
@@ -242,6 +280,7 @@ export default function RadioProgramming({
         row,
         targetSlot,
         inspection.sha256,
+        selectedRadio?.id,
       );
       setPending(operation);
       setInspection(null);
@@ -314,6 +353,45 @@ export default function RadioProgramming({
   return (
     <section className="radio-programming">
       <h3>Radio programming list</h3>
+      {user && (
+        <p>
+          {rows.length}/128 saved channels · {verified.length} verified ·{" "}
+          {rows.length - verified.length} awaiting verification. Program one
+          verified channel at a time; after each write, power-cycle and verify
+          before preparing the next empty slot.
+        </p>
+      )}
+      {user && (
+        <RadioChannelEntry
+          key={user.id}
+          onSave={async (channels) => {
+            const added = await api("/radio-channels/manual", {
+              method: "POST",
+              body: JSON.stringify({ channels }),
+            });
+            setRows((current) => [...current, ...added]);
+          }}
+        />
+      )}
+      {user && window.oarDesktop?.radioProfiles && (
+        <RadioProfiles
+          key={user.id}
+          user={user}
+          activePort={activePort}
+          busy={radioBusy}
+          setBusy={setRadioBusy}
+          pending={pending}
+          selected={selectedRadio}
+          onSelect={(radio) => {
+            setSelectedRadio(radio);
+            setInspection(null);
+          }}
+          onInspection={(value) => {
+            setInspection(value);
+            setTargetSlot(value.emptySlots.at(-1) ?? 127);
+          }}
+        />
+      )}
       <p>
         Choose a repeater on the map and select “Add to radio programming list”
         in its right-hand details. This list is private to your signed-in local
@@ -333,9 +411,85 @@ export default function RadioProgramming({
         handsets and desktop/mobile platforms are not validated for USB
         programming.
       </p>
+      {inspection?.memories && (
+        <details className="radio-memory-capture">
+          <summary>
+            Capture programmed memories from{" "}
+            {selectedRadio?.label || "inspected radio"} (
+            {inspection.memories.length})
+          </summary>
+          <p>
+            This is a read-only snapshot. Adding a captured memory to the list
+            does not write it and never marks it verified. Unsupported
+            DCS/receive squelch settings are not silently converted.
+          </p>
+          {inspection.memories.map((memory) => (
+            <section key={memory.slot}>
+              <p>
+                Slot {memory.slot} · {memory.name} · RX{" "}
+                {memory.rxMHz.toFixed(5)} MHz · TX{" "}
+                {memory.receiveOnly
+                  ? "disabled"
+                  : memory.txMHz?.toFixed(5) || "unknown"}{" "}
+                · tone {memory.tone} · {memory.mode}
+              </p>
+              <small>{memory.warning}</small>
+              <button
+                disabled={!memory.supportedForCapture}
+                onClick={async () => {
+                  try {
+                    const entry = {
+                      name:
+                        memory.name
+                          .toUpperCase()
+                          .replace(/[^A-Z0-9_-]/g, "")
+                          .slice(0, 7) || `CH${memory.slot}`,
+                      rxMHz: memory.rxMHz,
+                      txMHz: memory.txMHz,
+                      receiveOnly: memory.receiveOnly,
+                      tone: memory.tone,
+                      mode: memory.mode,
+                      notes: `Captured from ${selectedRadio?.label || "radio"}, slot ${memory.slot}; verify independently`,
+                    };
+                    const added = await api("/radio-channels/manual", {
+                      method: "POST",
+                      body: JSON.stringify({ channels: [entry] }),
+                    });
+                    setRows((current) => [...current, ...added]);
+                    setError("");
+                  } catch (reason) {
+                    setError(reason.message);
+                  }
+                }}
+              >
+                Capture slot {memory.slot} to private programming list
+              </button>
+            </section>
+          ))}
+        </details>
+      )}
       {window.oarDesktop?.platform === "linux" && (
         <div className="directory-status" role="status">
           <b>USB-serial cable detection</b>
+          <label>
+            Cable for radio registration and programming
+            <select
+              aria-label="Radio USB-serial cable"
+              disabled={radioBusy || !!pending}
+              value={activePort}
+              onChange={(event) => {
+                setActivePort(event.target.value);
+                setInspection(null);
+              }}
+            >
+              <option value="">Choose cable</option>
+              {ports.map((port) => (
+                <option value={port.path} key={port.path}>
+                  {port.name} · {port.path}
+                </option>
+              ))}
+            </select>
+          </label>
           {ports.length ? (
             ports.map((port) => (
               <div key={port.path}>
@@ -347,13 +501,14 @@ export default function RadioProgramming({
                 </p>
                 {port.accessible && (
                   <button
-                    disabled={!user || radioBusy}
+                    disabled={!user || radioBusy || !selectedRadio}
                     onClick={async () => {
                       setRadioBusy(true);
                       setBackupStatus("");
                       try {
                         const result = await window.oarDesktop.backupUV5R(
                           port.path,
+                          selectedRadio?.id,
                         );
                         setInspection(result);
                         setTargetSlot(result.emptySlots.at(-1) ?? 127);
@@ -380,6 +535,7 @@ export default function RadioProgramming({
                           port.path,
                         );
                         setPorts(await window.oarDesktop.radioPorts());
+                        if (!pending) setActivePort(port.path);
                         setError("");
                       } catch (e) {
                         setError(e.message);
@@ -444,7 +600,15 @@ export default function RadioProgramming({
             onClick={() =>
               window.oarDesktop
                 .radioPorts()
-                .then(setPorts)
+                .then((found) => {
+                  setPorts(found);
+                  if (!pending)
+                    setActivePort((current) =>
+                      found.some((port) => port.path === current)
+                        ? current
+                        : found.find((port) => port.accessible)?.path || "",
+                    );
+                })
                 .catch((e) => setError(e.message))
             }
           >
@@ -503,6 +667,7 @@ export default function RadioProgramming({
               onProgram={program}
               targetSlot={targetSlot}
               canProgram={
+                !!selectedRadio &&
                 !!inspection?.emptySlots.includes(targetSlot) &&
                 !!activePort &&
                 !pending &&

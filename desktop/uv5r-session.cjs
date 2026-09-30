@@ -84,12 +84,14 @@ function publicPending(pending) {
     callsign: pending.callsign,
     stage: pending.stage,
     rxMHz: pending.rxHz / 1_000_000,
-    txMHz: pending.txHz / 1_000_000,
+    txMHz: pending.txHz === null ? null : pending.txHz / 1_000_000,
     tone: pending.tone,
     mode: pending.mode,
     started: pending.started,
     backupFile: pending.baselineFile,
     device: pending.device,
+    radioId: pending.radioId,
+    fingerprint: pending.fingerprint,
   };
 }
 function pendingStatus(filename, owner) {
@@ -107,6 +109,8 @@ async function programOne({
   expectedSha,
   portFactory,
   beforeWrite,
+  radioId,
+  expectedFingerprint,
 }) {
   if (forOwner(pendingPath, owner))
     throw Error(
@@ -150,6 +154,8 @@ async function programOne({
         slot,
         device,
         cable,
+        radioId,
+        fingerprint: backup.fingerprint,
         started: new Date().toISOString(),
         baselineFile: backup.filename,
         baselineHash: backup.sha256,
@@ -172,6 +178,7 @@ async function programOne({
       return publicPending(pending);
     },
     portFactory,
+    expectedFingerprint,
   );
 }
 
@@ -258,6 +265,7 @@ async function verifyPending({
       };
     },
     portFactory,
+    pending.fingerprint,
   );
 }
 
@@ -327,6 +335,7 @@ async function restorePending({
       };
     },
     portFactory,
+    pending.fingerprint,
   );
 }
 

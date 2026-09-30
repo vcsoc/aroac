@@ -1,5 +1,7 @@
 # User development requirements
 
+- Stay focused on the requested scope and finish as quickly as practical, aiming for under 15 seconds when feasible. Do not expand scope or get distracted. Required hardware safety checks, validation and packaging must not be skipped to meet that time target. Commit completed request work and build/install the new packaged release for review/testing.
+
 - After every completed application change, run the relevant checks, build the packaged Linux desktop app, and install the latest build locally for the user to test/review. Preserve a rollback copy and verify the installed artifact. Commit every completed change; do not leave completed work uncommitted. Documentation-only changes do not require rebuilding an unchanged executable. Report the installed version and actual validation scope, and do not imply an untested platform or hardware operation is verified.
 
 - **No Java, no JDK, no .NET**, including development/build tooling. The user explicitly confirmed all three prohibitions. Do not invoke Gradle or other JDK-dependent tools, generate Java code, or substitute a framework that still requires these toolchains.

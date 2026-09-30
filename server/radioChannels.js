@@ -4,6 +4,9 @@ import {
   validCtcss,
 } from "../shared/radioProgramming.js";
 
+import { randomUUID } from "node:crypto";
+import { manualChannel } from "../shared/channelEntry.js";
+
 export function installRadioChannels(app, db) {
   db.exec(`CREATE TABLE IF NOT EXISTS radio_channels (
     id INTEGER PRIMARY KEY,
@@ -41,6 +44,43 @@ export function installRadioChannels(app, db) {
   app.get("/api/radio-channels", requireUser, (req, res) =>
     res.json(rows.all(req.user.id).map(view)),
   );
+  const insertManual = db.prepare(
+    "INSERT INTO radio_channels(owner,repeater_id,snapshot,offset_mhz,tone_mode,tx_tone,created) VALUES(?,?,?,?,?,?,?)",
+  );
+  app.post("/api/radio-channels/manual", requireUser, (req, res) => {
+    let entries;
+    try {
+      const input = req.body?.channels;
+      if (!Array.isArray(input) || !input.length || input.length > 128)
+        throw Error("Enter 1–128 channels.");
+      if (rows.all(req.user.id).length + input.length > 128)
+        throw Error("The programming list is limited to 128 channels.");
+      entries = input.map(manualChannel);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+    const ids = [];
+    db.exec("BEGIN");
+    try {
+      for (const entry of entries) {
+        const result = insertManual.run(
+          req.user.id,
+          `manual-${randomUUID()}`,
+          JSON.stringify(entry.snapshot),
+          entry.offsetMHz,
+          entry.toneMode,
+          entry.txTone,
+          new Date().toISOString(),
+        );
+        ids.push(Number(result.lastInsertRowid));
+      }
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+    res.status(201).json(ids.map((id) => view(one.get(req.user.id, id))));
+  });
   app.post("/api/radio-channels", requireUser, (req, res) => {
     const id = req.body?.repeaterId;
     if (
@@ -104,6 +144,33 @@ export function installRadioChannels(app, db) {
     if (!current)
       return res.status(404).json({ error: "Radio channel not found." });
     const body = req.body || {};
+    if (Object.hasOwn(body, "entry")) {
+      if (
+        !current.repeater_id.startsWith("manual-") ||
+        Object.keys(body).length !== 1
+      )
+        return res.status(400).json({
+          error:
+            "Only manual entries can be edited with the full channel form.",
+        });
+      let entry;
+      try {
+        entry = manualChannel(body.entry);
+      } catch (error) {
+        return res.status(400).json({ error: error.message });
+      }
+      db.prepare(
+        "UPDATE radio_channels SET snapshot=?,offset_mhz=?,tone_mode=?,tx_tone=?,verified=0 WHERE owner=? AND id=?",
+      ).run(
+        JSON.stringify(entry.snapshot),
+        entry.offsetMHz,
+        entry.toneMode,
+        entry.txTone,
+        req.user.id,
+        id,
+      );
+      return res.json(view(one.get(req.user.id, id)));
+    }
     if (
       Object.keys(body).some(
         (key) => !["offsetMHz", "toneMode", "txTone", "verified"].includes(key),

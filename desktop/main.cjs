@@ -19,6 +19,7 @@ const fs = require("node:fs");
 const { execFile } = require("node:child_process");
 const { withVerifiedBackup } = require("./uv5r.cjs");
 const { programOne, pendingStatus, verifyPending, restorePending } = require("./uv5r-session.cjs");
+const radioProfiles = require("./radio-profiles.cjs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { randomBytes, createHash } = require("node:crypto");
@@ -433,17 +434,52 @@ async function start() {
     if (!port) throw Error("Choose a currently accessible USB-serial cable.");
     if (radioBusy) throw Error("A radio operation is already running.");
     radioBusy = true;
-    try { return await operation(user, port); }
+    try {
+      const result = await operation(user, port);
+      if ((await request("/me"))?.id !== user.id) throw Error("Local profile changed during the radio operation. Check its pending state before doing anything else.");
+      return result;
+    }
     finally { radioBusy = false; }
   }
-  ipcMain.handle("oar:radio-backup", (event, device) =>
-    radioWithPort(event, device, async (_user, port) =>
-      withVerifiedBackup(port.path, radioDirectory(), async ({ backup }) => backup)));
+  const radioRoot = () => app.getPath("userData");
+  ipcMain.handle("oar:radio-profiles", async (event) => {
+    const user = await radioOperator(event);
+    return radioProfiles.profiles(radioRoot(), user.id);
+  });
+  ipcMain.handle("oar:radio-backup-folder", async (event, radioId) => {
+    const user = await radioOperator(event);
+    const directory = radioProfiles.backupDirectory(radioRoot(), user.id, radioId);
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+    const error = await shell.openPath(directory);
+    if (error) throw Error(error);
+    return { ok: true };
+  });
+  ipcMain.handle("oar:radio-history", async (event, radioId) => {
+    const user = await radioOperator(event);
+    return radioProfiles.history(radioRoot(), user.id, radioId);
+  });
+  ipcMain.handle("oar:radio-enroll", (event, device, input) =>
+    radioWithPort(event, device, async (user, port) => {
+      if (pendingStatus(radioPendingFile(), user.id)) throw Error("Resolve the pending radio write before registering another radio.");
+      return withVerifiedBackup(port.path, path.join(radioDirectory(), `unassigned-profile-${user.id}`), async ({ image }) => {
+        if ((await request("/me"))?.id !== user.id) throw Error("Local profile changed; radio registration cancelled.");
+        const radio = radioProfiles.enroll(radioRoot(), user.id, input, image);
+        const { saveBackup } = require("./uv5r.cjs");
+        const backup = saveBackup(image, radioProfiles.backupDirectory(radioRoot(), user.id, radio.id));
+        return { radio, backup };
+      });
+    }));
+  ipcMain.handle("oar:radio-backup", (event, device, radioId) =>
+    radioWithPort(event, device, async (user, port) => {
+      const radio = radioProfiles.getProfile(radioRoot(), user.id, radioId);
+      return withVerifiedBackup(port.path, radioProfiles.backupDirectory(radioRoot(), user.id, radio.id),
+        async ({ backup }) => ({ ...backup, radioId: radio.id }), undefined, radio.fingerprint);
+    }));
   ipcMain.handle("oar:radio-pending", async (event) => {
     const user = await radioOperator(event);
     return pendingStatus(radioPendingFile(), user.id);
   });
-  ipcMain.handle("oar:radio-program", (event, device, id, slot, expectedSha, expectedRow, confirmation) =>
+  ipcMain.handle("oar:radio-program", (event, device, id, slot, expectedSha, expectedRow, confirmation, radioId) =>
     radioWithPort(event, device, async (user, port) => {
       if (!Number.isSafeInteger(id) || confirmation !== `PROGRAM RADIO SLOT ${slot}`)
         throw Error("Explicit confirmation of the selected radio memory slot is required.");
@@ -453,8 +489,9 @@ async function start() {
       if (!row || !canExportChannel(row)) throw Error("Channel is not privately saved and independently verified for analog programming.");
       if (typeof expectedRow !== "string" || expectedRow.length > 5_000 || expectedRow !== JSON.stringify(row))
         throw Error("Radio channel settings changed after your confirmation. Review them again; no write was sent.");
-      return programOne({ device: port.path, directory: radioDirectory(), pendingPath: radioPendingFile(),
-        owner: user.id, cable: port.name, row, slot, expectedSha, beforeWrite: async () => {
+      const radio = radioProfiles.getProfile(radioRoot(), user.id, radioId);
+      return programOne({ device: port.path, directory: radioProfiles.backupDirectory(radioRoot(), user.id, radio.id), pendingPath: radioPendingFile(),
+        owner: user.id, cable: port.name, radioId: radio.id, expectedFingerprint: radio.fingerprint, row, slot, expectedSha, beforeWrite: async () => {
           const currentUser = await request("/me");
           const currentRows = await request("/radio-channels");
           if (demo || currentUser?.id !== user.id ||
@@ -464,14 +501,18 @@ async function start() {
     }));
   ipcMain.handle("oar:radio-verify", (event, device) =>
     radioWithPort(event, device, (user, port) => verifyPending({ device: port.path,
-      directory: radioDirectory(), pendingPath: radioPendingFile(), owner: user.id, cable: port.name })));
+      directory: pendingStatus(radioPendingFile(), user.id)?.radioId
+        ? radioProfiles.backupDirectory(radioRoot(), user.id, pendingStatus(radioPendingFile(), user.id).radioId) : radioDirectory(),
+      pendingPath: radioPendingFile(), owner: user.id, cable: port.name })));
   ipcMain.handle("oar:radio-restore", (event, device, slot, confirmation) =>
     radioWithPort(event, device, (user, port) => {
       if (!Number.isInteger(slot) || confirmation !== `RESTORE RADIO SLOT ${slot}`)
         throw Error("Explicit confirmation of the original slot and backup is required.");
       const pending = pendingStatus(radioPendingFile(), user.id);
       if (!pending || pending.slot !== slot) throw Error("No matching pending channel restoration.");
-      return restorePending({ device: port.path, directory: radioDirectory(), pendingPath: radioPendingFile(), owner: user.id, cable: port.name });
+      return restorePending({ device: port.path, directory: pending.radioId
+        ? radioProfiles.backupDirectory(radioRoot(), user.id, pending.radioId) : radioDirectory(),
+        pendingPath: radioPendingFile(), owner: user.id, cable: port.name });
     }));
   ipcMain.handle("oar:radio-port-access", (event, device) => {
     authorized(event);
@@ -528,6 +569,9 @@ async function start() {
   });
   ipcMain.handle("oar:request", (event, route, options) => {
     authorized(event);
+    if (radioBusy && typeof route === "string" && /^\/(?:login|logout|register|me)(?:\/|$)/.test(route) &&
+        (options?.method || "GET").toUpperCase() !== "GET")
+      throw Error("Wait for the radio operation to finish before changing local accounts.");
     return request(route, options);
   });
   ipcMain.handle("oar:coordinates", (event, lat, lng) => {
