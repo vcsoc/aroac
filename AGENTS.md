@@ -1,5 +1,7 @@
 # User development requirements
 
+- After every completed application change, run the relevant checks, build the packaged Linux desktop app, and install the latest build locally for the user to test/review. Preserve a rollback copy and verify the installed artifact. Commit every completed change; do not leave completed work uncommitted. Documentation-only changes do not require rebuilding an unchanged executable. Report the installed version and actual validation scope, and do not imply an untested platform or hardware operation is verified.
+
 - **No Java, no JDK, no .NET**, including development/build tooling. The user explicitly confirmed all three prohibitions. Do not invoke Gradle or other JDK-dependent tools, generate Java code, or substitute a framework that still requires these toolchains.
 - AROAC must be packaged desktop and mobile applications, not a PWA. It must be all-in-one and local-first: the executable owns its local database and application logic. No separate frontend/backend installation, server-address setup, or externally running account service. Network access is for online data and future optional inter-device transport.
 - Electron/Node desktop development is permitted. iOS development can proceed without the prohibited toolchains but requires macOS/Xcode for compilation/signing.
