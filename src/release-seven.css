@@ -243,6 +243,44 @@
 .link-repeater p {
   margin: 6px 0;
 }
+.radio-programming {
+  display: grid;
+  gap: 10px;
+  padding: 8px;
+  overflow-wrap: anywhere;
+}
+.radio-programming p,
+.radio-programming-channel small {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.radio-programming-channel {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.radio-programming-channel label {
+  font-size: 11px;
+}
+.radio-programming-channel h4 {
+  margin: 0;
+}
+.radio-programming-pending {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--warning, #d08a36);
+  border-radius: 5px;
+}
+.radio-programming-pending button {
+  white-space: normal;
+}
+.radio-programming select[aria-label="Empty radio memory slot"] {
+  margin: 6px 0;
+  max-width: 100%;
+}
 .account-dialog {
   max-width: min(760px, 95vw);
   width: 760px;

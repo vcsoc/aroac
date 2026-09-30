@@ -16,6 +16,9 @@ const {
 configureCredentialStorage(app);
 const credentialStorage = createCredentialStorage(safeStorage);
 const fs = require("node:fs");
+const { execFile } = require("node:child_process");
+const { withVerifiedBackup } = require("./uv5r.cjs");
+const { programOne, pendingStatus, verifyPending, restorePending } = require("./uv5r-session.cjs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { randomBytes, createHash } = require("node:crypto");
@@ -41,7 +44,8 @@ let win,
   demo = null,
   switchingDemo = false,
   workspaceGeneration = 0,
-  closing = false;
+  closing = false,
+  radioBusy = false;
 const localKey = randomBytes(32).toString("hex");
 const devUrl = !app.isPackaged ? process.env.OAR_DEV_URL : null;
 const dataPath = () => path.join(app.getPath("userData"), "station.sqlite");
@@ -108,6 +112,19 @@ function authorized(event) {
     )
   )
     throw Error("Untrusted IPC sender");
+}
+function listRadioPorts() {
+  if (process.platform !== "linux") return [];
+  try {
+    return fs.readdirSync("/dev/serial/by-id").slice(0, 32).flatMap((name) => {
+      const pathToPort = fs.realpathSync(path.join("/dev/serial/by-id", name));
+      if (!/^\/dev\/tty(?:USB|ACM)\d+$/.test(pathToPort)) return [];
+      let accessible = true;
+      try { fs.accessSync(pathToPort, fs.constants.R_OK | fs.constants.W_OK); }
+      catch { accessible = false; }
+      return [{ name: name.slice(0, 100), path: pathToPort, accessible }];
+    });
+  } catch { return []; }
 }
 function connection() {
   return {
@@ -344,6 +361,7 @@ async function start() {
     databasePath: dataPath,
   });
   async function toggleDemo() {
+    if (radioBusy) throw Error("Wait for the radio operation to finish before switching workspaces.");
     if (switchingDemo || !win || win.isDestroyed()) return;
     switchingDemo = true;
     workspaceGeneration++;
@@ -395,6 +413,82 @@ async function start() {
   ipcMain.handle("oar:connection", (event) => {
     authorized(event);
     return connection();
+  });
+  ipcMain.handle("oar:radio-ports", (event) => {
+    authorized(event);
+    return listRadioPorts();
+  });
+  const radioDirectory = () => path.join(app.getPath("userData"), "radio-backups");
+  const radioPendingFile = () => path.join(app.getPath("userData"), "radio-pending.json");
+  async function radioOperator(event) {
+    authorized(event);
+    if (demo) throw Error("Radio operations are disabled in demo mode.");
+    const user = await request("/me");
+    if (!Number.isSafeInteger(user?.id)) throw Error("Sign in before accessing private radio memories.");
+    return user;
+  }
+  async function radioWithPort(event, device, operation) {
+    const user = await radioOperator(event);
+    const port = listRadioPorts().find((entry) => entry.path === device && entry.accessible);
+    if (!port) throw Error("Choose a currently accessible USB-serial cable.");
+    if (radioBusy) throw Error("A radio operation is already running.");
+    radioBusy = true;
+    try { return await operation(user, port); }
+    finally { radioBusy = false; }
+  }
+  ipcMain.handle("oar:radio-backup", (event, device) =>
+    radioWithPort(event, device, async (_user, port) =>
+      withVerifiedBackup(port.path, radioDirectory(), async ({ backup }) => backup)));
+  ipcMain.handle("oar:radio-pending", async (event) => {
+    const user = await radioOperator(event);
+    return pendingStatus(radioPendingFile(), user.id);
+  });
+  ipcMain.handle("oar:radio-program", (event, device, id, slot, expectedSha, expectedRow, confirmation) =>
+    radioWithPort(event, device, async (user, port) => {
+      if (!Number.isSafeInteger(id) || confirmation !== `PROGRAM RADIO SLOT ${slot}`)
+        throw Error("Explicit confirmation of the selected radio memory slot is required.");
+      const list = await request("/radio-channels");
+      const row = Array.isArray(list) ? list.find((entry) => entry.id === id) : null;
+      const { canExportChannel } = await import("../shared/radioProgramming.js");
+      if (!row || !canExportChannel(row)) throw Error("Channel is not privately saved and independently verified for analog programming.");
+      if (typeof expectedRow !== "string" || expectedRow.length > 5_000 || expectedRow !== JSON.stringify(row))
+        throw Error("Radio channel settings changed after your confirmation. Review them again; no write was sent.");
+      return programOne({ device: port.path, directory: radioDirectory(), pendingPath: radioPendingFile(),
+        owner: user.id, cable: port.name, row, slot, expectedSha, beforeWrite: async () => {
+          const currentUser = await request("/me");
+          const currentRows = await request("/radio-channels");
+          if (demo || currentUser?.id !== user.id ||
+              !Array.isArray(currentRows) || JSON.stringify(currentRows.find((entry) => entry.id === id)) !== expectedRow)
+            throw Error("Signed-in profile or radio channel settings changed during backup. No write was sent.");
+        } });
+    }));
+  ipcMain.handle("oar:radio-verify", (event, device) =>
+    radioWithPort(event, device, (user, port) => verifyPending({ device: port.path,
+      directory: radioDirectory(), pendingPath: radioPendingFile(), owner: user.id, cable: port.name })));
+  ipcMain.handle("oar:radio-restore", (event, device, slot, confirmation) =>
+    radioWithPort(event, device, (user, port) => {
+      if (!Number.isInteger(slot) || confirmation !== `RESTORE RADIO SLOT ${slot}`)
+        throw Error("Explicit confirmation of the original slot and backup is required.");
+      const pending = pendingStatus(radioPendingFile(), user.id);
+      if (!pending || pending.slot !== slot) throw Error("No matching pending channel restoration.");
+      return restorePending({ device: port.path, directory: radioDirectory(), pendingPath: radioPendingFile(), owner: user.id, cable: port.name });
+    }));
+  ipcMain.handle("oar:radio-port-access", (event, device) => {
+    authorized(event);
+    if (demo) throw Error("USB cable access is not available in demo mode.");
+    const port = listRadioPorts().find((entry) => entry.path === device);
+    if (!port) throw Error("Choose a currently connected USB-serial cable.");
+    if (port.accessible) return Promise.resolve(port);
+    if (!fs.existsSync("/usr/bin/pkexec") || !fs.existsSync("/usr/bin/setfacl"))
+      throw Error("OS authorization tools are unavailable; ask your administrator for permission to access this cable.");
+    return new Promise((resolve, reject) => {
+      execFile("/usr/bin/pkexec", ["/usr/bin/setfacl", "-m", `u:${process.getuid()}:rw`, port.path], { timeout: 60000 }, (error) => {
+        if (error) return reject(Error("OS authorization was cancelled or unsuccessful; cable permissions were not changed."));
+        const updated = listRadioPorts().find((entry) => entry.path === port.path);
+        if (!updated?.accessible) return reject(Error("Serial cable is still inaccessible. Try reconnecting it or checking system permissions."));
+        resolve(updated);
+      });
+    });
   });
   ipcMain.handle(
     "oar:login-settings",
@@ -521,12 +615,14 @@ async function start() {
     if (
       typeof text !== "string" ||
       text.length > 5_000_000 ||
-      name !== "aroac-logbook.adi"
+      !["aroac-logbook.adi", "aroac-verified-radio-memories.csv"].includes(name)
     )
       throw Error("Invalid export");
     const result = await dialog.showSaveDialog(win, {
       defaultPath: name,
-      filters: [{ name: "ADIF logbook", extensions: ["adi"] }],
+      filters: name.endsWith(".csv")
+        ? [{ name: "Radio memory CSV", extensions: ["csv"] }]
+        : [{ name: "ADIF logbook", extensions: ["adi"] }],
     });
     if (!result.canceled)
       await fs.promises.writeFile(result.filePath, text, "utf8");
@@ -575,6 +671,12 @@ async function start() {
         nodeIntegration: false,
         sandbox: true,
       },
+    });
+    win.on("close", (event) => {
+      if (radioBusy) {
+        event.preventDefault();
+        dialog.showErrorBox("Radio operation in progress", "Wait for the radio operation to finish. Do not unplug the cable or turn off the radio during a write.");
+      }
     });
     zoom.attach(win);
     win.webContents.on("before-input-event", (event, input) => {
@@ -665,6 +767,7 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 app.on("before-quit", (event) => {
+  if (radioBusy) { event.preventDefault(); return; }
   if (closing || !localServer) return;
   event.preventDefault();
   closing = true;

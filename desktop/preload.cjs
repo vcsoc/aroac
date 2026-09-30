@@ -14,6 +14,13 @@ contextBridge.exposeInMainWorld(
     },
     windowControl: (action) => ipcRenderer.invoke("oar:window-control", action),
     connection: () => ipcRenderer.invoke("oar:connection"),
+    radioPorts: () => ipcRenderer.invoke("oar:radio-ports"),
+    backupUV5R: (device) => ipcRenderer.invoke("oar:radio-backup", device),
+    radioPending: () => ipcRenderer.invoke("oar:radio-pending"),
+    programUV5R: (device, row, slot, expectedSha) => ipcRenderer.invoke("oar:radio-program", device, row?.id, slot, expectedSha, JSON.stringify(row), `PROGRAM RADIO SLOT ${slot}`),
+    verifyUV5R: (device) => ipcRenderer.invoke("oar:radio-verify", device),
+    restoreUV5R: (device, slot) => ipcRenderer.invoke("oar:radio-restore", device, slot, `RESTORE RADIO SLOT ${slot}`),
+    requestRadioPortAccess: (device) => ipcRenderer.invoke("oar:radio-port-access", device),
     toggleDemo: () => ipcRenderer.invoke("oar:demo-toggle"),
     loginSettings: (value, allowUnencrypted) =>
       ipcRenderer.invoke("oar:login-settings", value, allowUnencrypted),

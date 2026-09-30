@@ -83,13 +83,15 @@ export function useRepeaters(enabled) {
     [error, setError] = useState(""),
     [loading, setLoading] = useState(false),
     generation = useRef(0);
-  const load = useCallback(async (force = false) => {
+  const load = useCallback(async (mode = "cached") => {
     const token = ++generation.current;
     setLoading(true);
     setError("");
     try {
-      const data = await api("/repeaters" + (force ? "?refresh=1" : ""));
+      const query = mode === "download" ? "?download=1" : mode === "refresh" ? "?refresh=1" : "";
+      const data = await api("/repeaters" + query);
       if (token === generation.current) setValue(data);
+      return data;
     } catch (e) {
       if (token === generation.current) setError(e.message);
     } finally {
@@ -103,5 +105,5 @@ export function useRepeaters(enabled) {
       generation.current++;
     };
   }, [enabled, load, sourceRevision]);
-  return { value, error, loading, refresh: () => load(true) };
+  return { value, error, loading, refresh: () => load("refresh"), download: () => load("download") };
 }

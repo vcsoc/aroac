@@ -35,6 +35,7 @@ import { useToastStatus } from "./Toasts";
 import OnOffTrack from "./OnOffTrack";
 import { repeaterFootprint } from "../shared/coverage.js";
 import { formatRawFrequencyHz } from "../shared/repeaterFrequency.js";
+import { directoryTone } from "../shared/radioProgramming.js";
 const toggleIcons = {
   "Saved locations on map": MapPin,
   "Grey line": Eclipse,
@@ -153,6 +154,8 @@ export function MapDrawer({
           ? "Map settings"
           : kind === "pins"
             ? "Saved locations"
+            : kind === "radio"
+              ? "Radio programming"
             : kind === "link"
               ? "Link planning"
               : "Repeater details"
@@ -164,6 +167,8 @@ export function MapDrawer({
             ? "Settings"
             : kind === "pins"
               ? "Saved locations"
+              : kind === "radio"
+                ? "Radio programming"
               : kind === "link"
                 ? "Link planning"
                 : "Repeater details"}
@@ -237,13 +242,15 @@ export function MapSettings({
         onChange={setRepeaters}
         description="All geolocated records available from hearham.com. Markers cluster when zoomed out."
       />
-      {showRepeaters && !iconOnly && (
+      {!iconOnly && (
         <div className="directory-status">
           <p role="status">
             {directory.loading
-              ? "Downloading repeater directory…"
+              ? "Loading repeater directory…"
               : directory.error ||
-                `${directory.value?.repeaters.length.toLocaleString() || 0} geolocated repeaters`}
+                (directory.value
+                  ? `${directory.value.repeaters.length.toLocaleString()} geolocated repeaters saved for offline use`
+                  : "No repeater directory loaded; download it while online for offline use.")}
           </p>
           {directory.value && (
             <>
@@ -260,9 +267,9 @@ export function MapSettings({
               </small>
             </>
           )}
-          <button onClick={directory.refresh} disabled={directory.loading}>
+          <button onClick={directory.download} disabled={directory.loading}>
             <RefreshCw size={14} />
-            Refresh directory
+            Download repeaters for offline use
           </button>
           <a href="https://hearham.com" target="_blank" rel="noreferrer">
             Source: hearham.com ↗
@@ -606,6 +613,9 @@ export function RepeaterDetails({
   onChoose,
   directory,
   onSave,
+  onRadioList,
+  onOfflineDownload,
+  offlineDownloading,
 }) {
   const [status, setStatus] = useToastStatus(),
     [busy, setBusy] = useState(false);
@@ -689,11 +699,24 @@ export function RepeaterDetails({
         </dd>
         <dt>Mode</dt>
         <dd>{repeater.mode || "Not supplied"}</dd>
+        <dt>Directory “encode” tone</dt>
+        <dd>{directoryTone(repeater.raw?.encode).label}</dd>
+        <dt>Directory “decode” tone</dt>
+        <dd>{directoryTone(repeater.raw?.decode).label}</dd>
         <dt>Grid</dt>
         <dd>{location.grid.toUpperCase()}</dd>
         <dt>Time zone</dt>
         <dd>{location.zone}</dd>
       </dl>
+      <p className="drawer-help">The provider’s “encode” and “decode” fields are shown above without assuming which direction applies to your radio. Verify the required transmit/access tone with the repeater owner or an up-to-date listing; blank, zero and digital color codes are not analog CTCSS tones. A UV-5R cannot use DMR or other digital modes.</p>
+      <div className="button-row">
+        <button onClick={() => onRadioList?.(repeater)} disabled={busy}>
+          <Radio size={14} /> Add to radio programming list
+        </button>
+        <button onClick={onOfflineDownload} disabled={offlineDownloading}>
+          <RefreshCw size={14} /> Download repeaters for offline use
+        </button>
+      </div>
       <button
         className="primary"
         disabled={busy}

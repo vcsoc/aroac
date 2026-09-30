@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { api, post, gridCenter, invalidateSessionRequests } from "./lib";
 import LinkPlanner from "./LinkPlanner";
+import RadioProgramming from "./RadioProgramming";
 import Tutorial from "./Tutorial";
 import { toast, ToastHost, clearToasts } from "./Toasts";
 import { APP_VERSION } from "./version";
@@ -493,6 +494,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
     [previewFont, setPreviewFont] = useState(null),
     [libraryTab, setLibraryTab] = useState("pins"),
     [libraryRevision, setLibraryRevision] = useState(0),
+    [radioRevision, setRadioRevision] = useState(0),
     [mapContext, setMapContext] = useState(null),
     [linkSource, setLinkSource] = useState(null),
     [linkDestination, setLinkDestination] = useState(null),
@@ -639,7 +641,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
     true,
   );
   const pinStore = usePins(),
-    directory = useRepeaters(showRepeaters || drawer === "link");
+    directory = useRepeaters(showRepeaters || quickOpen || ["link", "radio", "repeater"].includes(drawer));
   const matches = useMemo(() => {
     const ids = new Set(repeaterIds);
     return (directory.value?.repeaters || []).filter((r) => ids.has(r.id));
@@ -964,6 +966,16 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               onClick={() => toggleDrawer("pins")}
             >
               <MapPinned size={18} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Radio programming"
+              title="Radio programming list and USB cable status"
+              aria-controls="map-drawer"
+              aria-expanded={drawer === "radio"}
+              onClick={() => toggleDrawer("radio")}
+            >
+              <Radio size={18} />
             </button>
             <button
               className="icon-button"
@@ -1586,6 +1598,8 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               />
             )}
           </>
+        ) : drawer === "radio" ? (
+          <RadioProgramming user={user} revision={radioRevision} directory={directory} onDownload={directory.download} />
         ) : drawer === "link" ? (
           <LinkPlanner
             source={linkSource}
@@ -1606,6 +1620,17 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             onChoose={setActiveRepeaterId}
             directory={directory.value}
             onSave={createPin}
+            onRadioList={async (repeater) => {
+              if (!user) { setAuth(true); return; }
+              try {
+                await post("/radio-channels", { repeaterId: repeater.id });
+                setRadioRevision((n) => n + 1);
+                setDrawer("radio");
+                toast(`${repeater.callsign || "Repeater"} added to your radio programming list. Verify its settings before export.`);
+              } catch (error) { toast(error.message); }
+            }}
+            onOfflineDownload={directory.download}
+            offlineDownloading={directory.loading}
           />
         )}
       </MapDrawer>

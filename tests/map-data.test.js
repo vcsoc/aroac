@@ -118,7 +118,11 @@ test("global repeater directory is cached, reused, available offline and not sil
       assert.equal(data.omitted, 2);
       await fetch(root + "/api/repeaters?refresh=1");
       assert.equal(calls, 1);
+      await fetch(root + "/api/repeaters?download=1");
+      assert.equal(calls, 2);
       offline = true;
+      await fetch(root + "/api/repeaters?download=1");
+      assert.equal(calls, 2);
       const cache = await (await fetch(root + "/api/repeaters")).json();
       assert.equal(cache.offline, true);
       assert.equal(cache.stale, true);

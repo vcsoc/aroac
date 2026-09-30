@@ -10,6 +10,7 @@ files:
   - "!dist/brand/**" # Untracked artwork drafts are not release assets.
   - shared/sources.json
   - shared/roadmap.js
+  - shared/radioProgramming.js
   - LICENSE
   - roadmap.md
   - sources.yaml

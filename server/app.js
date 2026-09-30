@@ -10,6 +10,7 @@ import { installWeather } from "./weather.js";
 import { installElevation } from "./elevation.js";
 import { installLibrary } from "./library.js";
 import { installRepeaters } from "./repeaters.js";
+import { installRadioChannels } from "./radioChannels.js";
 import { installMuf } from "./muf.js";
 import { installMufContours } from "./mufContours.js";
 import {
@@ -558,6 +559,7 @@ export function createApp({
   installElevation(app, db, { isOffline });
   installLibrary(app, db);
   installRepeaters(app, db, { isOffline, fetcher: sourceConfig.fetch });
+  installRadioChannels(app, db);
   installGeocoding(app, db, { isOffline, fetcher: sourceConfig.fetch });
   app.use("/api", (req, res) => fail(res, 404, "API route not found"));
   app.use(express.static(path.resolve("dist")));

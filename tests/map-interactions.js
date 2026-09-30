@@ -376,6 +376,11 @@ try {
   await expect(page.locator(".repeater-raw")).toContainText(
     "145,270,000 Hz (145.27 MHz)",
   );
+  await expect(page.locator(".repeater-summary")).toContainText("100.0 Hz CTCSS");
+  await expect(page.getByRole("button", { name: "Download repeaters for offline use" })).toBeVisible();
+  await page.getByRole("button", { name: "Add to radio programming list" }).click();
+  await expect(page.getByRole("dialog")).toContainText("Welcome back, operator.");
+  await page.locator(".auth-dialog").getByRole("button", { name: "Close" }).click();
   const crossCheck = page.getByRole("link", {
     name: "Cross-check details on RepeaterBook ↗",
   });

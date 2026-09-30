@@ -114,6 +114,7 @@ export function installRepeaters(
           });
     if (
       cached &&
+      req.query.download !== "1" &&
       Date.now() - saved.fetched < (req.query.refresh === "1" ? 60000 : DAY)
     )
       return res.json({ ...cached, cached: true });
