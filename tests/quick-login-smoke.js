@@ -168,7 +168,10 @@ try {
     }),
   ).toHaveAttribute("aria-checked", "true");
   const file = path.join(dir, "local-session.json");
-  assert.equal(statSync(file).mode & 0o777, 0o600);
+  // POSIX mode bits do not describe Windows ACLs.
+  if (process.platform !== "win32") {
+    assert.equal(statSync(file).mode & 0o777, 0o600);
+  }
   assert.ok(!readFileSync(file, "utf8").includes(account.password));
   const config = JSON.parse(readFileSync(file, "utf8"));
   assert.ok(prefs.secureStorage ? config.session : config.sessionPlain);

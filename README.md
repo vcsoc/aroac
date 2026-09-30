@@ -17,9 +17,9 @@ see the license for details.
 
 The supplied `public/aroac-logo.png` is used in the sidebar and About dialog. `node scripts/generate-icons.js` produces Linux PNG, Windows ICO, macOS ICNS and iOS asset-catalog icons from the same source. The Linux x64 AppImage and archive include the green-and-white logo. Native Windows/macOS/iOS packages have **not** been compiled or signed with this artwork here; the historical 0.3.13-preview.12 assets predate it. The legacy application identifier remains to preserve existing local data. The Android scaffold is unsupported and was not regenerated.
 
-## Linux x64 release · 0.4.7
+## Desktop release · 0.4.7
 
-The [AROAC 0.4.7 release notes](docs/releases/0.4.7.md) describe the Linux AppImage/archive, checksum verification, UI improvements, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.7); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.6.md) remain available.
+The [AROAC 0.4.7 release notes](docs/releases/0.4.7.md) describe the Linux x64 AppImage/archive, Windows x64 installer and macOS ARM64 packages, checksum verification, UI improvements, tests and platform limitations. Download binaries from the [GitHub release](https://github.com/vcsoc/aroac/releases/tag/v0.4.7); the large executable assets are GitHub release assets, not Git blobs. [Previous release notes](docs/releases/0.4.6.md) remain available.
 
 ## Optional relay preview (0.4.1 desktop)
 
@@ -115,6 +115,8 @@ releases/AROAC-0.4.7.AppImage
 Make executable if your download manager removes that permission, then double-click. If FUSE is unavailable, run the AppImage with `--appimage-extract-and-run`. The older 0.1.0 files are obsolete client/server prototypes, not the standalone release.
 
 ## Windows x64 release
+
+Download the unsigned [AROAC 0.4.7 Windows installer](https://github.com/vcsoc/aroac/releases/download/v0.4.7/AROAC-Setup-0.4.7.exe). See the [0.4.7 release notes](docs/releases/0.4.7.md) for checksums, packaged-app test results and installation/update limitations.
 
 [Historical OAR v0.3.12 release](https://github.com/vcsoc/aroac/releases/tag/v0.3.12) includes
 `OAR-Setup-0.3.12.exe`, its blockmap, Windows update metadata and SHA-256 checksums.
