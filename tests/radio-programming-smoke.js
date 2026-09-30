@@ -73,10 +73,10 @@ try {
   await page
     .getByRole("button", { name: "Radio programming", exact: true })
     .click();
-  const drawer = page.getByRole("complementary", {
-    name: "Radio programming",
-    exact: true,
-  });
+  const drawer = page.locator("#radio-workspace");
+  await drawer
+    .getByText("Detailed channel cards and directory reports", { exact: true })
+    .click();
   await expect(drawer).toContainText("VE3RAD");
   await expect(drawer).toContainText(
     "100.0 Hz CTCSS (directory report; verify)",
@@ -183,6 +183,19 @@ try {
         filename: "simulated-private.img",
         sha256: "a".repeat(64),
         emptySlots: [126, 127],
+        memories: [
+          {
+            slot: 0,
+            name: "SIMRX",
+            rxMHz: 146.52,
+            txMHz: null,
+            receiveOnly: true,
+            tone: "none",
+            mode: "NFM",
+            supportedForCapture: true,
+            warning: "Simulated extracted memory",
+          },
+        ],
       }));
       ipcMain.removeHandler("oar:radio-pending");
       ipcMain.handle("oar:radio-pending", () => pending);
@@ -224,6 +237,11 @@ try {
       .getByRole("button", { name: "Radio programming", exact: true })
       .click();
     await drawer
+      .getByText("Detailed channel cards and directory reports", {
+        exact: true,
+      })
+      .click();
+    await drawer
       .getByRole("combobox", { name: "Registered physical radio" })
       .selectOption("11111111-1111-1111-1111-111111111111");
     await drawer
@@ -242,6 +260,41 @@ try {
     await expect(
       drawer.getByRole("combobox", { name: "Empty radio memory slot" }),
     ).toBeVisible();
+    await drawer
+      .getByRole("button", { name: "Radio memories (128 slots)", exact: true })
+      .click();
+    const memoryTable = drawer.getByRole("table", {
+      name: "Extracted radio memories",
+    });
+    await expect(memoryTable.getByRole("row")).toHaveCount(129);
+    await expect(
+      memoryTable.getByRole("row", { name: "Channel row SIMRX", exact: true }),
+    ).toContainText("Disabled");
+    const emptyMemory = memoryTable.getByRole("row", {
+      name: "Channel row empty memory 127",
+      exact: true,
+    });
+    await emptyMemory.getByRole("button", { name: "Enter channel" }).click();
+    await emptyMemory
+      .getByRole("textbox", { name: "Name for empty memory 127" })
+      .fill("DRAFT");
+    await emptyMemory
+      .getByRole("spinbutton", { name: "RX MHz for empty memory 127" })
+      .fill("146.52");
+    await emptyMemory.getByRole("checkbox").check();
+    await emptyMemory.getByRole("button", { name: "Save draft" }).click();
+    await expect(emptyMemory).toContainText("radio unchanged");
+    await drawer
+      .getByRole("button", { name: /Saved programming list/ })
+      .click();
+    await drawer
+      .getByRole("table", { name: "Saved channel programming list" })
+      .getByRole("row", { name: "Channel row DRAFT", exact: true })
+      .getByRole("button", { name: "Remove draft" })
+      .click();
+    console.log(
+      "128-slot extraction table and inline empty-memory draft capture passed; no radio write.",
+    );
     await drawer
       .getByRole("button", {
         name: "Program radio channel VE3RAD to memory 127",
@@ -275,6 +328,11 @@ try {
     await expect(drawer).toContainText(
       "SUCCESS: memory 127 and the entire radio image match",
     );
+    await drawer
+      .getByText("Detailed channel cards and directory reports", {
+        exact: true,
+      })
+      .click();
     console.log(
       "Simulated packaged USB UI passed: exact settings confirmation, cancel, persistent pending, explicit read-only verification. No radio writes sent.",
     );
@@ -329,8 +387,18 @@ try {
   await expect(
     drawer.getByRole("region", { name: "Radio channel BULK2" }),
   ).toContainText("Receive-only memory");
+  const inlineRow = drawer
+    .getByRole("table", { name: "Saved channel programming list" })
+    .getByRole("row", { name: "Channel row BULK1", exact: true });
+  await inlineRow.getByRole("button", { name: "Edit inline" }).click();
+  await inlineRow
+    .getByRole("spinbutton", { name: "RX MHz for BULK1" })
+    .fill("146.53");
+  await inlineRow.getByRole("button", { name: "Save draft" }).click();
+  await expect(inlineRow).toContainText("146.53000");
+  await expect(inlineRow).toContainText("Draft / verify");
   console.log(
-    "Manual entry, edit-with-verification-reset, and validated bulk channel capture passed.",
+    "Manual entry, inline table editing, edit-with-verification-reset, and validated bulk channel capture passed.",
   );
   console.log(
     "Radio list smoke passed: offline cached repeater, private channel, reported tone, explicit verification, CSV availability, removal.",

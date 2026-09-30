@@ -97,6 +97,7 @@ const nav = [
   ["conditions", "Conditions", CloudSun],
   ["messages", "Messages", MessageSquare],
   ["logbook", "Logbook", BookOpen],
+  ["radio", "Radio channels", Radio],
 ];
 export function useFeed(name, interval = 300000) {
   const sourceRevision = useSourceRevision();
@@ -546,7 +547,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
       document.querySelector(".profile-button")?.focus(),
     );
   };
-  const panelWidths = usePanelWidths(leftOpen, !!drawer);
+  const panelWidths = usePanelWidths(leftOpen && page !== "radio", !!drawer);
   const [muf, setMuf] = usePreference("oar-muf");
   const [followGrey, setFollowGrey] = usePreference(
     "oar-grey-follow-clock",
@@ -641,7 +642,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
     true,
   );
   const pinStore = usePins(),
-    directory = useRepeaters(showRepeaters || quickOpen || ["link", "radio", "repeater"].includes(drawer));
+    directory = useRepeaters(showRepeaters || quickOpen || page === "radio" || ["link", "radio", "repeater"].includes(drawer));
   const matches = useMemo(() => {
     const ids = new Set(repeaterIds);
     return (directory.value?.repeaters || []).filter((r) => ids.has(r.id));
@@ -831,7 +832,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
         "app " +
         (["dashboard", "atlas"].includes(page) ? "map-page " : "") +
         (drawer ? "drawer-open " : "") +
-        (leftOpen ? "left-open" : "")
+        (leftOpen && page !== "radio" ? "left-open" : "")
       }
     >
       <aside className="sidebar">
@@ -856,7 +857,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               aria-label={label}
               title={label}
               className={page === id ? "selected" : ""}
-              onClick={() => setPage(id)}
+              onClick={() => { setPage(id); if (id === "radio") setDrawer(null); }}
             >
               <Icon size={19} />
               <span>{label}</span>
@@ -971,9 +972,9 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               className="icon-button"
               aria-label="Radio programming"
               title="Radio programming list and USB cable status"
-              aria-controls="map-drawer"
-              aria-expanded={drawer === "radio"}
-              onClick={() => toggleDrawer("radio")}
+              aria-controls="radio-workspace"
+              aria-expanded={page === "radio"}
+              onClick={() => { setPage("radio"); setDrawer(null); }}
             >
               <Radio size={18} />
             </button>
@@ -1264,6 +1265,10 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
             </>
           )}
           {page === "conditions" && <Conditions />}
+          {page === "radio" && <div id="radio-workspace" className="radio-workspace" aria-label="Radio programming workspace">
+            <header><h1>Radio channels & programming</h1><p>Extract, review and edit channel drafts. Radio writes require a backup and explicit confirmation.</p></header>
+            <RadioProgramming user={user} revision={radioRevision} directory={directory} onDownload={directory.download} />
+          </div>}
           {["messages", "logbook"].includes(page) &&
             (!user ? (
               <div className="panel welcome">
@@ -1348,7 +1353,7 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
           }
         }}
         resize={panelWidths.left}
-        open={leftOpen}
+        open={leftOpen && page !== "radio"}
         pinned={leftPinned}
         setPinned={setLeftPinned}
         onClose={() => setLeftOpen(false)}
@@ -1598,8 +1603,6 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               />
             )}
           </>
-        ) : drawer === "radio" ? (
-          <RadioProgramming user={user} revision={radioRevision} directory={directory} onDownload={directory.download} />
         ) : drawer === "link" ? (
           <LinkPlanner
             source={linkSource}
@@ -1625,7 +1628,8 @@ function Workspace({ user, demoMode, setUser, page, setPage }) {
               try {
                 await post("/radio-channels", { repeaterId: repeater.id });
                 setRadioRevision((n) => n + 1);
-                setDrawer("radio");
+                setDrawer(null);
+                setPage("radio");
                 toast(`${repeater.callsign || "Repeater"} added to your radio programming list. Verify its settings before export.`);
               } catch (error) { toast(error.message); }
             }}

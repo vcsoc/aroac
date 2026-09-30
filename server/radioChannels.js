@@ -145,13 +145,10 @@ export function installRadioChannels(app, db) {
       return res.status(404).json({ error: "Radio channel not found." });
     const body = req.body || {};
     if (Object.hasOwn(body, "entry")) {
-      if (
-        !current.repeater_id.startsWith("manual-") ||
-        Object.keys(body).length !== 1
-      )
+      if (Object.keys(body).length !== 1)
         return res.status(400).json({
           error:
-            "Only manual entries can be edited with the full channel form.",
+            "Send only the channel entry when editing full settings.",
         });
       let entry;
       try {

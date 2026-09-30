@@ -1,6 +1,6 @@
 # UV-5R USB programming — Linux desktop preview
 
-Available in the locally built 0.4.8-preview.2 desktop, not the published 0.4.7 release.
+Available in the locally built 0.4.8-preview.3 desktop, not the published 0.4.7 release.
 
 ## Validated hardware and limitations
 
@@ -8,12 +8,18 @@ One photographed Baofeng UV-5R (hardware label apparently P51UV), CH340 USB-seri
 
 Linux requires `/usr/bin/stty` and serial permissions. Optional permission granting uses `/usr/bin/pkexec` and `/usr/bin/setfacl` with the system authorization prompt. ACLs may expire after unplugging. No Java/JDK/.NET is needed. Windows, macOS, iOS and Android USB programming are not implemented or validated; Android remains blocked by the project toolchain requirements.
 
+## Full-page channel workspace
+
+Open **Radio channels** in the sidebar or the **Radio programming** toolbar button. The workspace replaces the map rather than opening a narrow drawer. **Saved programming list** shows local drafts; **Radio memories (128 slots)** shows the last extracted memory image, including occupied, fully empty and residual-data slots. Select/register the physical radio, then **Extract radio memories and save private backup** to fill the table with a double-checked read-only image.
+
+Use **Edit inline** on a saved row to edit name, RX/TX, receive-only, tone, mode and notes, then **Save draft**. Any settings edit clears verification. Use **Enter channel** on an empty extracted row, or **Edit / capture draft** on an occupied one, to create a local draft; this never writes the extracted slot. Switch to the saved list to verify/program it into an inspected empty slot. Occupied memories are intentionally not overwritten. Detailed channel cards and directory reports remain available in a collapsed section.
+
 ## Use
 
 1. Power on the same tested radio, seat the cable firmly and close other serial/programming applications. Sign in to your local AROAC profile.
 2. Under **Physical radio profiles and fingerprints**, register the connected radio with a name and the physical serial or your unique label. Registration reads twice without writing and creates a separate private backup folder. For a previously registered radio, select it, confirm its physical label and click **Use this radio profile**. The fingerprint is a SHA-256 over clone identity, firmware and selected calibration regions, excluding channel memories. It is **not a guaranteed unique hardware serial**: different radios may share it, and calibration changes may alter it. A mismatch blocks reads from being assigned to that profile and blocks programming; it does not silently create or switch profiles. Backups and fingerprints are scoped to the signed-in local user, with a different UUID/folder for each registered physical label—even when signatures match.
 3. Select a map repeater and **Add to radio programming list**, or open **Enter channels manually or import a channel list**. The form supports name, RX/TX frequency, receive-only, CTCSS, FM/NFM and notes. Use **Edit channel frequencies/name** to edit manual entries; saving clears verification. Bulk CSV supports `Name,RX MHz,TX MHz or off,Tone,Mode,Notes`, quoted fields, an optional header, and up to 128 total saved channels. Validate/preview first; a bad row rejects the entire import. File import stays local. Inspected radio memories can also be captured into the list, unverified; DCS/receive-squelch settings that cannot be reproduced are shown but not silently converted. Independently check frequency, signed offset, FM/NFM, current access/operation and licence/local band plan. Provider encode/decode direction is not assumed. Select the correct standard CTCSS transmit tone (or no tone), then mark settings verified. DCS/digital programming is not supported. Receive squelch tone stays off.
-4. Open **Radio programming**. Authorize cable access if needed. Click **Inspect empty memories and save full private backup**. This reads twice and refuses inconsistent data or a different signature/firmware.
+4. Open **Radio programming**. Authorize cable access if needed. Click **Extract radio memories and save private backup**. This reads twice and refuses inconsistent data or a different signature/firmware.
 5. Choose an offered empty memory (0–127). AROAC never overwrites an occupied slot through this workflow. Click the channel's **Program to empty memory … via USB**, review the exact RX/TX, tone and slot, and confirm. Low power is used. Conservative TX limits are 144–148 and 430–450 MHz, but these limits are **not** permission to transmit in your jurisdiction.
 6. Keep radio/cable connected until the operation returns. Once instructed, turn the radio off and on. Click **Verify full radio image (read-only)**. Success requires the entire image to equal the original with only the intended two 16-byte channel/name blocks changed. An ACK is never treated as verified success.
 7. Do not transmit until verification succeeds. A read can leave the handset in clone mode; power-cycle before normal operation.

@@ -8,6 +8,8 @@ import { api, download } from "./lib";
 import { confirmAction } from "./InterfaceUI";
 import RadioChannelEntry, { ChannelForm } from "./RadioChannelEntry";
 import RadioProfiles from "./RadioProfiles";
+import RadioChannelTable from "./RadioChannelTable";
+import "./radio-workspace.css";
 
 function Channel({
   row,
@@ -361,6 +363,13 @@ export default function RadioProgramming({
           before preparing the next empty slot.
         </p>
       )}
+      {user && <RadioChannelTable key={user.id} rows={rows} inspection={inspection}
+        onUpdate={update} onRemove={remove} onProgram={program} targetSlot={targetSlot}
+        canProgram={!!selectedRadio && !!inspection?.emptySlots.includes(targetSlot) && !!activePort && !pending && !radioBusy}
+        onAdd={async (entry) => {
+          const added = await api("/radio-channels/manual", { method: "POST", body: JSON.stringify({ channels: [entry] }) });
+          setRows((current) => [...current, ...added]);
+        }} />}
       {user && (
         <RadioChannelEntry
           key={user.id}
@@ -501,6 +510,7 @@ export default function RadioProgramming({
                 </p>
                 {port.accessible && (
                   <button
+                    aria-label="Inspect empty memories and save full private backup"
                     disabled={!user || radioBusy || !selectedRadio}
                     onClick={async () => {
                       setRadioBusy(true);
@@ -524,7 +534,7 @@ export default function RadioProgramming({
                       }
                     }}
                   >
-                    Inspect empty memories and save full private backup
+                    Extract radio memories and save private backup
                   </button>
                 )}
                 {!port.accessible && (
@@ -658,6 +668,7 @@ export default function RadioProgramming({
               one, then add it here.
             </p>
           )}
+          <details className="radio-detailed-cards"><summary>Detailed channel cards and directory reports</summary>
           {rows.map((row) => (
             <Channel
               key={row.id}
@@ -674,7 +685,7 @@ export default function RadioProgramming({
                 !radioBusy
               }
             />
-          ))}
+          ))}</details>
           <button
             disabled={busy || verified.length === 0}
             onClick={async () => {
