@@ -1,0 +1,4 @@
+6bc5aabe3aaec33ab2f586ed66df202ebb8d71202d758877949ee23e7d4ffe28  AROAC-0.4.8-preview.3-arm64.dmg
+2a9353baef439249377a460d02a164e941dd0fa6c210d8fd34b3dd392951551a  AROAC-0.4.8-preview.3-arm64.dmg.blockmap
+d8968ab6b0fefe2ffb50b8279b75baa461db784239c7784f0b3a76b09dd8aecd  AROAC-0.4.8-preview.3-arm64-mac.zip
+24924d37747efe416f290dea596b85e769d9f2611893014039fbfff3b9928305  AROAC-0.4.8-preview.3-arm64-mac.zip.blockmap
